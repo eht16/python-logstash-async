@@ -2,6 +2,7 @@ import ssl
 from logging.handlers import SocketHandler
 from logstash import formatter
 
+from pprint import pprint
 
 # Derive from object to force a new-style class and thus allow super() to work
 # on Python 2.6
@@ -39,6 +40,9 @@ class TCPLogstashHandler(SocketHandler, object):
 
     def makeSocket(self, timeout=1):
         s = super(TCPLogstashHandler, self).makeSocket(timeout)
+        if not self.ssl:
+            return s
+
         cert_reqs = ssl.CERT_REQUIRED
         if not self.ssl_verify:
             if self.ca_certs:
@@ -46,6 +50,4 @@ class TCPLogstashHandler(SocketHandler, object):
             else:
                 cert_reqs = ssl.CERT_NONE
 
-        if self.ssl:
-            return ssl.wrap_socket(s, keyfile=self.keyfile, certfile=self.certfile, ca_certs=self.ca_certs, cert_reqs=cert_reqs)
-        return s
+        return ssl.wrap_socket(s, keyfile=self.keyfile, certfile=self.certfile, ca_certs=self.ca_certs, cert_reqs=cert_reqs)
