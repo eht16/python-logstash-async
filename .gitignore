@@ -1,27 +1,21 @@
 *.py[cod]
 MANIFEST
-.idea
-
-# C extensions
-*.so
 
 # Packages
+/.eggs
 *.egg
 *.egg-info
-dist
-build
-eggs
-parts
-bin
-var
-sdist
-develop-eggs
-.installed.cfg
-lib
-lib64
+/dist
+/build
+/eggs
+/bin
+/var
+/sdist
+/develop-eggs
+/.installed.cfg
 
 # Installer logs
-pip-log.txt
+/pip-log.txt
 
 # Unit test / coverage reports
 .coverage
@@ -31,7 +25,11 @@ nosetests.xml
 # Translations
 *.mo
 
-# Mr Developer
-.mr.developer.cfg
-.project
-.pydevproject
+# IDEs
+/.idea
+/.geany
+/.mr.developer.cfg
+/.project
+/.pydevproject
+/.settings
+/.release

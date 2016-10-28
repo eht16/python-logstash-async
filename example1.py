@@ -1,17 +1,27 @@
+# -*- coding: utf-8 -*-
+
 import logging
-import logstash
 import sys
 
+from logstash_async.handler import AsynchronousLogstashHandler
+
 host = 'localhost'
+port = 5959
 
 test_logger = logging.getLogger('python-logstash-logger')
+test_logger = logging.getLogger('')
 test_logger.setLevel(logging.INFO)
-test_logger.addHandler(logstash.LogstashHandler(host, 5959, version=1))
-# test_logger.addHandler(logstash.TCPLogstashHandler(host, 5959, version=1))
+test_logger.addHandler(AsynchronousLogstashHandler(host, port, database_path='logstash_test.db'))
 
-test_logger.error('python-logstash: test logstash error message.')
-test_logger.info('python-logstash: test logstash info message.')
-test_logger.warning('python-logstash: test logstash warning message.')
+test_logger.error('python-logstash-async: test logstash error message.')
+test_logger.info('python-logstash-async: test logstash info message.')
+test_logger.warning('python-logstash-async: test logstash warning message.')
+test_logger.debug('python-logstash-async: test logstash debug message.')
+
+try:
+    1 / 0
+except Exception, e:
+    test_logger.exception(u'Exception: %s', e)
 
 # add extra field to logstash message
 extra = {

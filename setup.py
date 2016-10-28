@@ -1,13 +1,42 @@
-from distutils.core import setup
+# -*- coding: utf-8 -*-
+
+from os import path
+from setuptools import setup
+from shutil import rmtree
+import sys
+
+NAME = 'python-logstash-async'
+VERSION = '1.0.0'
+
+here = path.abspath(path.dirname(__file__))
+with open(path.join(here, 'README.rst')) as f:
+    LONG_DESCRIPTION = f.read().decode('utf-8')
+
+
+if 'bdist_wheel' in sys.argv:
+    # Remove previous build dir when creating a wheel build, since if files have been removed
+    # from the project, they'll still be cached in the build dir and end up as part of the
+    # build, which is really neat!
+    for directory in ('build', 'dist', 'python_logstash_async.egg-info'):
+        try:
+            rmtree(directory)
+        except:
+            pass
+
+
 setup(
-    name='python-logstash',
-    packages=['logstash'],
-    version='0.4.6',
-    description='Python logging handler for Logstash.',
-    long_description=open('README.rst').read(),
-    author='Volodymyr Klochan',
-    author_email='vklochan@gmail.com',
-    url='https://github.com/vklochan/python-logstash',
+    name=NAME,
+    packages=['logstash_async'],
+    version=VERSION,
+    description='Asynchronous Python logging handler for Logstash.',
+    long_description=LONG_DESCRIPTION,
+    license='MIT',
+    author='Enrico Tröger',
+    author_email='enrico.troeger@uvena.de',
+    url='https://github.com/eht16/python-logstash-async',
+    keywords='logging logstash asynchronous',
+    requires=['six'],
+    setup_requires=['flake8'],
     classifiers=[
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
