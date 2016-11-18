@@ -4,6 +4,7 @@
 # of the MIT license.  See the LICENSE file for details.
 
 from datetime import date, datetime
+from copy import deepcopy
 import logging
 import socket
 import sys
@@ -191,7 +192,8 @@ class LogstashFormatter(logging.Formatter):
             return  # early out if no prefix is configured
 
         field_skip_list = LOGSTASH_MESSAGE_FIELD_LIST + [self._extra_prefix]
-        for key, value in message.items():
+        message_copy = deepcopy(message)
+        for key, value in message_copy.items():
             if key not in field_skip_list:
                 message[self._extra_prefix][key] = value
                 del message[key]
