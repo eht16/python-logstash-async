@@ -191,10 +191,9 @@ class LogstashFormatter(logging.Formatter):
             return  # early out if no prefix is configured
 
         field_skip_list = LOGSTASH_MESSAGE_FIELD_LIST + [self._extra_prefix]
-        for key, value in message.items():
+        for key in list(message):
             if key not in field_skip_list:
-                message[self._extra_prefix][key] = value
-                del message[key]
+                message[self._extra_prefix][key] = message.pop(key)
 
     # ----------------------------------------------------------------------
     def _serialize(self, message):
