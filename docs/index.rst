@@ -16,38 +16,14 @@ This is especially useful for applications like websites or web services or any 
 request serving API where response times matter.
 
 
-About
------
+Contents
+--------
 
 .. toctree::
    :maxdepth: 2
 
    about.rst
-
-
-Installation
-------------
-
-.. toctree::
-   :maxdepth: 2
-
    installation.rst
-
-
-Usage
------
-
-.. toctree::
-   :maxdepth: 2
-
    usage.rst
-
-
-Configuration
--------------
-
-.. toctree::
-   :maxdepth: 1
-
    config.rst
    config_logstash.rst
