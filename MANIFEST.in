@@ -2,3 +2,6 @@ include LICENSE
 include README.rst
 include example1.py
 include example2.py
+include docs/Makefile
+recursive-include docs *.py *.rst *.css *.gif *.png
+recursive-exclude docs/_build *

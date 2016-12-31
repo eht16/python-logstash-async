@@ -37,6 +37,7 @@ setup(
     keywords='logging logstash asynchronous',
     install_requires=['six'],
     setup_requires=['flake8'],
+    include_package_data=True,
     classifiers=[
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
