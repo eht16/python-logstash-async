@@ -52,6 +52,13 @@ ChangeLog
 ---------
 
 
+1.1.0 (Dec 31, 2016)
+++++++++++++++++++++
+
+  * Add documentation (built by Sphinx, hosted at readthedocs.org)
+  * Fix installing of "six" dependency on package install
+
+
 1.0.1 (Nov 26, 2016)
 ++++++++++++++++++++
 
