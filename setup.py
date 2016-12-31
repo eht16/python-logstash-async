@@ -35,7 +35,7 @@ setup(
     author_email='enrico.troeger@uvena.de',
     url='https://github.com/eht16/python-logstash-async',
     keywords='logging logstash asynchronous',
-    requires=['six'],
+    install_requires=['six'],
     setup_requires=['flake8'],
     classifiers=[
         'Development Status :: 4 - Beta',
