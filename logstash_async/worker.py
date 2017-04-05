@@ -180,8 +180,15 @@ class LogProcessingWorker(Thread):
                 self._safe_log(u'exception', u'An error occurred while sending events: %s', e)
                 self._database.requeue_queued_events(queued_events)
             else:
-                self._database.delete_queued_events()
+                self._delete_queued_events_from_database()
                 self._reset_flush_counters()
+
+    # ----------------------------------------------------------------------
+    def _delete_queued_events_from_database(self):
+        try:
+            self._database.delete_queued_events()
+        except DatabaseLockedError:
+            pass  # nothing to handle, if it fails, we delete those events in a later run
 
     # ----------------------------------------------------------------------
     def _queued_event_interval_reached(self):
