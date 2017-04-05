@@ -52,6 +52,12 @@ ChangeLog
 ---------
 
 
+1.1.1 (Apr 05, 2017)
+++++++++++++++++++++
+
+  * Improve handling on locked Sqlite database on high event load
+
+
 1.1.0 (Dec 31, 2016)
 ++++++++++++++++++++
 
