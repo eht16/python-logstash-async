@@ -55,8 +55,13 @@ class DatabaseCache(object):
     # ----------------------------------------------------------------------
     def _initialize_schema(self):
         cursor = self._connection.cursor()
-        for statement in DATABASE_SCHEMA_STATEMENTS:
-            cursor.execute(statement)
+        try:
+            for statement in DATABASE_SCHEMA_STATEMENTS:
+                cursor.execute(statement)
+        except sqlite3.OperationalError:
+            self._close()
+            self._handle_sqlite_error()
+            raise
 
     # ----------------------------------------------------------------------
     def add_event(self, event):
