@@ -36,7 +36,7 @@ class AsynchronousLogstashHandler(Handler):
     # ----------------------------------------------------------------------
     def __init__(self, host, port=5959, transport='logstash_async.transport.TcpTransport',
                  ssl_enable=False, ssl_verify=True, keyfile=None, certfile=None, ca_certs=None,
-                 database_path=':memory:', enable=True):
+                 database_path=':memory:?cache=shared', enable=True):
         super(AsynchronousLogstashHandler, self).__init__()
         self._host = host
         self._port = port
