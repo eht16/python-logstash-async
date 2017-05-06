@@ -52,6 +52,16 @@ ChangeLog
 ---------
 
 
+1.2.0 (May 06, 2017)
+++++++++++++++++++++
+
+  * Require path setting to the Sqlite database
+    (the previous default value ":memory:" doesn't help, see #5)
+  * Fix a Python3 incompatibility (#3)
+  * Fix a Django 1.8 / local Django development server
+    incompatibility (3)
+
+
 1.1.1 (Apr 05, 2017)
 ++++++++++++++++++++
 
