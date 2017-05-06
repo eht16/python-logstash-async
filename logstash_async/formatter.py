@@ -15,6 +15,7 @@ try:
 except ImportError:
     import simplejson as json
 
+from six import text_type
 import logstash_async
 
 # The list contains all the attributes listed in
@@ -229,12 +230,13 @@ class DjangoLogstashFormatter(LogstashFormatter):
         if hasattr(record, 'request') and hasattr(record.request, 'META'):
             request = record.request
 
+            request_user = self._get_attribute_with_default(request, 'user', '')
             extra_fields['django_version'] = self._django_version
             extra_fields['req_useragent'] = request.META.get('HTTP_USER_AGENT', '<none>')
             extra_fields['req_remote_address'] = request.META.get('REMOTE_ADDR', '<none>')
             extra_fields['req_host'] = request.get_host()
             extra_fields['req_uri'] = request.get_raw_uri()
-            extra_fields['req_user'] = self._get_attribute_with_default(request, 'user', '')
+            extra_fields['req_user'] = text_type(request_user)
             extra_fields['req_method'] = request.META.get('REQUEST_METHOD', '')
             extra_fields['req_referer'] = request.META.get('HTTP_REFERER', '')
 
