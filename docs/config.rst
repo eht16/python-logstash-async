@@ -8,7 +8,10 @@ host
     The host of the Logstash server (no default)
 
 port
-    The port of the Logstash server (default 5959)
+    The port of the Logstash server (no default)
+
+database_path
+    The path to the file containing queued events (no default)
 
 transport
     Callable or path to a compatible transport class
@@ -42,9 +45,6 @@ ca_certs
     The path to the file containing recognized CA certificates
     (default: None)
     Only used for `logstash_async.transport.TcpTransport`.
-
-database_path
-    The path to the file containing queued events (default: ':memory:')
 
 enable
     Flag to enable log processing (default is True, disabling

@@ -18,15 +18,15 @@ class ProcessingError(Exception):
 
 class AsynchronousLogstashHandler(Handler):
     """Python logging handler for Logstash. Sends events over TCP.
-    :param host: The host of the logstash server.
-    :param port: The port of the logstash server (default 5959).
+    :param host: The host of the logstash server, required.
+    :param port: The port of the logstash server, required.
+    :param database_path: The path to the file containing queued events, required.
     :param transport: Callable or path to a compatible transport class.
     :param ssl_enable: Should SSL be enabled for the connection? Default is False.
     :param ssl_verify: Should the server's SSL certificate be verified?
     :param keyfile: The path to client side SSL key file (default is None).
     :param certfile: The path to client side SSL certificate file (default is None).
     :param ca_certs: The path to the file containing recognized CA certificates.
-    :param database_path: The path to the file containing queued events.
     :param enable Flag to enable log processing (default is True, disabling
                   might be handy for local testing, etc.)
     """
@@ -34,19 +34,19 @@ class AsynchronousLogstashHandler(Handler):
     _worker_thread = None
 
     # ----------------------------------------------------------------------
-    def __init__(self, host, port=5959, transport='logstash_async.transport.TcpTransport',
+    def __init__(self, host, port, database_path, transport='logstash_async.transport.TcpTransport',
                  ssl_enable=False, ssl_verify=True, keyfile=None, certfile=None, ca_certs=None,
-                 database_path=':memory:', enable=True):
+                 enable=True):
         super(AsynchronousLogstashHandler, self).__init__()
         self._host = host
         self._port = port
+        self._database_path = database_path
         self._transport_path = transport
         self._ssl_enable = ssl_enable
         self._ssl_verify = ssl_verify
         self._keyfile = keyfile
         self._certfile = certfile
         self._ca_certs = ca_certs
-        self._database_path = database_path
         self._enable = enable
         self._transport = None
         self._setup_transport()
