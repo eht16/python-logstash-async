@@ -228,12 +228,13 @@ class DjangoLogstashFormatter(LogstashFormatter):
         # For details see https://code.djangoproject.com/ticket/27234
         if hasattr(record, 'request') and hasattr(record.request, 'META'):
             request = record.request
+
             extra_fields['django_version'] = self._django_version
             extra_fields['req_useragent'] = request.META.get('HTTP_USER_AGENT', '<none>')
             extra_fields['req_remote_address'] = request.META.get('REMOTE_ADDR', '<none>')
             extra_fields['req_host'] = request.get_host()
             extra_fields['req_uri'] = request.get_raw_uri()
-            extra_fields['req_user'] = unicode(request.user) if request.user else ''
+            extra_fields['req_user'] = self._get_attribute_with_default(request, 'user', '')
             extra_fields['req_method'] = request.META.get('REQUEST_METHOD', '')
             extra_fields['req_referer'] = request.META.get('HTTP_REFERER', '')
 
@@ -258,3 +259,16 @@ class DjangoLogstashFormatter(LogstashFormatter):
                     extra_fields['tmpl_during'] = template_info['during']
 
         return extra_fields
+
+    # ----------------------------------------------------------------------
+    def _get_attribute_with_default(self, obj, attr_name, default=None):
+        """
+        Query an attribute from an object but check before if it exists or return
+        a default value if it is missing
+        """
+        if hasattr(obj, attr_name):
+            value = getattr(obj, attr_name)
+            if value is not None:
+                return value
+        # fallback
+        return default
