@@ -38,7 +38,7 @@ class AsynchronousLogstashHandler(Handler):
     # ----------------------------------------------------------------------
     def __init__(self, host, port, database_path, transport='logstash_async.transport.TcpTransport',
                  ssl_enable=False, ssl_verify=True, keyfile=None, certfile=None, ca_certs=None,
-                 enable=True, ensure_ascii=True):
+                 enable=True):
         super(AsynchronousLogstashHandler, self).__init__()
         self._host = host
         self._port = port
@@ -50,7 +50,6 @@ class AsynchronousLogstashHandler(Handler):
         self._certfile = certfile
         self._ca_certs = ca_certs
         self._enable = enable
-        self._ensure_ascii = ensure_ascii
         self._transport = None
         self._setup_transport()
 
@@ -121,7 +120,7 @@ class AsynchronousLogstashHandler(Handler):
     # ----------------------------------------------------------------------
     def _create_formatter_if_necessary(self):
         if self.formatter is None:
-            self.formatter = LogstashFormatter(ensure_ascii=self._ensure_ascii)
+            self.formatter = LogstashFormatter()
 
     # ----------------------------------------------------------------------
     def close(self):
