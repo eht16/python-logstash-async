@@ -29,6 +29,8 @@ class AsynchronousLogstashHandler(Handler):
     :param ca_certs: The path to the file containing recognized CA certificates.
     :param enable Flag to enable log processing (default is True, disabling
                   might be handy for local testing, etc.)
+    :param ensure_ascii Will be  all non-ASCII characters in the output escaped with \uXXXX sequences
+                        (default is True)
     """
 
     _worker_thread = None
