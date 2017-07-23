@@ -33,12 +33,14 @@ LOGSTASH_MESSAGE_FIELD_LIST = [
 class LogstashFormatter(logging.Formatter):
 
     # ----------------------------------------------------------------------
-    def __init__(self, message_type='python-logstash', tags=None, fqdn=False, extra_prefix='extra', extra=None):
+    def __init__(self, message_type='python-logstash', tags=None, fqdn=False, extra_prefix='extra', extra=None,
+                 ensure_ascii=True):
         super(LogstashFormatter, self).__init__()
         self._message_type = message_type
         self._tags = tags if tags is not None else []
         self._extra_prefix = extra_prefix
         self._extra = extra
+        self._ensure_ascii = ensure_ascii
 
         self._interpreter = None
         self._interpreter_version = None
@@ -201,7 +203,7 @@ class LogstashFormatter(logging.Formatter):
         if sys.version_info < (3, 0):
             return json.dumps(message)
         else:
-            return bytes(json.dumps(message), 'utf-8')
+            return bytes(json.dumps(message, ensure_ascii=self._ensure_ascii), 'utf-8')
 
 
 class DjangoLogstashFormatter(LogstashFormatter):
