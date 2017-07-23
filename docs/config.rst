@@ -99,10 +99,10 @@ extra
     (default: None)
 
 ensure_ascii
-    By default ('True') non_ASCII symbols in JSON escaped with \uXXXX sequence. 
-    But on some specific settings of Elastic Stack 
-    this sequences won't be transformed back to UTF8 represintation.
-    For this specific cases try to set  parameter to 'False'.
+    By default ('True') non-ASCII symbols in JSON are escaped with \uXXXX
+    sequence. But on some specific settings of Elastic Stack
+    those sequences won't be transformed back to UTF-8 representation.
+    For those specific cases try to set parameter to 'False'.
 
 Options for the asynchronous processing (in module logstash_async.constants)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
