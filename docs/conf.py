@@ -48,7 +48,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'python-logstash-async'
-copyright = u'2016, Enrico Tröger'
+copyright = u'2017, Enrico Tröger'
 author = u'Enrico Tröger'
 
 # The version info for the project you're documenting, acts as replacement for

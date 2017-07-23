@@ -59,7 +59,7 @@ ChangeLog
     (the previous default value ":memory:" doesn't help, see #5)
   * Fix a Python3 incompatibility (#3)
   * Fix a Django 1.8 / local Django development server
-    incompatibility (3)
+    incompatibility (#3)
 
 
 1.1.1 (Apr 05, 2017)
