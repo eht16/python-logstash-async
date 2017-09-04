@@ -20,7 +20,7 @@ test_logger.debug('python-logstash-async: test logstash debug message.')
 
 try:
     1 / 0
-except Exception, e:
+except Exception as e:
     test_logger.exception(u'Exception: %s', e)
 
 # add extra field to logstash message

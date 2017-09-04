@@ -8,7 +8,9 @@ import sys
 
 import six
 
+from logstash_async.cache import Cache
 from logstash_async.utils import ichunked
+from contextlib import contextmanager
 
 
 DATABASE_SCHEMA_STATEMENTS = [
@@ -30,12 +32,31 @@ class DatabaseLockedError(Exception):
     pass
 
 
-class DatabaseCache(object):
+class DatabaseCache(Cache):
+    """Backend implementation for python-logstash-async. Keeps messages on disk in a SQL-lite DB
+    while attempting to publish them to logstash. Persists log messages through restarts of a process.
+
+    :param path: Path to the SQLite database
+    :param event_ttl: Optional parameter used to expire events in the database after a time
+    """
 
     # ----------------------------------------------------------------------
-    def __init__(self, path):
+    def __init__(self, path, event_ttl=None):
         self._database_path = path
         self._connection = None
+        self._event_ttl = event_ttl
+
+    @contextmanager
+    def _connect(self):
+        self._open()
+        try:
+            with self._connection as connection:
+                yield connection
+        except sqlite3.OperationalError:
+            self._handle_sqlite_error()
+            raise
+        finally:
+            self._close()
 
     # ----------------------------------------------------------------------
     def _open(self):
@@ -68,15 +89,8 @@ class DatabaseCache(object):
         query = u'''
             INSERT INTO `event`
             (`event_text`, `pending_delete`, `entry_date`) VALUES (?, ?, datetime('now'))'''
-        self._open()
-        try:
-            with self._connection:  # implicit commit/rollback
-                self._connection.execute(query, (event, False))
-        except sqlite3.OperationalError:
-            self._handle_sqlite_error()
-            raise
-        finally:
-            self._close()
+        with self._connect() as connection:
+            connection.execute(query, (event, False))
 
     # ----------------------------------------------------------------------
     def _handle_sqlite_error(self):
@@ -86,25 +100,13 @@ class DatabaseCache(object):
 
     # ----------------------------------------------------------------------
     def get_queued_events(self):
-        """
-        Fetch pending events and mark them to be deleted soon, so other threads/processes
-        won't fetch them as well.
-        """
         query_fetch = 'SELECT `event_id`, `event_text` FROM `event` WHERE `pending_delete` = 0;'
         query_update_base = 'UPDATE `event` SET `pending_delete`=1 WHERE `event_id` IN (%s);'
-        self._open()
-        try:
-            with self._connection:  # implicit commit/rollback
-                cursor = self._connection.cursor()
-                cursor.execute(query_fetch)
-                events = cursor.fetchall()
-                # mark retrieved events as pending_delete
-                self._bulk_update_events(cursor, events, query_update_base)
-        except sqlite3.OperationalError:
-            self._handle_sqlite_error()
-            raise
-        finally:
-            self._close()
+        with self._connect() as connection:
+            cursor = connection.cursor()
+            cursor.execute(query_fetch)
+            events = cursor.fetchall()
+            self._bulk_update_events(cursor, events, query_update_base)
 
         return events
 
@@ -119,29 +121,23 @@ class DatabaseCache(object):
     # ----------------------------------------------------------------------
     def requeue_queued_events(self, events):
         query_update_base = 'UPDATE `event` SET `pending_delete`=0 WHERE `event_id` IN (%s);'
-        self._open()
-        try:
-            with self._connection:  # implicit commit/rollback
-                cursor = self._connection.cursor()
-                self._bulk_update_events(cursor, events, query_update_base)
-        except sqlite3.OperationalError:
-            self._handle_sqlite_error()
-            raise
-        finally:
-            self._close()
-
-        return events
+        with self._connect() as connection:
+            cursor = connection.cursor()
+            self._bulk_update_events(cursor, events, query_update_base)
 
     # ----------------------------------------------------------------------
     def delete_queued_events(self):
         query_delete = 'DELETE FROM `event` WHERE `pending_delete`=1;'
-        self._open()
-        try:
-            with self._connection:  # implicit commit/rollback
-                cursor = self._connection.cursor()
-                cursor.execute(query_delete)
-        except sqlite3.OperationalError:
-            self._handle_sqlite_error()
-            raise
-        finally:
-            self._close()
+        with self._connect() as connection:
+            cursor = connection.cursor()
+            cursor.execute(query_delete)
+
+    # ----------------------------------------------------------------------
+    def expire_events(self):
+        if self._event_ttl is None:
+            return
+
+        query_delete = "DELETE FROM `event` WHERE `entry_date` < datetime('now', '-%d seconds');" % self._event_ttl
+        with self._connect() as connection:
+            cursor = connection.cursor()
+            cursor.execute(query_delete)

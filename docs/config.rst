@@ -50,6 +50,11 @@ enable
     Flag to enable log processing (default is True, disabling
     might be handy for local testing, etc.)
 
+event_ttl
+    TTL for messages that are waiting to be published. (default: None)
+    If a message is beyond it's TTL, it will be deleted from the cache
+    and will not be published to logstash.
+
 
 Options for configuring the log formatter
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

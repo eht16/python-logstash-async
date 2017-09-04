@@ -26,4 +26,5 @@ Contents
    installation.rst
    usage.rst
    config.rst
+   persistence.rst
    config_logstash.rst
