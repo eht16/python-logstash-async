@@ -7,7 +7,7 @@ https://github.com/vklochan/python-logstash.
 It adds the following features:
 
   * Asynchronous transport of log events
-  * Store log events temporarily in a SQLite database until transport
+  * Store log events temporarily in a cache until transport
     to the Logstash server has been successful
   * Transport of events via TCP and UDP, in the future hopefully via
     the Beats protocol
@@ -29,7 +29,7 @@ So this handler will accept log events and pass them for further
 processing to a separate worker thread which will try to send
 the events to the configured Logstash server asynchronously.
 If sending the events fails, the events are stored in a
-local SQLite database for a later sending attempt.
+local cache for a later sending attempt.
 
 Whenever the application stops, to be more exact whenever
 Python' logging subsystem is shutdown, the worker thread
@@ -50,6 +50,12 @@ License
 
 ChangeLog
 ---------
+
+1.X.X (Sep 05 2017)
+++++++++++++++++++++
+
+  * Added in-memory cache back (see #12)
+  * Added support for TTL of messages
 
 
 1.2.0 (May 06, 2017)

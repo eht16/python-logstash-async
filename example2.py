@@ -36,4 +36,3 @@ extra = {
     'test_list': [1, 2, '3'],
 }
 test_logger.info('python-logstash: test extra fields', extra=extra)
-

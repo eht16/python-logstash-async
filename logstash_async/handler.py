@@ -7,6 +7,7 @@ from logging import Handler
 
 from six import string_types
 
+import logstash_async
 from logstash_async.formatter import LogstashFormatter
 from logstash_async.utils import import_string, safe_log_via_print
 from logstash_async.worker import LogProcessingWorker
@@ -17,7 +18,7 @@ class ProcessingError(Exception):
 
 
 class AsynchronousLogstashHandler(Handler):
-    """Python logging handler for Logstash. Sends events over TCP.
+    """Python logging handler for Logstash. Sends events over TCP by default.
     :param host: The host of the logstash server, required.
     :param port: The port of the logstash server, required.
     :param database_path: The path to the file containing queued events, required.
@@ -27,8 +28,10 @@ class AsynchronousLogstashHandler(Handler):
     :param keyfile: The path to client side SSL key file (default is None).
     :param certfile: The path to client side SSL certificate file (default is None).
     :param ca_certs: The path to the file containing recognized CA certificates.
-    :param enable Flag to enable log processing (default is True, disabling
+    :param enable: Flag to enable log processing (default is True, disabling
                   might be handy for local testing, etc.)
+    :param event_ttl: Amount of time in seconds to wait before expiring log messages in
+                      the database. (Given in seconds. Default is None, and disables this feature)
     """
 
     _worker_thread = None
@@ -36,7 +39,7 @@ class AsynchronousLogstashHandler(Handler):
     # ----------------------------------------------------------------------
     def __init__(self, host, port, database_path, transport='logstash_async.transport.TcpTransport',
                  ssl_enable=False, ssl_verify=True, keyfile=None, certfile=None, ca_certs=None,
-                 enable=True):
+                 enable=True, event_ttl=None):
         super(AsynchronousLogstashHandler, self).__init__()
         self._host = host
         self._port = port
@@ -49,6 +52,7 @@ class AsynchronousLogstashHandler(Handler):
         self._ca_certs = ca_certs
         self._enable = enable
         self._transport = None
+        self._event_ttl = event_ttl
         self._setup_transport()
 
     # ----------------------------------------------------------------------
@@ -100,7 +104,9 @@ class AsynchronousLogstashHandler(Handler):
             keyfile=self._keyfile,
             certfile=self._certfile,
             ca_certs=self._ca_certs,
-            database_path=self._database_path)
+            database_path=self._database_path,
+            cache=logstash_async.EVENT_CACHE,
+            event_ttl=self._event_ttl)
         AsynchronousLogstashHandler._worker_thread.start()
 
     # ----------------------------------------------------------------------
