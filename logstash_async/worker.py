@@ -77,6 +77,10 @@ class LogProcessingWorker(Thread):
         self._warn_about_non_empty_queue_on_shutdown()
 
     # ----------------------------------------------------------------------
+    def force_flush_queued_events(self):
+        self._flush_queued_events(force=True)
+
+    # ----------------------------------------------------------------------
     def _reset_flush_counters(self):
         self._last_event_flush_date = datetime.now()
         self._non_flushed_event_count = 0
