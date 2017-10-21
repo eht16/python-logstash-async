@@ -109,22 +109,42 @@ ensure_ascii
     those sequences won't be transformed back to UTF-8 representation.
     For those specific cases try to set parameter to 'False'.
 
-Options for the asynchronous processing (in module logstash_async.constants)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-SOCKET_TIMEOUT
+.. _module-constants:
+
+Options for the asynchronous processing and formatting
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+There are a few constants which are meant to be static but still can be overridden
+from the calling application by importing the ``constants`` variable from the
+``logstash_async.constants`` which holds all constants as attributes
+for easy modification.
+
+
+constants.SOCKET_TIMEOUT
     Timeout in seconds for TCP connections (default: 5.0)
 
-QUEUE_CHECK_INTERVAL
+constants.QUEUE_CHECK_INTERVAL
     Interval in seconds to check the internal queue for new messages
     to be cached in the database (default: 2.0)
 
-QUEUED_EVENTS_FLUSH_INTERVAL
+constants.QUEUED_EVENTS_FLUSH_INTERVAL
     Interval in seconds to send cached events from the database
     to Logstash (default 10.0)
 
-QUEUED_EVENTS_FLUSH_COUNT
+constants.QUEUED_EVENTS_FLUSH_COUNT
     Count of cached events to send cached events from the database
     to Logstash; events are sent to Logstash whenever
     `QUEUED_EVENTS_FLUSH_COUNT` or `QUEUED_EVENTS_FLUSH_INTERVAL` is reached,
     whatever happens first (default 50)
+
+Example usage:
+
+.. code:: python
+
+  from logstash_async.constants import constants
+
+  constants.SOCKET_TIMEOUT = 10.0
+
+  from logstash_async.handler import AsynchronousLogstashHandler
+  ...

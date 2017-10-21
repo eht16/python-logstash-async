@@ -10,10 +10,7 @@ from threading import Event, Thread
 from six.moves.queue import Queue, Empty
 
 from logstash_async.memory_cache import MemoryCache
-from logstash_async.constants import (
-    QUEUED_EVENTS_FLUSH_COUNT,
-    QUEUED_EVENTS_FLUSH_INTERVAL,
-    QUEUE_CHECK_INTERVAL)
+from logstash_async.constants import constants
 from logstash_async.database import DatabaseCache, DatabaseLockedError
 from logstash_async.utils import safe_log_via_print
 
@@ -154,7 +151,7 @@ class LogProcessingWorker(Thread):
 
     # ----------------------------------------------------------------------
     def _delay_processing(self):
-        self._shutdown_event.wait(QUEUE_CHECK_INTERVAL)
+        self._shutdown_event.wait(constants.QUEUE_CHECK_INTERVAL)
 
     # ----------------------------------------------------------------------
     def _shutdown_requested(self):
@@ -209,11 +206,11 @@ class LogProcessingWorker(Thread):
     # ----------------------------------------------------------------------
     def _queued_event_interval_reached(self):
         delta = datetime.now() - self._last_event_flush_date
-        return delta.total_seconds() > QUEUED_EVENTS_FLUSH_INTERVAL
+        return delta.total_seconds() > constants.QUEUED_EVENTS_FLUSH_INTERVAL
 
     # ----------------------------------------------------------------------
     def _queued_event_count_reached(self):
-        return self._non_flushed_event_count > QUEUED_EVENTS_FLUSH_COUNT
+        return self._non_flushed_event_count > constants.QUEUED_EVENTS_FLUSH_COUNT
 
     # ----------------------------------------------------------------------
     def _send_events(self, events):

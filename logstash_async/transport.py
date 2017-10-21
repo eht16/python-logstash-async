@@ -7,7 +7,7 @@ import socket
 import ssl
 import sys
 
-from logstash_async.constants import SOCKET_TIMEOUT
+from logstash_async.constants import constants
 
 
 class UdpTransport(object):
@@ -32,7 +32,7 @@ class UdpTransport(object):
             self._close()
 
     # ----------------------------------------------------------------------
-    def _create_socket(self, timeout=SOCKET_TIMEOUT):
+    def _create_socket(self, timeout=constants.SOCKET_TIMEOUT):
         if self._sock is not None:
             return
 
@@ -84,7 +84,7 @@ class TcpTransport(UdpTransport):
         self._ca_certs = ca_certs
 
     # ----------------------------------------------------------------------
-    def _create_socket(self, timeout=SOCKET_TIMEOUT):
+    def _create_socket(self, timeout=constants.SOCKET_TIMEOUT):
         if self._sock is not None:
             return
 

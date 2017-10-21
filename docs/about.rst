@@ -36,9 +36,10 @@ Python' logging subsystem is shutdown, the worker thread
 is signaled to send any queued events and clean up itself
 before shutdown.
 
-The sending intervals and timeouts can be configured in the
-``logstash_async.constants`` module by the corresponding
-module-level constants, see below for details.
+The interval and timeout settings used for transmitting
+can be configured in the ``logstash_async.constants``
+module.
+See :ref:`module-constants` for details.
 
 
 License
