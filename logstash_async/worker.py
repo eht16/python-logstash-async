@@ -87,6 +87,10 @@ class LogProcessingWorker(Thread):
         self._non_flushed_event_count = 0
 
     # ----------------------------------------------------------------------
+    def _clear_flush_event(self):
+        self._flush_event.clear()
+
+    # ----------------------------------------------------------------------
     def _setup_logger(self):
         self._logger = get_logger(self.name)
 
@@ -208,7 +212,7 @@ class LogProcessingWorker(Thread):
             else:
                 self._delete_queued_events_from_database()
                 self._reset_flush_counters()
-                self._flush_event.clear()
+                self._clear_flush_event()
 
     # ----------------------------------------------------------------------
     def _delete_queued_events_from_database(self):
