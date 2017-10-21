@@ -189,6 +189,8 @@ class LogProcessingWorker(Thread):
         if not force and not self._queued_event_interval_reached() and not self._queued_event_count_reached():
             return
 
+        self._clear_flush_event()
+
         try:
             queued_events = self._database.get_queued_events()
         except DatabaseLockedError:
@@ -212,7 +214,6 @@ class LogProcessingWorker(Thread):
             else:
                 self._delete_queued_events_from_database()
                 self._reset_flush_counters()
-                self._clear_flush_event()
 
     # ----------------------------------------------------------------------
     def _delete_queued_events_from_database(self):
