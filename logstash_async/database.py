@@ -3,6 +3,7 @@
 # This software may be modified and distributed under the terms
 # of the MIT license.  See the LICENSE file for details.
 
+from contextlib import contextmanager
 import sqlite3
 import sys
 
@@ -11,7 +12,6 @@ import six
 from logstash_async.cache import Cache
 from logstash_async.constants import constants
 from logstash_async.utils import ichunked
-from contextlib import contextmanager
 
 
 DATABASE_SCHEMA_STATEMENTS = [

@@ -55,7 +55,9 @@ class MemoryCache(Cache):
             if event_to_queue:
                 event_to_queue['pending_delete'] = False
             else:
-                self.logger.warn("Could not requeue event with id (%s). It does not appear to be in the cache." % event['id'])
+                self.logger.warn(
+                    "Could not requeue event with id {}. "
+                    "It does not appear to be in the cache.".format(event['id']))
 
     # ----------------------------------------------------------------------
     def delete_queued_events(self):
@@ -68,7 +70,10 @@ class MemoryCache(Cache):
             return
 
         delete_time = datetime.now() - timedelta(seconds=self._event_ttl)
-        ids_to_delete = [event['id'] for event in self._cache.values() if event['entry_date'] < delete_time]
+        ids_to_delete = [
+            event['id']
+            for event in self._cache.values()
+            if event['entry_date'] < delete_time]
         self._delete_events(ids_to_delete)
 
     # ----------------------------------------------------------------------
@@ -78,4 +83,6 @@ class MemoryCache(Cache):
             # that we can do. This currently doesn't throw an error.
             event = self._cache.pop(event_id, None)
             if not event:
-                self.logger.warn("Could not delete event with id (%s). It does not appear to be in the cache." % event_id)
+                self.logger.warn(
+                    "Could not delete event with id {}. "
+                    "It does not appear to be in the cache.".format(event_id))
