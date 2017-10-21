@@ -21,6 +21,8 @@ class Constants(object):
     # to Logstash whenever QUEUED_EVENTS_FLUSH_COUNT or QUEUED_EVENTS_FLUSH_INTERVAL is reached,
     # whatever happens first
     QUEUED_EVENTS_FLUSH_COUNT = 50
+    # maximum number of events to be updated within one SQLite statement
+    DATABASE_EVENT_CHUNK_SIZE = 750
     # list of Python standard LogRecord attributes which are filtered out from the event sent
     # to Logstash. Usually this list does not need to be modified. Add/Remove elements to
     # exclude/include them in the Logstash event, for the full list see:
@@ -30,6 +32,11 @@ class Constants(object):
         'funcName', 'id', 'levelname', 'levelno', 'lineno', 'module',
         'msecs', 'message', 'msg', 'name', 'pathname', 'process',
         'processName', 'relativeCreated', 'stack_info', 'thread', 'threadName']
+    # fields to be set on the top-level of a Logstash event/message, do not modify this
+    # unless you know what you are doing
+    FORMATTER_LOGSTASH_MESSAGE_FIELD_LIST = [
+        '@timestamp', '@version', 'host', 'level', 'logsource', 'message',
+        'pid', 'program', 'type', 'tags']
 
 
 constants = Constants()

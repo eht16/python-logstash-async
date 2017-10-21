@@ -9,6 +9,7 @@ import sys
 import six
 
 from logstash_async.cache import Cache
+from logstash_async.constants import constants
 from logstash_async.utils import ichunked
 from contextlib import contextmanager
 
@@ -24,8 +25,6 @@ DATABASE_SCHEMA_STATEMENTS = [
     '''CREATE INDEX IF NOT EXISTS `idx_pending_delete` ON `event` (pending_delete);''',
     '''CREATE INDEX IF NOT EXISTS `idx_entry_date` ON `event` (entry_date);''',
 ]
-
-EVENT_CHUNK_SIZE = 750  # maximum number of events to be updated within one SQLite statement
 
 
 class DatabaseLockedError(Exception):
@@ -114,7 +113,7 @@ class DatabaseCache(Cache):
     def _bulk_update_events(self, cursor, events, statement_base):
         event_ids = [event[0] for event in events]
         # split into multiple queries as SQLite has a maximum 1000 variables per query
-        for event_ids_subset in ichunked(event_ids, EVENT_CHUNK_SIZE):
+        for event_ids_subset in ichunked(event_ids, constants.DATABASE_EVENT_CHUNK_SIZE):
             statement = statement_base % ','.join('?' * len(event_ids_subset))
             cursor.execute(statement, event_ids_subset)
 
