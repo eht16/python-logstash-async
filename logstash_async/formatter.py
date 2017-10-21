@@ -16,15 +16,9 @@ except ImportError:
     import simplejson as json
 
 from six import text_type
+from logstash_async.constants import constants
 import logstash_async
 
-# The list contains all the attributes listed in
-# http://docs.python.org/library/logging.html#logrecord-attributes
-RECORD_FIELD_SKIP_LIST = (
-    'args', 'asctime', 'created', 'exc_info', 'exc_text', 'filename',
-    'funcName', 'id', 'levelname', 'levelno', 'lineno', 'module',
-    'msecs', 'message', 'msg', 'name', 'pathname', 'process',
-    'processName', 'relativeCreated', 'stack_info', 'thread', 'threadName')
 LOGSTASH_MESSAGE_FIELD_LIST = [
     '@timestamp', '@version', 'host', 'level', 'logsource', 'message',
     'pid', 'program', 'type', 'tags']
@@ -147,7 +141,7 @@ class LogstashFormatter(logging.Formatter):
         fields = {}
 
         for key, value in record.__dict__.items():
-            if key not in RECORD_FIELD_SKIP_LIST:
+            if key not in constants.FORMATTER_RECORD_FIELD_SKIP_LIST:
                 fields[key] = value_repr(value)
         return fields
 

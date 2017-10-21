@@ -21,6 +21,15 @@ class Constants(object):
     # to Logstash whenever QUEUED_EVENTS_FLUSH_COUNT or QUEUED_EVENTS_FLUSH_INTERVAL is reached,
     # whatever happens first
     QUEUED_EVENTS_FLUSH_COUNT = 50
+    # list of Python standard LogRecord attributes which are filtered out from the event sent
+    # to Logstash. Usually this list does not need to be modified. Add/Remove elements to
+    # exclude/include them in the Logstash event, for the full list see:
+    # http://docs.python.org/library/logging.html#logrecord-attributes
+    FORMATTER_RECORD_FIELD_SKIP_LIST = [
+        'args', 'asctime', 'created', 'exc_info', 'exc_text', 'filename',
+        'funcName', 'id', 'levelname', 'levelno', 'lineno', 'module',
+        'msecs', 'message', 'msg', 'name', 'pathname', 'process',
+        'processName', 'relativeCreated', 'stack_info', 'thread', 'threadName']
 
 
 constants = Constants()

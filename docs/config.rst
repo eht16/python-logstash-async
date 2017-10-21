@@ -138,6 +138,13 @@ constants.QUEUED_EVENTS_FLUSH_COUNT
     `QUEUED_EVENTS_FLUSH_COUNT` or `QUEUED_EVENTS_FLUSH_INTERVAL` is reached,
     whatever happens first (default 50)
 
+constants.FORMATTER_RECORD_FIELD_SKIP_LIST
+    List of Python standard LogRecord attributes which are filtered out from the event sent
+    to Logstash. Usually this list does not need to be modified. Add/Remove elements to
+    exclude/include them in the Logstash event, for the full list see:
+    http://docs.python.org/library/logging.html#logrecord-attributes
+
+
 Example usage:
 
 .. code:: python
