@@ -44,6 +44,7 @@ class LogProcessingWorker(Thread):
         self.name = self.__class__.__name__
 
         self._shutdown_event = Event()
+        self._flush_event = Event()
         self._queue = Queue()
 
         self._event = None
@@ -78,7 +79,7 @@ class LogProcessingWorker(Thread):
 
     # ----------------------------------------------------------------------
     def force_flush_queued_events(self):
-        self._flush_queued_events(force=True)
+        self._flush_event.set()
 
     # ----------------------------------------------------------------------
     def _reset_flush_counters(self):
@@ -109,7 +110,8 @@ class LogProcessingWorker(Thread):
                     self._flush_queued_events(force=True)
                     return
 
-                self._flush_queued_events()
+                force_flush = self._flush_requested()
+                self._flush_queued_events(force=force_flush)
                 self._delay_processing()
                 self._expire_events()
             except (DatabaseLockedError, ProcessingError):
@@ -165,6 +167,10 @@ class LogProcessingWorker(Thread):
         return self._shutdown_event.is_set()
 
     # ----------------------------------------------------------------------
+    def _flush_requested(self):
+        return self._flush_event.is_set()
+
+    # ----------------------------------------------------------------------
     def _requeue_event(self):
         self._queue.put(self._event)
 
@@ -202,6 +208,7 @@ class LogProcessingWorker(Thread):
             else:
                 self._delete_queued_events_from_database()
                 self._reset_flush_counters()
+                self._flush_event.clear()
 
     # ----------------------------------------------------------------------
     def _delete_queued_events_from_database(self):
