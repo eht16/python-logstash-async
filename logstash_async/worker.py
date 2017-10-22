@@ -41,6 +41,7 @@ class LogProcessingWorker(Thread):
         self.name = self.__class__.__name__
 
         self._shutdown_event = Event()
+        self._flush_event = Event()
         self._queue = Queue()
 
         self._event = None
@@ -74,9 +75,17 @@ class LogProcessingWorker(Thread):
         self._warn_about_non_empty_queue_on_shutdown()
 
     # ----------------------------------------------------------------------
+    def force_flush_queued_events(self):
+        self._flush_event.set()
+
+    # ----------------------------------------------------------------------
     def _reset_flush_counters(self):
         self._last_event_flush_date = datetime.now()
         self._non_flushed_event_count = 0
+
+    # ----------------------------------------------------------------------
+    def _clear_flush_event(self):
+        self._flush_event.clear()
 
     # ----------------------------------------------------------------------
     def _setup_logger(self):
@@ -102,7 +111,8 @@ class LogProcessingWorker(Thread):
                     self._flush_queued_events(force=True)
                     return
 
-                self._flush_queued_events()
+                force_flush = self._flush_requested()
+                self._flush_queued_events(force=force_flush)
                 self._delay_processing()
                 self._expire_events()
             except (DatabaseLockedError, ProcessingError):
@@ -158,6 +168,10 @@ class LogProcessingWorker(Thread):
         return self._shutdown_event.is_set()
 
     # ----------------------------------------------------------------------
+    def _flush_requested(self):
+        return self._flush_event.is_set()
+
+    # ----------------------------------------------------------------------
     def _requeue_event(self):
         self._queue.put(self._event)
 
@@ -171,6 +185,8 @@ class LogProcessingWorker(Thread):
         # check if necessary and abort if not
         if not force and not self._queued_event_interval_reached() and not self._queued_event_count_reached():
             return
+
+        self._clear_flush_event()
 
         try:
             queued_events = self._database.get_queued_events()
