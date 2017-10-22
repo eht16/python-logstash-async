@@ -15,7 +15,7 @@ try:
 except ImportError:
     import simplejson as json
 
-from six import text_type
+from six import text_type, string_types, integer_types
 from logstash_async.constants import constants
 import logstash_async
 
@@ -116,10 +116,7 @@ class LogstashFormatter(logging.Formatter):
     # ----------------------------------------------------------------------
     def _get_record_fields(self, record):
         def value_repr(value):
-            if sys.version_info < (3, 0):
-                easy_types = (basestring, bool, float, int, long, type(None))
-            else:
-                easy_types = (str, bool, float, int, type(None))
+            easy_types = (bool, float, type(None)) + string_types + integer_types
 
             if isinstance(value, dict):
                 return {k: value_repr(v) for k, v in value.items()}
