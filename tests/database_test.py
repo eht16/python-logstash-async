@@ -1,6 +1,12 @@
+# -*- coding: utf-8 -*-
+#
+# This software may be modified and distributed under the terms
+# of the MIT license.  See the LICENSE file for details.
+
 import unittest
 import os
 import sqlite3
+
 from logstash_async.database import DatabaseCache, DATABASE_SCHEMA_STATEMENTS
 
 
@@ -9,14 +15,17 @@ class DatabaseCacheTest(unittest.TestCase):
     TEST_DB_FILENAME = "test.db"
     _connection = None
 
+    # ----------------------------------------------------------------------
     @classmethod
     def setUpClass(cls):
         if os.path.isfile(cls.TEST_DB_FILENAME):
             os.remove(cls.TEST_DB_FILENAME)
 
+    # ----------------------------------------------------------------------
     def setUp(self):
         self.cache = DatabaseCache(self.TEST_DB_FILENAME)
 
+    # ----------------------------------------------------------------------
     def tearDown(self):
         stmt = "DELETE FROM `event`;"
         self.cache._open()
@@ -24,11 +33,13 @@ class DatabaseCacheTest(unittest.TestCase):
             conn.execute(stmt)
         self.cache._close()
 
+    # ----------------------------------------------------------------------
     @classmethod
     def tearDownClass(cls):
         if os.path.isfile(cls.TEST_DB_FILENAME):
             os.remove(cls.TEST_DB_FILENAME)
 
+    # ----------------------------------------------------------------------
     @classmethod
     def get_connection(cls):
         if cls._connection:
@@ -40,12 +51,14 @@ class DatabaseCacheTest(unittest.TestCase):
             cls._connection.cursor().execute(statement)
         return cls._connection
 
+    # ----------------------------------------------------------------------
     @classmethod
     def close_connection(cls):
         if cls._connection:
             cls._connection.close()
         cls._connection = None
 
+    # ----------------------------------------------------------------------
     def test_add_event(self):
         self.cache.add_event("message")
         conn = self.get_connection()
@@ -54,11 +67,13 @@ class DatabaseCacheTest(unittest.TestCase):
         event = events[0]
         self.assertEqual(event['event_text'], 'message')
 
+    # ----------------------------------------------------------------------
     def test_get_queued_events(self):
         self.cache.add_event("message")
         events = self.cache.get_queued_events()
         self.assertEqual(len(events), 1)
 
+    # ----------------------------------------------------------------------
     def test_get_queued_events_set_delete_flag(self):
         self.cache.add_event("message")
         events = self.cache.get_queued_events()
@@ -66,6 +81,7 @@ class DatabaseCacheTest(unittest.TestCase):
         events = self.cache.get_queued_events()
         self.assertEqual(len(events), 0)
 
+    # ----------------------------------------------------------------------
     def test_requeue_queued_events(self):
         self.cache.add_event("message")
         events = self.cache.get_queued_events()
@@ -75,6 +91,7 @@ class DatabaseCacheTest(unittest.TestCase):
         events = self.cache.get_queued_events()
         self.assertEqual(len(events), 1)
 
+    # ----------------------------------------------------------------------
     def test_delete_queued_events(self):
         self.cache.add_event('message')
         events = self.cache.get_queued_events()
@@ -85,6 +102,7 @@ class DatabaseCacheTest(unittest.TestCase):
         events = self.cache.get_queued_events()
         self.assertEqual(len(events), 0)
 
+    # ----------------------------------------------------------------------
     def test_dont_delete_unqueued_events(self):
         self.cache.add_event('message')
         self.cache.delete_queued_events()
@@ -92,6 +110,7 @@ class DatabaseCacheTest(unittest.TestCase):
         events = self.cache.get_queued_events()
         self.assertEqual(len(events), 1)
 
+    # ----------------------------------------------------------------------
     def test_expire_events(self):
         import time
         self.cache._event_ttl = 0
