@@ -9,7 +9,7 @@ NAME = 'python-logstash-async'
 VERSION = '1.2.0'
 
 here = path.abspath(path.dirname(__file__))
-with open(path.join(here, 'README.rst')) as f:
+with open(path.join(here, 'README.rst'), 'rb') as f:
     LONG_DESCRIPTION = f.read().decode('utf-8')
 
 
