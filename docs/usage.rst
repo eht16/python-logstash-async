@@ -140,3 +140,25 @@ This would result in a Logstash event like the following
         "program": "manage.py",
         "type": "python-logstash"
     }
+
+
+Trigger event flushing
+----------------------
+
+In case you need to trigger flushing queued events (as if it is
+important for your application to try to send events as fast as
+possible or similar), the `AsynchronousLogstashHandler` class
+provides a method `flush` which will trigger flushing of queued
+events in the asynchronous worker thread.
+
+There is no guarantee that the flush will succeed but so you can
+bypass the next `constants.QUEUED_EVENTS_FLUSH_INTERVAL` resp.
+`constants.QUEUED_EVENTS_FLUSH_COUNT`
+(see :ref:`module-constants` for details.).
+
+In case sending the queued events to Logstash failed, the events
+will be requeued as usual and the flush signal is reset. That is,
+until the next attempt to send queued events,
+`constants.QUEUED_EVENTS_FLUSH_INTERVAL` and
+`constants.QUEUED_EVENTS_FLUSH_COUNT` will be taken into account
+again.
