@@ -52,11 +52,17 @@ License
 ChangeLog
 ---------
 
-1.X.X (Sep 05 2017)
-++++++++++++++++++++
+1.3.0 (Oct 23 2017)
++++++++++++++++++++
 
-  * Added in-memory cache back (see #12)
-  * Added support for TTL of messages
+  * Added in-memory cache back (#12, loganasherjones)
+  * Added support for TTL of messages (loganasherjones)
+  * Minor Python3 compability fixes
+  * Implement AsynchronousLogstashHandler::flush method
+    to manually flushed queued events (#15, Vladislav Pakhomov)
+  * Ease modification of constants from the calling application (#14)
+  * Add Formatter parameter 'ensure_ascii' to workaround potential
+    encoding errors on some setups (#9, Sergei Lobastov)
 
 
 1.2.0 (May 06, 2017)
