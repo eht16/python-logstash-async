@@ -74,7 +74,8 @@ class AsynchronousLogstashHandler(Handler):
 
     # ----------------------------------------------------------------------
     def flush(self):
-        self._worker_thread.force_flush_queued_events()
+        if self._worker_thread_is_running():
+            self._worker_thread.force_flush_queued_events()
 
     # ----------------------------------------------------------------------
     def _setup_transport(self):
