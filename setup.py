@@ -21,10 +21,7 @@ if 'bdist_wheel' in sys.argv:
     # from the project, they'll still be cached in the build dir and end up as part of the
     # build, which is really neat!
     for directory in ('build', 'dist', 'python_logstash_async.egg-info'):
-        try:
-            rmtree(directory)
-        except:
-            pass
+        rmtree(directory, ignore_errors=True)
 
 
 setup(
