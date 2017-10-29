@@ -52,6 +52,16 @@ License
 ChangeLog
 ---------
 
+1.3.1 (Oct 30 2017)
++++++++++++++++++++
+
+  * Call flush on worker thread only if it is running
+    (prevent errors when application shuts down before
+    anything was logged)
+  * Rewrite utils.ichunked to not raise StopIteration
+    (for future Python 3.7 compability)
+
+
 1.3.0 (Oct 23 2017)
 +++++++++++++++++++
 
