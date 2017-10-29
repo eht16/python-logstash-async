@@ -17,11 +17,16 @@ import six
 # ----------------------------------------------------------------------
 def ichunked(seq, chunksize):
     """Yields items from an iterator in iterable chunks.
-       http://stackoverflow.com/a/1335572
+       https://stackoverflow.com/a/8998040
     """
     iterable = iter(seq)
     while True:
-        yield list(chain([next(iterable)], islice(iterable, chunksize - 1)))
+        chunk_iterable = islice(iterable, chunksize)
+        try:
+            element = next(chunk_iterable)
+        except StopIteration:
+            return
+        yield list(chain((element,), chunk_iterable))
 
 
 # ----------------------------------------------------------------------
