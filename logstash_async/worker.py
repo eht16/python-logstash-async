@@ -53,6 +53,7 @@ class LogProcessingWorker(Thread):
         self._last_event_flush_date = None
         self._non_flushed_event_count = None
         self._logger = None
+        self._rate_limit_storage = None
         self._rate_limit_strategy = None
         self._rate_limit_item = None
 
@@ -99,8 +100,8 @@ class LogProcessingWorker(Thread):
         # rate limit our own messages to not spam around in case of temporary network errors, etc
         rate_limit_setting = constants.ERROR_LOG_RATE_LIMIT
         if rate_limit_setting:
-            rate_limit_storage = MemoryStorage()
-            self._rate_limit_strategy = FixedWindowRateLimiter(rate_limit_storage)
+            self._rate_limit_storage = MemoryStorage()
+            self._rate_limit_strategy = FixedWindowRateLimiter(self._rate_limit_storage)
             self._rate_limit_item = parse_rate_limit(rate_limit_setting)
 
     # ----------------------------------------------------------------------
