@@ -61,7 +61,7 @@ class DatabaseCache(Cache):
     def _open(self):
         self._connection = sqlite3.connect(
             self._database_path,
-            timeout=5.0,
+            timeout=constants.DATABASE_TIMEOUT,
             isolation_level='EXCLUSIVE')
         self._connection.row_factory = sqlite3.Row
         self._initialize_schema()

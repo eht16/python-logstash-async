@@ -23,6 +23,8 @@ class Constants(object):
     QUEUED_EVENTS_FLUSH_COUNT = 50
     # maximum number of events to be updated within one SQLite statement
     DATABASE_EVENT_CHUNK_SIZE = 750
+    # timeout in seconds to "connect" (i.e. open) the SQLite database
+    DATABASE_TIMEOUT = 5.0
     # list of Python standard LogRecord attributes which are filtered out from the event sent
     # to Logstash. Usually this list does not need to be modified. Add/Remove elements to
     # exclude/include them in the Logstash event, for the full list see:

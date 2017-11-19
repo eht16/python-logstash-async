@@ -56,6 +56,7 @@ ChangeLog
 +++++++++++++++++++
 
   * Implement rate limiting of LogProcessingWorker error messages
+  * Add a constant to configure the timeout for the Sqlite database
 
 
 1.3.1 (Oct 30 2017)
