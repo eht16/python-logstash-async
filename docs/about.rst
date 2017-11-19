@@ -52,6 +52,12 @@ License
 ChangeLog
 ---------
 
+1.4.0 (TBR)
++++++++++++++++++++
+
+  * Implement rate limiting of LogProcessingWorker error messages
+
+
 1.3.1 (Oct 30 2017)
 +++++++++++++++++++
 

@@ -7,6 +7,10 @@ from datetime import datetime
 from logging import getLogger as get_logger
 from threading import Event, Thread
 
+from limits import parse as parse_rate_limit
+from limits.storage import MemoryStorage
+from limits.strategies import FixedWindowRateLimiter
+from six import integer_types
 from six.moves.queue import Queue, Empty
 
 from logstash_async.memory_cache import MemoryCache
@@ -49,6 +53,8 @@ class LogProcessingWorker(Thread):
         self._last_event_flush_date = None
         self._non_flushed_event_count = None
         self._logger = None
+        self._rate_limit_strategy = None
+        self._rate_limit_item = None
 
     # ----------------------------------------------------------------------
     def enqueue_event(self, event):
@@ -90,6 +96,12 @@ class LogProcessingWorker(Thread):
     # ----------------------------------------------------------------------
     def _setup_logger(self):
         self._logger = get_logger(self.name)
+        # rate limit our own messages to not spam around in case of temporary network errors, etc
+        rate_limit_setting = constants.ERROR_LOG_RATE_LIMIT
+        if rate_limit_setting:
+            rate_limit_storage = MemoryStorage()
+            self._rate_limit_strategy = FixedWindowRateLimiter(rate_limit_storage)
+            self._rate_limit_item = parse_rate_limit(rate_limit_setting)
 
     # ----------------------------------------------------------------------
     def _setup_database(self):
@@ -130,11 +142,12 @@ class LogProcessingWorker(Thread):
     def _process_event(self):
         try:
             self._write_event_to_database()
-        except DatabaseLockedError:
+        except DatabaseLockedError as e:
             self._safe_log(
                 u'debug',
                 u'Database is locked, will try again later (queue length %d)',
-                self._queue.qsize())
+                self._queue.qsize(),
+                exc=e)
             raise
         except Exception as e:
             self._log_processing_error(e)
@@ -157,7 +170,8 @@ class LogProcessingWorker(Thread):
             u'exception',
             u'Log processing error (queue size: %3s): %s',
             self._queue.qsize(),
-            exception)
+            exception,
+            exc=exception)
 
     # ----------------------------------------------------------------------
     def _delay_processing(self):
@@ -190,15 +204,16 @@ class LogProcessingWorker(Thread):
 
         try:
             queued_events = self._database.get_queued_events()
-        except DatabaseLockedError:
+        except DatabaseLockedError as e:
             self._safe_log(
                 u'debug',
                 u'Database is locked, will try again later (queue length %d)',
-                self._queue.qsize())
+                self._queue.qsize(),
+                exc=e)
             return  # try again later
         except Exception as e:
             # just log the exception and hope we can recover from the error
-            self._safe_log(u'exception', u'Error retrieving queued events: %s', e)
+            self._safe_log(u'exception', u'Error retrieving queued events: %s', e, exc=e)
             return
 
         if queued_events:
@@ -206,7 +221,11 @@ class LogProcessingWorker(Thread):
                 events = [event['event_text'] for event in queued_events]
                 self._send_events(events)
             except Exception as e:
-                self._safe_log(u'exception', u'An error occurred while sending events: %s', e)
+                self._safe_log(
+                    u'exception',
+                    u'An error occurred while sending events: %s',
+                    e,
+                    exc=e)
                 self._database.requeue_queued_events(queued_events)
             else:
                 self._delete_queued_events_from_database()
@@ -234,7 +253,7 @@ class LogProcessingWorker(Thread):
 
     # ----------------------------------------------------------------------
     def _log_general_error(self, exc):
-        self._safe_log(u'exception', u'An unexpected error occurred: %s', exc)
+        self._safe_log(u'exception', u'An unexpected error occurred: %s', exc, exc=exc)
 
     # ----------------------------------------------------------------------
     def _safe_log(self, log_level, message, *args, **kwargs):
@@ -242,8 +261,44 @@ class LogProcessingWorker(Thread):
         if self._shutdown_requested():
             safe_log_via_print(log_level, message, *args, **kwargs)
         else:
-            log_func = getattr(self._logger, log_level)
-            return log_func(message, *args, **kwargs)
+            rate_limit_allowed = self._rate_limit_check(kwargs)
+            if rate_limit_allowed <= 0:
+                return  # skip further logging due to rate limiting
+            elif rate_limit_allowed == 1:
+                # extend the message to indicate future rate limiting
+                message = \
+                    u'{} (rate limiting effective, ' \
+                    'further equal messages will be limited)'.format(message)
+
+            self._safe_log_impl(log_level, message, *args, **kwargs)
+
+    # ----------------------------------------------------------------------
+    def _rate_limit_check(self, kwargs):
+        exc = kwargs.pop('exc', None)
+        if self._rate_limit_strategy is not None and exc is not None:
+            key = self._factor_rate_limit_key(exc)
+            # query curent counter for the caller
+            _, remaining = self._rate_limit_strategy.get_window_stats(self._rate_limit_item, key)
+            # increase the rate limit counter for the key
+            self._rate_limit_strategy.hit(self._rate_limit_item, key)
+            return remaining
+
+        return 2  # any value greater than 1 means allowed
+
+    # ----------------------------------------------------------------------
+    def _factor_rate_limit_key(self, exc):
+        module_name = getattr(exc, '__module__', '__no_module__')
+        class_name = exc.__class__.__name__
+        key_items = [module_name, class_name]
+        if hasattr(exc, 'errno') and isinstance(exc.errno, integer_types):
+            # in case of socket.error, include the errno as rate limiting key
+            key_items.append(str(exc.errno))
+        return '.'.join(key_items)
+
+    # ----------------------------------------------------------------------
+    def _safe_log_impl(self, log_level, message, *args, **kwargs):
+        log_func = getattr(self._logger, log_level)
+        log_func(message, *args, **kwargs)
 
     # ----------------------------------------------------------------------
     def _warn_about_non_empty_queue_on_shutdown(self):

@@ -151,6 +151,23 @@ constants.FORMATTER_LOGSTASH_MESSAGE_FIELD_LIST
     Fields to be set on the top-level of a Logstash event/message, do not modify this
     unless you know what you are doing
 
+constants.ERROR_LOG_RATE_LIMIT
+    Enable rate limiting for error messages (e.g. network errors) emitted by the logger
+    used in LogProcessingWorker, i.e. when transmitting log messages to the Logstash server.
+    In case the Logstash cannot be reached due to network issues
+    (timeouts, connection refused, ...), this may lead to many repeated error log messages which
+    can get annoying, especially if the application's logging system is configured to send emails
+    or other notifications. For such errors emitted directly from the LogProcessingWorker class,
+    rate limiting of identical errors for some time period can be configured to reduce logging
+    of the same errors. In case rate limiting is in effect, the last message before dropping further
+    messages will contain a hint telling that further messages of this kind will be dropped.
+    To disable set this to `None` (default), to enable use a string like '5 per minute',
+    for details see http://limits.readthedocs.io/en/stable/string-notation.html.
+
+    .. note::
+        This rate limit affects only error log messages emitted directly in
+        LogProcessingWorker, if you need a general rate limiting of all log messages,
+        use a filter for the logging framework, e.g. https://github.com/wkeeling/ratelimitingfilter.
 
 Example usage:
 

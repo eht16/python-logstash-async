@@ -37,6 +37,11 @@ class Constants(object):
     FORMATTER_LOGSTASH_MESSAGE_FIELD_LIST = [
         '@timestamp', '@version', 'host', 'level', 'logsource', 'message',
         'pid', 'program', 'type', 'tags']
+    # enable rate limiting for error messages (e.g. network errors) emitted by the logger
+    # used in LogProcessingWorker, i.e. when transmitting log messages to the Logstash server.
+    # Use a string like '5 per minute' or None to disable (default), for details see
+    # http://limits.readthedocs.io/en/stable/string-notation.html
+    ERROR_LOG_RATE_LIMIT = None
 
 
 constants = Constants()
