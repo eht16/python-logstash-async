@@ -5,7 +5,7 @@
 
 from logging import Handler
 
-from six import string_types
+from six import string_types, text_type
 
 import logstash_async
 from logstash_async.formatter import LogstashFormatter
@@ -39,7 +39,7 @@ class AsynchronousLogstashHandler(Handler):
     # ----------------------------------------------------------------------
     def __init__(self, host, port, database_path, transport='logstash_async.transport.TcpTransport',
                  ssl_enable=False, ssl_verify=True, keyfile=None, certfile=None, ca_certs=None,
-                 enable=True, event_ttl=None):
+                 enable=True, event_ttl=None, encoding='utf-8'):
         super(AsynchronousLogstashHandler, self).__init__()
         self._host = host
         self._port = port
@@ -53,6 +53,7 @@ class AsynchronousLogstashHandler(Handler):
         self._enable = enable
         self._transport = None
         self._event_ttl = event_ttl
+        self._encoding = encoding
         self._setup_transport()
 
     # ----------------------------------------------------------------------
@@ -124,7 +125,10 @@ class AsynchronousLogstashHandler(Handler):
     # ----------------------------------------------------------------------
     def _format_record(self, record):
         self._create_formatter_if_necessary()
-        return self.formatter.format(record) + b'\n'
+        formatted = self.formatter.format(record)
+        if isinstance(formatted, text_type):
+            formatted = formatted.encode(self._encoding)
+        return formatted + b'\n'
 
     # ----------------------------------------------------------------------
     def _create_formatter_if_necessary(self):
