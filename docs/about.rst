@@ -52,6 +52,12 @@ License
 ChangeLog
 ---------
 
+1.4.1 (Jan 20 2018)
++++++++++++++++++++
+
+  * Handle possible non-bytes result in Formatter (#18, rmihael)
+
+
 1.4.0 (Nov 22 2017)
 +++++++++++++++++++
 
