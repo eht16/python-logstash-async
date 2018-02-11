@@ -16,7 +16,7 @@ sends Logstash messages using UDP and TCP. For example:
   test_logger = logging.getLogger('python-logstash-logger')
   test_logger.setLevel(logging.INFO)
   test_logger.addHandler(AsynchronousLogstashHandler(
-      host, port, database_path='logstash.db')))
+      host, port, database_path='logstash.db'))
 
   # If you don't want to write to a SQLite database, then you do
   # not have to specify a database_path.
