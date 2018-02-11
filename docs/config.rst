@@ -174,7 +174,7 @@ constants.ERROR_LOG_RATE_LIMIT
 
 Example usage:
 
-.. code:: python
+.. code-block:: python
 
   from logstash_async.constants import constants
 

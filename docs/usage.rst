@@ -4,7 +4,7 @@ Usage
 `AsynchronousLogstashHandler` is a custom logging handler which
 sends Logstash messages using UDP and TCP. For example:
 
-.. code:: python
+.. code-block:: python
 
   import logging
   import sys
@@ -56,7 +56,7 @@ Usage with Django
 
 Modify your ``settings.py`` to integrate ``python-logstash-async`` with Django's logging:
 
-.. code:: python
+.. code-block:: python
 
   LOGGING = {
     ...
@@ -103,7 +103,7 @@ Modify your ``settings.py`` to integrate ``python-logstash-async`` with Django's
 This would result in a Logstash event like the following
 (note: to some extend dependent of your Logstash configuration):
 
-.. code:: json
+.. code-block:: json
 
     {
         "@timestamp": "2016-10-23T15:11:16.853Z",
