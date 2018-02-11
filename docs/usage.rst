@@ -141,6 +141,101 @@ This would result in a Logstash event like the following
         "type": "python-logstash"
     }
 
+Usage with Logging File Config
+------------------------------
+
+Example code for Python's `logging.config.fileConfig`:
+
+.. code-block:: python
+
+    import logging
+    from logging.config import fileConfig
+
+    fileConfig('logging.conf', disable_existing_loggers=True)
+    logger = logging.getLogger()
+    test_logger.info('python-logstash-async: test logstash info message.')
+
+
+Example config for Python's `logging.config.fileConfig`:
+
+.. code-block:: ini
+
+    # loggers
+    [loggers]
+    keys = root
+
+    [logger_root]
+    name = python-app
+    level = DEBUG
+    handlers = console,logstash
+    propagate = 1
+    qualname = root
+
+    # handlers
+    [handlers]
+    keys = console,logstash
+
+    [handler_console]
+    class = StreamHandler
+    level = NOTSET
+    formatter = console
+    args = (sys.stdout,)
+
+    [handler_logstash]
+    class = logstash_async.handler.AsynchronousLogstashHandler
+    level = DEBUG
+    formatter = logstash
+    args = ('%(host)s', %(port)s, '%(database_path)s', '%(transport)s', %(ssl_enable)s, %(ssl_verify)s, '%(keyfile)s', '%(certfile)s', '%(ca_certs)s', %(enable)s)
+    transport = logstash_async.transport.TcpTransport
+    host = localhost
+    port = 5959
+    enable = True
+    ssl_enable = True
+    ssl_verify = True
+    ca_certs = /etc/ssl/certs/ca.crt
+    certfile = /etc/ssl/certs/logstash.crt
+    keyfile = /etc/ssl/private/logstash.key
+    database_path = /var/lib/logstash.db
+
+    [formatters]
+    keys = console,logstash
+
+    [formatter_console]
+    format = %(asctime)s %(name)-12s %(levelname)+8s %(message)s
+
+    [formatter_logstash]
+    class = logstash_async.formatter.LogstashFormatter
+    # format, datefmt and style are a hack: we cannot specify "args" for formatters
+    # (see logging.config.py:111 _create_formatters()), so we pass our values as format parameters
+    # "format" corresponds to LogstashFormatter's "message_type" argument,
+    # "datefmt" to "tags" and "style" to "fqdn" ("style" is Python3 only).
+    # However, the "tags" argument expects a list and "fqdn" expects a boolean but Python's
+    # logging framework passes strings for both, so this is of limited use.
+    format = format
+    datefmt = custom-tag
+    style = True
+
+
+.. note::
+    As also stated in the comment in the example configuration above, Python's
+    `fileConfig` format does not allow to pass arbitary arguments to a formatter
+    class in the config file in the same way as for handlers.
+    It supports only three arguments: `format`, `datefmt` and `style`
+    (where `style` is Python3 only) and passes those as positional arguments to
+    the formatter class.
+
+    You can either use the hack shown in the example by setting at least the
+    `message_type` argument of `LogstashFormatter` which is its first position argument
+    and so corresponds to `format` in the logging configuration.
+
+    A better and more clean solution is to create a subclass of `LogstashFormatter` and
+    set the various configuration values there or use a different formatter like
+    https://github.com/madzak/python-json-logger.
+    This is a limitation of Python's logging file config format.
+
+Another example using Python logging file config in combination with Gunicorn
+can be found on https://github.com/eht16/python-logstash-async/issues/20.
+
 
 Trigger event flushing
 ----------------------
