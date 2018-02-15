@@ -4,18 +4,35 @@ Configuration
 Options for configuring the log handler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-host
-    The host of the Logstash server (no default)
+``host``
 
-port
-    The port of the Logstash server (no default)
+    The host of the Logstash server
 
-database_path
-    The path to the file containing queued events (no default)
+    *Type*: ``string``
 
-transport
-    Callable or path to a compatible transport class
-    (default: 'logstash_async.transport.TcpTransport').
+    *Default*: None
+
+
+``port``
+
+    The port of the Logstash server
+
+    *Type*: ``integer``
+
+    *Default*: None
+
+
+``database_path``
+
+    The path to the file containing queued events
+
+    *Type*: ``string``
+
+    *Default*: None
+
+
+``transport``
+    Callable or path to a compatible transport class.
 
     You can specify your own transport class, e.g. to implement
     a transport via Redis or the Beats protocol.
@@ -25,35 +42,81 @@ transport
     with a similar interface as `logstash_async.transport.TcpTransport`.
     Especially it should provide a `close()` and a `send()` method.
 
-ssl_enable
-    Should SSL be enabled for the connection? (default: False)
+    *Type*: ``string``
+
+    *Default*: ``logstash_async.transport.TcpTransport``
+
+
+``ssl_enable``
+
+    Should SSL be enabled for the connection?
     Only used for `logstash_async.transport.TcpTransport`.
 
-ssl_verify
-    Should the server's SSL certificate be verified? (default: True)
+    *Type*: ``boolean``
+
+    *Default*: ``False``
+
+
+``ssl_verify``
+
+    Should the server's SSL certificate be verified?
     Only used for `logstash_async.transport.TcpTransport`.
 
-keyfile
-    The path to client side SSL key file (default: None)
+    *Type*: ``boolean``
+
+    *Default*: ``True``
+
+
+``keyfile``
+
+    The path to client side SSL key file.
     Only used for `logstash_async.transport.TcpTransport`.
 
-certfile
-    The path to client side SSL certificate file (default: None)
+    *Type*: ``string``
+
+    *Default*: None
+
+
+``certfile``
+
+    The path to client side SSL certificate file.
     Only used for `logstash_async.transport.TcpTransport`.
 
-ca_certs
-    The path to the file containing recognized CA certificates
-    (default: None)
+    *Type*: ``string``
+
+    *Default*: None
+
+
+``ca_certs``
+
+    The path to the file containing recognized CA certificates.
     Only used for `logstash_async.transport.TcpTransport`.
 
-enable
-    Flag to enable log processing (default is True, disabling
-    might be handy for local testing, etc.)
+    *Type*: ``string``
 
-event_ttl
-    TTL for messages that are waiting to be published. (default: None)
+    *Default*: None
+
+
+``enable``
+
+    Flag to enable log processing (disabling might be handy for
+    local testing, etc.)
+
+    *Type*: ``boolean``
+
+    *Default*: True
+
+
+``event_ttl``
+
+    TTL for messages that are waiting to be published.
     If a message is beyond it's TTL, it will be deleted from the cache
     and will not be published to logstash.
+
+    *Type*: ``integer``
+
+    *Default*: None
+
 
 
 Options for configuring the log formatter
@@ -70,21 +133,38 @@ should return valid JSON suitable to be sent to Logstash
 
 Options:
 
-message_type
+``message_type``
+
     The `type` field in the message sent to Logstash
-    (default: 'python-logstash')
 
-tags
-    Additional tags to include in the Logstash message (default: None)
+    *Type*: ``string``
 
-fqdn
+    *Default*: ``python-logstash``
+
+
+``tags``
+
+    Additional tags to include in the Logstash message
+
+    *Type*: ``list``
+
+    *Default*: None
+
+
+``fqdn``
+
     Use the system's FQDN (fully qualified domain name) in the `host`
     field of the message sent to Logstash.
     `socket.getfqdn()` is used to retrieve the FQDN, otherwise
     `socket.gethostname()` is used for the default hostname.
-    (default: False)
 
-extra_prefix
+    *Type*: ``boolean``
+
+    *Default*: ``False``
+
+
+``extra_prefix``
+
     Name of the field in the resulting message sent to Logstash where
     all additional fields are grouped into. Consider it as some sort
     of namespace for all non-standard fields in the log event.
@@ -95,19 +175,33 @@ extra_prefix
     To disable grouping of the extra items and have them on the top
     level of the log event message, simply set this option to `None`
     or the empty string.
-    (default: 'extra')
 
-extra
+    *Type*: ``string``
+
+    *Default*: ``extra``
+
+
+``extra``
+
     Dictionary with static items to be included in the message sent
     to Logstash. This dictionary will be merged with any other extra
     items passed in the logging call.
-    (default: None)
 
-ensure_ascii
-    By default ('True') non-ASCII symbols in JSON are escaped with \uXXXX
+    *Type*: ``dict``
+
+    *Default*: None
+
+
+``ensure_ascii``
+
+    By default non-ASCII symbols in JSON are escaped with \uXXXX
     sequence. But on some specific settings of Elastic Stack
     those sequences won't be transformed back to UTF-8 representation.
     For those specific cases try to set parameter to 'False'.
+
+    *Type*: ``boolean``
+
+    *Default*: ``True``
 
 
 .. _module-constants:
@@ -121,40 +215,89 @@ from the calling application by importing the ``constants`` variable from the
 for easy modification.
 
 
-constants.SOCKET_TIMEOUT
-    Timeout in seconds for TCP connections (default: 5.0)
+``constants.SOCKET_TIMEOUT``
 
-constants.QUEUE_CHECK_INTERVAL
+    Timeout in seconds for TCP connections
+
+    *Type*: ``float``
+
+    *Default*: ``5.0``
+
+
+``constants.QUEUE_CHECK_INTERVAL``
+
     Interval in seconds to check the internal queue for new messages
-    to be cached in the database (default: 2.0)
+    to be cached in the database
 
-constants.QUEUED_EVENTS_FLUSH_INTERVAL
+    *Type*: ``float``
+
+    *Default*: ``2.0``
+
+
+``constants.QUEUED_EVENTS_FLUSH_INTERVAL``
+
     Interval in seconds to send cached events from the database
-    to Logstash (default 10.0)
+    to Logstash
 
-constants.QUEUED_EVENTS_FLUSH_COUNT
+    *Type*: ``float``
+
+    *Default*: ``10.0``
+
+
+``constants.QUEUED_EVENTS_FLUSH_COUNT``
+
     Count of cached events to send cached events from the database
     to Logstash; events are sent to Logstash whenever
     `QUEUED_EVENTS_FLUSH_COUNT` or `QUEUED_EVENTS_FLUSH_INTERVAL` is reached,
-    whatever happens first (default 50)
+    whatever happens first
 
-constants.DATABASE_EVENT_CHUNK_SIZE
-    Maximum number of events to be updated within one SQLite statement (default 750)
+    *Type*: ``integer``
 
-constants.DATABASE_TIMEOUT
-    Timeout in seconds to "connect" (i.e. open) the SQLite database (default 5.0)
+    *Default*: ``50``
 
-constants.FORMATTER_RECORD_FIELD_SKIP_LIST
+
+``constants.DATABASE_EVENT_CHUNK_SIZE``
+
+    Maximum number of events to be updated within one SQLite statement
+
+    *Type*: ``integer``
+
+    *Default*: ``750``
+
+
+``constants.DATABASE_TIMEOUT``
+
+    Timeout in seconds to "connect" (i.e. open) the SQLite database
+
+    *Type*: ``float``
+
+    *Default*: ``5.0``
+
+
+``constants.FORMATTER_RECORD_FIELD_SKIP_LIST``
+
     List of Python standard LogRecord attributes which are filtered out from the event sent
     to Logstash. Usually this list does not need to be modified. Add/Remove elements to
     exclude/include them in the Logstash event, for the full list see:
     http://docs.python.org/library/logging.html#logrecord-attributes
 
-constants.FORMATTER_LOGSTASH_MESSAGE_FIELD_LIST
+    *Type*: ``list``
+
+    *Default*: <see source code>
+
+
+``constants.FORMATTER_LOGSTASH_MESSAGE_FIELD_LIST``
+
     Fields to be set on the top-level of a Logstash event/message, do not modify this
     unless you know what you are doing
 
-constants.ERROR_LOG_RATE_LIMIT
+    *Type*: ``list``
+
+    *Default*: <see source code>
+
+
+``constants.ERROR_LOG_RATE_LIMIT``
+
     Enable rate limiting for error messages (e.g. network errors) emitted by the logger
     used in LogProcessingWorker, i.e. when transmitting log messages to the Logstash server.
     In case the Logstash cannot be reached due to network issues
@@ -164,13 +307,18 @@ constants.ERROR_LOG_RATE_LIMIT
     rate limiting of identical errors for some time period can be configured to reduce logging
     of the same errors. In case rate limiting is in effect, the last message before dropping further
     messages will contain a hint telling that further messages of this kind will be dropped.
-    To disable set this to `None` (default), to enable use a string like '5 per minute',
+    To disable set this to `None`, to enable use a string like '5 per minute',
     for details see http://limits.readthedocs.io/en/stable/string-notation.html.
 
     .. note::
         This rate limit affects only error log messages emitted directly in
         LogProcessingWorker, if you need a general rate limiting of all log messages,
         use a filter for the logging framework, e.g. https://github.com/wkeeling/ratelimitingfilter.
+
+    *Type*: ``string``
+
+    *Default*: None
+
 
 Example usage:
 
