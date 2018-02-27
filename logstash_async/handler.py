@@ -22,6 +22,7 @@ class AsynchronousLogstashHandler(Handler):
     :param host: The host of the logstash server, required.
     :param port: The port of the logstash server, required.
     :param database_path: The path to the file containing queued events, required.
+                          Use None to use a in-memory cache.
     :param transport: Callable or path to a compatible transport class.
     :param ssl_enable: Should SSL be enabled for the connection? Default is False.
     :param ssl_verify: Should the server's SSL certificate be verified?
@@ -29,7 +30,7 @@ class AsynchronousLogstashHandler(Handler):
     :param certfile: The path to client side SSL certificate file (default is None).
     :param ca_certs: The path to the file containing recognized CA certificates.
     :param enable: Flag to enable log processing (default is True, disabling
-                  might be handy for local testing, etc.)
+                   might be handy for local testing, etc.)
     :param event_ttl: Amount of time in seconds to wait before expiring log messages in
                       the database. (Given in seconds. Default is None, and disables this feature)
     """

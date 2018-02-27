@@ -24,7 +24,9 @@ Options for configuring the log handler
 
 ``database_path``
 
-    The path to the file containing queued events
+    The path to the file containing queued events.
+    To use an in-memory cache instead of a SQLite database,
+    simply pass ``None``. See :doc:`persistence` for details.
 
     *Type*: ``string``
 
