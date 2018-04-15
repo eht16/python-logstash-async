@@ -4,7 +4,3 @@
 # of the MIT license.  See the LICENSE file for details.
 
 __version__ = '1.4.1'
-
-# When using an in-memory only cache, this persists the cache through
-# thread failures, shutdowns, and restarts.
-EVENT_CACHE = {}

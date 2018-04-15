@@ -7,7 +7,6 @@ from logging import Handler
 
 from six import string_types, text_type
 
-import logstash_async
 from logstash_async.formatter import LogstashFormatter
 from logstash_async.utils import import_string, safe_log_via_print
 from logstash_async.worker import LogProcessingWorker
@@ -112,7 +111,6 @@ class AsynchronousLogstashHandler(Handler):
             certfile=self._certfile,
             ca_certs=self._ca_certs,
             database_path=self._database_path,
-            cache=logstash_async.EVENT_CACHE,
             event_ttl=self._event_ttl)
         AsynchronousLogstashHandler._worker_thread.start()
 

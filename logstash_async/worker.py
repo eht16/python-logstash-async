@@ -37,7 +37,6 @@ class LogProcessingWorker(Thread):
         self._certfile = kwargs.pop('certfile')
         self._ca_certs = kwargs.pop('ca_certs')
         self._database_path = kwargs.pop('database_path')
-        self._memory_cache = kwargs.pop('cache')
         self._event_ttl = kwargs.pop('event_ttl')
 
         super(LogProcessingWorker, self).__init__(*args, **kwargs)
@@ -109,7 +108,8 @@ class LogProcessingWorker(Thread):
         if self._database_path:
             self._database = DatabaseCache(path=self._database_path, event_ttl=self._event_ttl)
         else:
-            self._database = MemoryCache(cache=self._memory_cache, event_ttl=self._event_ttl)
+            cache = dict()
+            self._database = MemoryCache(cache=cache, event_ttl=self._event_ttl)
 
     # ----------------------------------------------------------------------
     def _fetch_events(self):
