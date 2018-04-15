@@ -46,9 +46,25 @@ From `Python documentation <https://docs.python.org/2/library/logging.html>`_::
     (See the `Formatter <https://docs.python.org/2/library/logging.html#logging.Formatter>`_ documentation
     for more information on which keys are used by the logging system.)
 
-You can also specify an additional extra dictionary in the logging configuration with static
-values like the application name, environment, etc. These values will be merged with any
-extra dictionary items passed in the logging call into the configured extra prefix.
+You can also specify an additional extra dictionary in the logging configuration (e.g. via
+FileConfig, DictConfig or logging configuration in the code)
+with static values like the application name, environment, etc. These values will
+be merged with any extra dictionary items passed in the logging call into the
+configured extra prefix, e.g.:
+
+.. code-block:: python
+
+  from logstash_async.formatter import LogstashFormatter
+  from logstash_async.handler import AsynchronousLogstashHandler
+
+  ...
+  logstash_formatter = LogstashFormatter(
+      message_type='python-logstash',
+      extra_prefix='dev',
+      extra=dict(application='example-app', environment='production'))
+  logstash_handler.setFormatter(logstash_formatter)
+  test_logger.addHandler(logstash_handler)
+  ...
 
 
 Usage with Django
