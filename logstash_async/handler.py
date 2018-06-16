@@ -7,10 +7,10 @@ from logging import Handler
 
 from six import string_types, text_type
 
-import logstash_async
 from logstash_async.formatter import LogstashFormatter
 from logstash_async.utils import import_string, safe_log_via_print
 from logstash_async.worker import LogProcessingWorker
+import logstash_async
 
 
 class ProcessingError(Exception):

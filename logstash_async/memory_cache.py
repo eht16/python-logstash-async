@@ -3,9 +3,10 @@
 # This software may be modified and distributed under the terms
 # of the MIT license.  See the LICENSE file for details.
 
-import uuid
-from logging import getLogger as get_logger
 from datetime import datetime, timedelta
+from logging import getLogger as get_logger
+import uuid
+
 from logstash_async.cache import Cache
 
 

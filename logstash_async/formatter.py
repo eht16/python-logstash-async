@@ -10,21 +10,30 @@ import sys
 import time
 import traceback
 import uuid
+
+from six import integer_types, string_types, text_type
+
+from logstash_async.constants import constants
+import logstash_async
+
+
 try:
     import json
 except ImportError:
     import simplejson as json
 
-from six import text_type, string_types, integer_types
-from logstash_async.constants import constants
-import logstash_async
-
 
 class LogstashFormatter(logging.Formatter):
 
     # ----------------------------------------------------------------------
-    def __init__(self, message_type='python-logstash', tags=None, fqdn=False, extra_prefix='extra', extra=None,
-                 ensure_ascii=True):
+    def __init__(
+            self,
+            message_type='python-logstash',
+            tags=None,
+            fqdn=False,
+            extra_prefix='extra',
+            extra=None,
+            ensure_ascii=True):
         super(LogstashFormatter, self).__init__()
         self._message_type = message_type
         self._tags = tags if tags is not None else []
@@ -38,7 +47,8 @@ class LogstashFormatter(logging.Formatter):
         self._logsource = None
         self._program_name = None
 
-        # fetch static information and process related information already as they won't change during lifetime
+        # fetch static information and process related information already
+        # as they won't change during lifetime
         self._prefetch_interpreter()
         self._prefetch_interpreter_version()
         self._prefetch_host(fqdn)

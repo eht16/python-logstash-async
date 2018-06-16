@@ -11,11 +11,11 @@ from limits import parse as parse_rate_limit
 from limits.storage import MemoryStorage
 from limits.strategies import FixedWindowRateLimiter
 from six import integer_types
-from six.moves.queue import Queue, Empty
+from six.moves.queue import Empty, Queue
 
-from logstash_async.memory_cache import MemoryCache
 from logstash_async.constants import constants
 from logstash_async.database import DatabaseCache, DatabaseLockedError
+from logstash_async.memory_cache import MemoryCache
 from logstash_async.utils import safe_log_via_print
 
 
@@ -161,8 +161,8 @@ class LogProcessingWorker(Thread):
         try:
             self._database.expire_events()
         except DatabaseLockedError:
-            # Nothing to handle, if it fails, we will either successfully publish these messages next time
-            # or we will delete them on the next pass.
+            # Nothing to handle, if it fails, we will either successfully publish
+            # these messages next time or we will delete them on the next pass.
             pass
 
     # ----------------------------------------------------------------------
@@ -198,7 +198,8 @@ class LogProcessingWorker(Thread):
     # ----------------------------------------------------------------------
     def _flush_queued_events(self, force=False):
         # check if necessary and abort if not
-        if not force and not self._queued_event_interval_reached() and not self._queued_event_count_reached():
+        if not force and not self._queued_event_interval_reached() and \
+                not self._queued_event_count_reached():
             return
 
         self._clear_flush_event()

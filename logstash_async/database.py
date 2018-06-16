@@ -32,11 +32,13 @@ class DatabaseLockedError(Exception):
 
 
 class DatabaseCache(Cache):
-    """Backend implementation for python-logstash-async. Keeps messages on disk in a SQL-lite DB
-    while attempting to publish them to logstash. Persists log messages through restarts of a process.
+    """
+        Backend implementation for python-logstash-async. Keeps messages on disk in a SQL-lite DB
+        while attempting to publish them to logstash. Persists log messages through restarts
+        of a process.
 
-    :param path: Path to the SQLite database
-    :param event_ttl: Optional parameter used to expire events in the database after a time
+        :param path: Path to the SQLite database
+        :param event_ttl: Optional parameter used to expire events in the database after a time
     """
 
     # ----------------------------------------------------------------------
@@ -136,7 +138,8 @@ class DatabaseCache(Cache):
         if self._event_ttl is None:
             return
 
-        query_delete = "DELETE FROM `event` WHERE `entry_date` < datetime('now', '-%d seconds');" % self._event_ttl
+        query_delete = "DELETE FROM `event` WHERE `entry_date` < datetime('now', '-{} seconds');" \
+            .format(self._event_ttl)
         with self._connect() as connection:
             cursor = connection.cursor()
             cursor.execute(query_delete)
