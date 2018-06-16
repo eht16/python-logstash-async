@@ -95,6 +95,7 @@ Modify your ``settings.py`` to integrate ``python-logstash-async`` with Django's
         'logstash': {
             'level': 'DEBUG',
             'class': 'logstash_async.handler.AsynchronousLogstashHandler',
+            'formatter': 'logstash',
             'transport': 'logstash_async.transport.TcpTransport',
             'host': 'logstash.host.tld',
             'port': 5959,
