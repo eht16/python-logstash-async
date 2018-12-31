@@ -28,6 +28,13 @@ Options for configuring the log handler
     To use an in-memory cache instead of a SQLite database,
     simply pass ``None``. See :doc:`persistence` for details.
 
+    .. note::
+        Using multiple instances of `AsynchronousLogstashHandler` with
+        different `database_path` settings won't work because there is only one
+        `LogProcessingWorker` instance and it is configured with the
+        `database_path` setting from the first handler
+        which emits a log event.
+
     *Type*: ``string``
 
     *Default*: None
