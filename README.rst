@@ -2,6 +2,26 @@
 python-logstash-async
 =====================
 
+.. image:: https://img.shields.io/pypi/v/python-logstash-async.svg
+    :target: https://pypi.org/project/python-logstash-async/
+    :alt: PyPI
+
+.. image:: https://readthedocs.org/projects/python-logstash-async/badge/?version=latest
+    :target: http://python-logstash-async.readthedocs.io/en/latest/
+    :alt: Documentation Status
+
+.. image:: https://travis-ci.org/eht16/python-logstash-async.svg?branch=master
+    :target: https://travis-ci.org/eht16/python-logstash-async
+    :alt: Travis CI
+
+.. image:: https://img.shields.io/pypi/pyversions/python-logstash-async.svg
+    :target: https://pypi.org/project/python-logstash-async/
+    :alt: Python Versions
+
+.. image:: https://img.shields.io/pypi/l/python-logstash-async.svg
+    :target: https://pypi.org/project/python-logstash-async/
+    :alt: License
+
 Python Logstash Async is an asynchronous Python logging handler to submit
 log events to a remote Logstash instance.
 
@@ -17,23 +37,19 @@ request serving API where response times matter.
 For more details, configuration options and usage examples please see the
 documentation at http://python-logstash-async.readthedocs.io/en/latest/.
 
-.. image:: https://readthedocs.org/projects/python-logstash-async/badge/?version=latest
-    :target: http://python-logstash-async.readthedocs.io/en/latest/
-    :alt: Documentation Status
-
 
 Installation
 ------------
 
 The easiest method is to install directly from pypi using pip::
 
-  pip install python-logstash-async
+    pip install python-logstash-async
 
 
 If you prefer, you can download python-logstash-async and install it
 directly from source::
 
-    $ python setup.py install
+    python setup.py install
 
 
 Get the Source
