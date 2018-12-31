@@ -1,11 +1,19 @@
+# -*- coding: utf-8 -*-
+#
+# This software may be modified and distributed under the terms
+# of the MIT license.  See the LICENSE file for details.
 
+os: linux
+dist: trusty
 sudo: false
 language: python
+cache: pip
 
 python:
   - "2.7"
   - "3.6"
   - "pypy"
   - "pypy3"
+
 install: pip install tox-travis
 script: tox
