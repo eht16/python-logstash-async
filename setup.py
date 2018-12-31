@@ -34,10 +34,16 @@ setup(
     author='Enrico Tröger',
     author_email='enrico.troeger@uvena.de',
     url='https://github.com/eht16/python-logstash-async',
+    project_urls={
+        'Travis CI': 'https://travis-ci.org/eht16/python-logstash-async/',
+        'Source code': 'https://github.com/eht16/python-logstash-async/',
+        'Documentation': 'https://python-logstash-async.readthedocs.io/en/stable/',
+    },
     keywords='logging logstash asynchronous',
     install_requires=['limits', 'six'],
     setup_requires=['flake8', 'isort'],
     include_package_data=True,
+    test_suite='tests',
     classifiers=[
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
