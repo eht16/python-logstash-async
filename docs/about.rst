@@ -29,7 +29,7 @@ So this handler will accept log events and pass them for further
 processing to a separate worker thread which will try to send
 the events to the configured Logstash server asynchronously.
 If sending the events fails, the events are stored in a
-local cache for a later sending attempt.
+local cache for a later attempt sending the events.
 
 Whenever the application stops, to be more exact whenever
 Python' logging subsystem is shutdown, the worker thread
