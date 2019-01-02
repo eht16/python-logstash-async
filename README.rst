@@ -7,7 +7,7 @@ python-logstash-async
     :alt: PyPI
 
 .. image:: https://readthedocs.org/projects/python-logstash-async/badge/?version=latest
-    :target: http://python-logstash-async.readthedocs.io/en/latest/
+    :target: https://python-logstash-async.readthedocs.io/en/latest/
     :alt: Documentation Status
 
 .. image:: https://travis-ci.org/eht16/python-logstash-async.svg?branch=master
