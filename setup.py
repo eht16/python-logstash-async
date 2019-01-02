@@ -40,7 +40,7 @@ setup(
         'Documentation': 'https://python-logstash-async.readthedocs.io/en/stable/',
     },
     keywords='logging logstash asynchronous',
-    install_requires=['limits', 'six'],
+    install_requires=['limits', 'pylogbeat', 'six'],
     setup_requires=['flake8', 'isort'],
     include_package_data=True,
     test_suite='tests',

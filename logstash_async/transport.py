@@ -7,6 +7,10 @@ import socket
 import ssl
 import sys
 
+import pylogbeat
+
+from logstash_async.utils import ichunked
+
 
 class TimeoutNotSet(object):
     pass
@@ -24,7 +28,7 @@ class UdpTransport(object):
         self._sock = None
 
     # ----------------------------------------------------------------------
-    def send(self, events):
+    def send(self, events, use_logging=False):  # pylint: disable=unused-argument
         # Ideally we would keep the socket open but this is risky because we might not notice
         # a broken TCP connection and send events into the dark.
         # On UDP we push into the dark by design :)
@@ -79,7 +83,7 @@ class UdpTransport(object):
 class TcpTransport(UdpTransport):
 
     # ----------------------------------------------------------------------
-    def __init__(
+    def __init__(  # pylint: disable=too-many-arguments
             self,
             host,
             port,
@@ -130,3 +134,41 @@ class TcpTransport(UdpTransport):
     def _send_via_socket(self, data):
         data_to_send = self._convert_data_to_send(data)
         self._sock.sendall(data_to_send)
+
+
+class BeatsTransport(object):
+
+    _batch_size = 10
+
+    # ----------------------------------------------------------------------
+    def __init__(  # pylint: disable=too-many-arguments
+            self,
+            host,
+            port,
+            ssl_enable,
+            ssl_verify,
+            keyfile,
+            certfile,
+            ca_certs,
+            timeout=TimeoutNotSet):
+        timeout_ = None if timeout is not TimeoutNotSet else timeout
+        self._client_arguments = dict(
+            host=host,
+            port=port,
+            timeout=timeout_,
+            ssl_enable=ssl_enable,
+            ssl_verify=ssl_verify,
+            keyfile=keyfile,
+            certfile=certfile,
+            ca_certs=ca_certs)
+
+    # ----------------------------------------------------------------------
+    def close(self):
+        pass  # nothing to do
+
+    # ----------------------------------------------------------------------
+    def send(self, events, use_logging=False):
+        client = pylogbeat.PyLogBeatClient(use_logging=use_logging, **self._client_arguments)
+        with client:
+            for events_subset in ichunked(events, self._batch_size):
+                client.send(events_subset)

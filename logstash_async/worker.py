@@ -251,7 +251,8 @@ class LogProcessingWorker(Thread):
 
     # ----------------------------------------------------------------------
     def _send_events(self, events):
-        self._transport.send(events)
+        use_logging = False if self._shutdown_requested() else True
+        self._transport.send(events, use_logging=use_logging)
 
     # ----------------------------------------------------------------------
     def _log_general_error(self, exc):
