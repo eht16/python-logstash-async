@@ -7,7 +7,9 @@ import socket
 import ssl
 import sys
 
-from logstash_async.constants import constants
+
+class TimeoutNotSet(object):
+    pass
 
 
 class UdpTransport(object):
@@ -15,9 +17,10 @@ class UdpTransport(object):
     _keep_connection = False
 
     # ----------------------------------------------------------------------
-    def __init__(self, host, port, **kwargs):
+    def __init__(self, host, port, timeout=TimeoutNotSet, **kwargs):
         self._host = host
         self._port = port
+        self._timeout = timeout
         self._sock = None
 
     # ----------------------------------------------------------------------
@@ -32,13 +35,14 @@ class UdpTransport(object):
             self._close()
 
     # ----------------------------------------------------------------------
-    def _create_socket(self, timeout=constants.SOCKET_TIMEOUT):
+    def _create_socket(self):
         if self._sock is not None:
             return
 
         # from logging.handlers.DatagramHandler
         self._sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self._sock.settimeout(timeout)
+        if self._timeout is not TimeoutNotSet:
+            self._sock.settimeout(self._timeout)
 
     # ----------------------------------------------------------------------
     def _send(self, events):
@@ -75,22 +79,34 @@ class UdpTransport(object):
 class TcpTransport(UdpTransport):
 
     # ----------------------------------------------------------------------
-    def __init__(self, host, port, ssl_enable, ssl_verify, keyfile, certfile, ca_certs):
+    def __init__(
+            self,
+            host,
+            port,
+            ssl_enable,
+            ssl_verify,
+            keyfile,
+            certfile,
+            ca_certs,
+            timeout=TimeoutNotSet):
         super(TcpTransport, self).__init__(host, port)
         self._ssl_enable = ssl_enable
         self._ssl_verify = ssl_verify
         self._keyfile = keyfile
         self._certfile = certfile
         self._ca_certs = ca_certs
+        self._timeout = timeout
 
     # ----------------------------------------------------------------------
-    def _create_socket(self, timeout=constants.SOCKET_TIMEOUT):
+    def _create_socket(self):
         if self._sock is not None:
             return
 
         # from logging.handlers.SocketHandler
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.settimeout(timeout)
+        if self._timeout is not TimeoutNotSet:
+            sock.settimeout(self._timeout)
+
         sock.connect((self._host, self._port))
         # non-SSL
         if not self._ssl_enable:

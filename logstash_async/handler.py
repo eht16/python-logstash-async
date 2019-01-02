@@ -7,6 +7,7 @@ from logging import Handler
 
 from six import string_types, text_type
 
+from logstash_async.constants import constants
 from logstash_async.formatter import LogstashFormatter
 from logstash_async.utils import import_string, safe_log_via_print
 from logstash_async.worker import LogProcessingWorker
@@ -89,6 +90,7 @@ class AsynchronousLogstashHandler(Handler):
             self._transport = transport_class(
                 host=self._host,
                 port=self._port,
+                timeout=constants.SOCKET_TIMEOUT,
                 ssl_enable=self._ssl_enable,
                 ssl_verify=self._ssl_verify,
                 keyfile=self._keyfile,
