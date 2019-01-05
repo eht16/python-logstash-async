@@ -101,11 +101,12 @@ class DatabaseCache(Cache):
 
     # ----------------------------------------------------------------------
     def get_queued_events(self):
-        query_fetch = 'SELECT `event_id`, `event_text` FROM `event` WHERE `pending_delete` = 0;'
+        query_fetch = '''
+            SELECT `event_id`, `event_text` FROM `event` WHERE `pending_delete` = 0 LIMIT ?;'''
         query_update_base = 'UPDATE `event` SET `pending_delete`=1 WHERE `event_id` IN (%s);'
         with self._connect() as connection:
             cursor = connection.cursor()
-            cursor.execute(query_fetch)
+            cursor.execute(query_fetch, (constants.QUEUED_EVENTS_BATCH_SIZE,))
             events = cursor.fetchall()
             self._bulk_update_events(cursor, events, query_update_base)
 

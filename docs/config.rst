@@ -266,10 +266,21 @@ for easy modification.
 
 ``constants.QUEUED_EVENTS_FLUSH_COUNT``
 
-    Count of cached events to send cached events from the database
+    Count of cached events to send from the database
     to Logstash; events are sent to Logstash whenever
     `QUEUED_EVENTS_FLUSH_COUNT` or `QUEUED_EVENTS_FLUSH_INTERVAL` is reached,
     whatever happens first
+
+    *Type*: ``integer``
+
+    *Default*: ``50``
+
+
+``constants.QUEUED_EVENTS_BATCH_SIZE``
+
+    Maximum number of events to be sent to Logstash in one batch.
+    Depending on the transport, this usually means a new connection to the Logstash
+    is established for the event batch (this is true for the UDP, TCP and Beats transports).
 
     *Type*: ``integer``
 

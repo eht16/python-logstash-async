@@ -7,6 +7,7 @@ import unittest
 import os
 import sqlite3
 
+from logstash_async.constants import constants
 from logstash_async.database import DatabaseCache, DATABASE_SCHEMA_STATEMENTS
 
 
@@ -71,6 +72,30 @@ class DatabaseCacheTest(unittest.TestCase):
     def test_get_queued_events(self):
         self.cache.add_event("message")
         events = self.cache.get_queued_events()
+        self.assertEqual(len(events), 1)
+
+    # ----------------------------------------------------------------------
+    def test_get_queued_events_batch_size(self):
+        constants.QUEUED_EVENTS_BATCH_SIZE = 3
+
+        self.cache.add_event("message 1")
+        self.cache.add_event("message 2")
+        self.cache.add_event("message 3")
+        self.cache.add_event("message 4")
+        self.cache.add_event("message 5")
+
+        events = self.cache.get_queued_events()
+        # expect only 3 events according to QUEUED_EVENTS_BATCH_SIZE
+        self.assertEqual(len(events), constants.QUEUED_EVENTS_BATCH_SIZE)
+
+    # ----------------------------------------------------------------------
+    def test_get_queued_events_batch_size_underrun(self):
+        constants.QUEUED_EVENTS_BATCH_SIZE = 3
+
+        self.cache.add_event("message 1")
+
+        events = self.cache.get_queued_events()
+        # expect only 1 event as there are no more available
         self.assertEqual(len(events), 1)
 
     # ----------------------------------------------------------------------

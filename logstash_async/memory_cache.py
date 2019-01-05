@@ -8,6 +8,7 @@ from logging import getLogger as get_logger
 import uuid
 
 from logstash_async.cache import Cache
+from logstash_async.constants import constants
 
 
 class MemoryCache(Cache):
@@ -39,10 +40,15 @@ class MemoryCache(Cache):
     # ----------------------------------------------------------------------
     def get_queued_events(self):
         events = []
+        event_count = 0
         for event in self._cache.values():
             if not event['pending_delete']:
                 events.append(event)
                 event['pending_delete'] = True
+
+                event_count += 1
+                if event_count >= constants.QUEUED_EVENTS_BATCH_SIZE:
+                    break
         return events
 
     # ----------------------------------------------------------------------

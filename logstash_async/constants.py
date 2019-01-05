@@ -21,6 +21,8 @@ class Constants(object):
     # to Logstash whenever QUEUED_EVENTS_FLUSH_COUNT or QUEUED_EVENTS_FLUSH_INTERVAL is reached,
     # whatever happens first
     QUEUED_EVENTS_FLUSH_COUNT = 50
+    # maximum number of events to be sent to Logstash in one batch (i.e. using a single connection)
+    QUEUED_EVENTS_BATCH_SIZE = 50
     # maximum number of events to be updated within one SQLite statement
     DATABASE_EVENT_CHUNK_SIZE = 750
     # timeout in seconds to "connect" (i.e. open) the SQLite database
