@@ -45,11 +45,17 @@ Options for configuring the log handler
 
     You can specify your own transport class, e.g. to implement
     a transport via Redis or the Beats protocol.
-    If you support pass a string, it should be a path to a
+    If you pass a string, it should be a path to a
     class which can be imported.
-    If you pass anything else, it should be an object of a class
+    If you pass anything else, it should be an instance of a class
     with a similar interface as `logstash_async.transport.TcpTransport`.
     Especially it should provide a `close()` and a `send()` method.
+
+    Currently available transports are::
+
+      ``logstash_async.transport.TcpTransport``
+      ``logstash_async.transport.UdpTransport``
+      ``logstash_async.transport.BeatsTransport``
 
     *Type*: ``string``
 
@@ -59,7 +65,8 @@ Options for configuring the log handler
 ``ssl_enable``
 
     Should SSL be enabled for the connection?
-    Only used for `logstash_async.transport.TcpTransport`.
+    Only used for `logstash_async.transport.TcpTransport` and
+    ``logstash_async.transport.BeatsTransport``.
 
     *Type*: ``boolean``
 
@@ -69,7 +76,8 @@ Options for configuring the log handler
 ``ssl_verify``
 
     Should the server's SSL certificate be verified?
-    Only used for `logstash_async.transport.TcpTransport`.
+    Only used for `logstash_async.transport.TcpTransport` and
+    ``logstash_async.transport.BeatsTransport``.
 
     *Type*: ``boolean``
 
@@ -79,7 +87,8 @@ Options for configuring the log handler
 ``keyfile``
 
     The path to client side SSL key file.
-    Only used for `logstash_async.transport.TcpTransport`.
+    Only used for `logstash_async.transport.TcpTransport` and
+    ``logstash_async.transport.BeatsTransport``.
 
     *Type*: ``string``
 
@@ -89,7 +98,8 @@ Options for configuring the log handler
 ``certfile``
 
     The path to client side SSL certificate file.
-    Only used for `logstash_async.transport.TcpTransport`.
+    Only used for `logstash_async.transport.TcpTransport` and
+    ``logstash_async.transport.BeatsTransport``.
 
     *Type*: ``string``
 
@@ -99,7 +109,8 @@ Options for configuring the log handler
 ``ca_certs``
 
     The path to the file containing recognized CA certificates.
-    Only used for `logstash_async.transport.TcpTransport`.
+    Only used for `logstash_async.transport.TcpTransport` and
+    ``logstash_async.transport.BeatsTransport``.
 
     *Type*: ``string``
 

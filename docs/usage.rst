@@ -68,7 +68,7 @@ configured extra prefix, e.g.:
 
 
 Usage with Django
------------------
+=================
 
 Modify your ``settings.py`` to integrate ``python-logstash-async`` with Django's logging:
 
@@ -159,7 +159,7 @@ This would result in a Logstash event like the following
     }
 
 Usage with Logging File Config
-------------------------------
+==============================
 
 Example code for Python's `logging.config.fileConfig`:
 
