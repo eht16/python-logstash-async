@@ -51,6 +51,20 @@ License
 ChangeLog
 ---------
 
+1.5.0 (Jan 05 2018)
++++++++++++++++++++
+
+  * Add new constant QUEUED_EVENTS_BATCH_SIZE to limit events sent once
+    (related to #31)
+  * Add "Beats" transport (logstash-input-beats, related to #31)
+  * Add "timeout" argument to transport classes for more flexible
+    setting
+  * Docs: better document the shared database between handlers (#30)
+  * Perform tests also against Python 3.7
+  * Docs: explain Formatter extra dict in more detail (#23)
+  * Docs: minor improvements
+
+
 1.4.1 (Jan 20 2018)
 +++++++++++++++++++
 

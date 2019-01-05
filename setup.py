@@ -9,7 +9,7 @@ from shutil import rmtree
 import sys
 
 NAME = 'python-logstash-async'
-VERSION = '1.4.1'
+VERSION = '1.5.0'
 
 here = path.abspath(path.dirname(__file__))
 with open(path.join(here, 'README.rst'), 'rb') as f:
