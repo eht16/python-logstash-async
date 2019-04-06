@@ -10,7 +10,7 @@ Example ``logstash.conf`` for unencrypted TCP transport::
             host => "127.0.0.1"
             port => 5959
             mode => server
-            codec => json
+            codec => json_lines {}
         }
     }
 
@@ -22,7 +22,7 @@ Example ``logstash.conf`` for SSL-encrypted TCP transport::
             host => "127.0.0.1"
             port => 5958
             mode => server
-            codec => json
+            codec => json_lines {}
 
             ssl_enable => true
             ssl_verify => true
