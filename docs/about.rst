@@ -51,7 +51,14 @@ License
 ChangeLog
 ---------
 
-1.5.0 (Jan 05 2018)
+1.5.1 (Jul 03 2019)
++++++++++++++++++++
+
+  * Fix broken transport instantiation if callable is used (#42)
+  * Fix tcp input codec in documentation
+
+
+1.5.0 (Jan 05 2019)
 +++++++++++++++++++
 
   * Add new constant QUEUED_EVENTS_BATCH_SIZE to limit events sent once
