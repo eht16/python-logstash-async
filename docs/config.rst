@@ -47,7 +47,7 @@ Options for configuring the log handler
     a transport via Redis or the Beats protocol.
     If you pass a string, it should be a path to a
     class which can be imported.
-    If you pass anything else, it should be an instance of a class
+    If you pass anything else, it should be a callable or an instance of a class
     with a similar interface as `logstash_async.transport.TcpTransport`.
     Especially it should provide a `close()` and a `send()` method.
 

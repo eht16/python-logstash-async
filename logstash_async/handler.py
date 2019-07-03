@@ -85,19 +85,26 @@ class AsynchronousLogstashHandler(Handler):
         if self._transport is not None:
             return
 
+        transport_args = dict(
+            host=self._host,
+            port=self._port,
+            timeout=constants.SOCKET_TIMEOUT,
+            ssl_enable=self._ssl_enable,
+            ssl_verify=self._ssl_verify,
+            keyfile=self._keyfile,
+            certfile=self._certfile,
+            ca_certs=self._ca_certs)
         if isinstance(self._transport_path, string_types):
             transport_class = import_string(self._transport_path)
-            self._transport = transport_class(
-                host=self._host,
-                port=self._port,
-                timeout=constants.SOCKET_TIMEOUT,
-                ssl_enable=self._ssl_enable,
-                ssl_verify=self._ssl_verify,
-                keyfile=self._keyfile,
-                certfile=self._certfile,
-                ca_certs=self._ca_certs)
-        else:
+            self._transport = transport_class(**transport_args)
+        elif callable(self._transport_path):
+            self._transport = self._transport_path(**transport_args)
+        elif hasattr(self._transport_path, 'send'):
             self._transport = self._transport_path
+        else:
+            raise RuntimeError(
+                'Invalid transport path: must be an importable module path, '
+                'a class or factory function or an instance.')
 
     # ----------------------------------------------------------------------
     def _start_worker_thread(self):
