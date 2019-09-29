@@ -41,6 +41,46 @@ module.
 See :ref:`module-constants` for details.
 
 
+Differences to using FileBeat
+-----------------------------
+
+While `FileBeat <https://www.elastic.co/de/products/beats/filebeat>`_
+provides similar features like ``python-logstash-async``, there are
+also a few differences which make this package worth using:
+
+  - FileBeat needs to be installed and configured on the server
+    independently from the application - this is an advantage and
+    disadvantage - depending on the environment and deployment
+    strategy.
+
+    Deploying FileBeat server-side can be useful if multiple
+    applications are hosted on a server and one FileBeat instance can
+    handle the log files of all those applications.
+
+    However, in a Docker / Kubernetes / whatever container world,
+    one likely rather have an application as the single process running
+    in the container and one does not want to have sidecar containers or
+    so just to send the log events to Logstash.
+
+  - FileBeat process log files, i.e. one need to write the log messages
+    to a log file using a certain format and then have FileBeat or
+    Logstash parse this format again to get a structured log event
+    again - ``python-logstash-async`` sends a structured log event
+    already to Logstash, no need for additional parsing and gives
+    much more flexibility to add custom data to the the events without
+    struggling with a logfile format.
+
+  - When exceptions with stack traces included or other multi line
+    messages are to be logged, FileBeat or Logstash needs to be
+    configured carefully to properly detect and handle multiline log
+    messages - with ``python-logstash-async`` no special handling of
+    multiline log events is necessary as it cleanly integrates
+    with Python's logging framework.
+
+After all, both approaches are valid and have their own use cases.
+Which fits best depends on the application and its requirements.
+
+
 License
 -------
 
@@ -50,6 +90,12 @@ License
 
 ChangeLog
 ---------
+
+1.5.2 (unreleased)
++++++++++++++++++++
+
+  * Docs: Explain the differences to FileBeat (#44)
+
 
 1.5.1 (Jul 03 2019)
 +++++++++++++++++++
