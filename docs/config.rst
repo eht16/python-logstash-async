@@ -143,8 +143,9 @@ Options for configuring the log formatter
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The following settings are only valid for the provided formatters
-`logstash_async.handler.LogstashFormatter` and
-`logstash_async.handler.DjangoLogstashFormatter`.
+`logstash_async.handler.LogstashFormatter`,
+`logstash_async.handler.DjangoLogstashFormatter` and
+`logstash_async.handler.FlaskLogstashFormatter`.
 
 You can use any other formatter by configuring Python's logging
 system accordingly. Any other formatter's `format()` method just

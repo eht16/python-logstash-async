@@ -273,3 +273,54 @@ class DjangoLogstashFormatter(LogstashFormatter):
                 return value
         # fallback
         return default
+
+
+class FlaskLogstashFormatter(LogstashFormatter):
+
+    # ----------------------------------------------------------------------
+    def __init__(self, *args, **kwargs):
+        super(FlaskLogstashFormatter, self).__init__(*args, **kwargs)
+        self._django_version = None
+        self._fetch_django_version()
+
+    # ----------------------------------------------------------------------
+    def _fetch_django_version(self):
+        from flask import __version__
+        self._flask_version = __version__
+
+    # ----------------------------------------------------------------------
+    def _get_extra_fields(self, record):
+        from flask import request
+
+        extra_fields = super(FlaskLogstashFormatter, self)._get_extra_fields(record)
+
+        extra_fields['flask_version'] = self._flask_version
+        if request:  # request might be unbound in other threads
+            extra_fields['req_useragent'] = str(request.user_agent) if request.user_agent else ''
+            extra_fields['req_remote_address'] = request.remote_addr
+            extra_fields['req_host'] = request.host.split(':', 1)[0]
+            extra_fields['req_uri'] = request.url
+            extra_fields['req_method'] = request.method
+            extra_fields['req_referer'] = request.referrer
+            if 'X-Request-ID' in request.headers:
+                extra_fields['request_id'] = request.headers.get('X-Request-ID')
+            if request.remote_user:
+                extra_fields['req_user'] = request.remote_user
+
+            forwarded_proto = request.headers.get('X-Forwarded-Proto', None)
+            if forwarded_proto is not None:
+                extra_fields['req_forwarded_proto'] = forwarded_proto
+
+            forwarded_for = request.headers.get('X-Forwarded-For', None)
+            if forwarded_for is not None:
+                # make it a list
+                forwarded_for_list = forwarded_for.replace(' ', '').split(',')
+                extra_fields['req_forwarded_for'] = forwarded_for_list
+
+        # check if we have a status code somewhere
+        if hasattr(record, 'status_code'):
+            extra_fields['status_code'] = record.status_code
+        if hasattr(record, 'response'):
+            extra_fields['status_code'] = record.response.status_code
+
+        return extra_fields
