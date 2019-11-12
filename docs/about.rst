@@ -12,6 +12,7 @@ It adds the following features:
   * Transport of events via TCP, UDP the Beats protocol
   * TCP transport optionally SSL-encrypted
   * Special formatter ready to be used in Django projects
+  * Special formatter ready to be used in Flask projects
 
 
 Asynchronous processing
@@ -91,10 +92,12 @@ License
 ChangeLog
 ---------
 
-1.5.2 (unreleased)
+1.6.0 (Nov 12 2019)
 +++++++++++++++++++
 
   * Docs: Explain the differences to FileBeat (#44)
+  * Close TCP socket on connect timeouts
+  * Add Flask formatter
 
 
 1.5.1 (Jul 03 2019)
