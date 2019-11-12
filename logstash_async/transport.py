@@ -107,28 +107,31 @@ class TcpTransport(UdpTransport):
             return
 
         # from logging.handlers.SocketHandler
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self._sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         if self._timeout is not TimeoutNotSet:
-            sock.settimeout(self._timeout)
+            self._sock.settimeout(self._timeout)
 
-        sock.connect((self._host, self._port))
-        # non-SSL
-        if not self._ssl_enable:
-            self._sock = sock
-            return
-        # SSL
-        cert_reqs = ssl.CERT_REQUIRED
-        if not self._ssl_verify:
-            if self._ca_certs:
-                cert_reqs = ssl.CERT_OPTIONAL
-            else:
-                cert_reqs = ssl.CERT_NONE
-        self._sock = ssl.wrap_socket(
-            sock,
-            keyfile=self._keyfile,
-            certfile=self._certfile,
-            ca_certs=self._ca_certs,
-            cert_reqs=cert_reqs)
+        try:
+            self._sock.connect((self._host, self._port))
+            # non-SSL
+            if not self._ssl_enable:
+                return
+            # SSL
+            cert_reqs = ssl.CERT_REQUIRED
+            if not self._ssl_verify:
+                if self._ca_certs:
+                    cert_reqs = ssl.CERT_OPTIONAL
+                else:
+                    cert_reqs = ssl.CERT_NONE
+            self._sock = ssl.wrap_socket(
+                self._sock,
+                keyfile=self._keyfile,
+                certfile=self._certfile,
+                ca_certs=self._ca_certs,
+                cert_reqs=cert_reqs)
+        except socket.error:
+            self._close()
+            raise
 
     # ----------------------------------------------------------------------
     def _send_via_socket(self, data):
