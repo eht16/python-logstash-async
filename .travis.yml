@@ -4,7 +4,7 @@
 # of the MIT license.  See the LICENSE file for details.
 
 os: linux
-dist: trusty
+dist: bionic
 sudo: false
 language: python
 cache: pip
@@ -12,6 +12,8 @@ cache: pip
 python:
   - "2.7"
   - "3.6"
+  - "3.7"
+  - "3.8"
   - "pypy"
   - "pypy3"
 
