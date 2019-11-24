@@ -3,12 +3,16 @@
 # This software may be modified and distributed under the terms
 # of the MIT license.  See the LICENSE file for details.
 
-import unittest
 import os
 import sqlite3
+import time
+import unittest
 
 from logstash_async.constants import constants
-from logstash_async.database import DatabaseCache, DATABASE_SCHEMA_STATEMENTS
+from logstash_async.database import DATABASE_SCHEMA_STATEMENTS, DatabaseCache
+
+
+# pylint: disable=protected-access
 
 
 class DatabaseCacheTest(unittest.TestCase):
@@ -63,7 +67,8 @@ class DatabaseCacheTest(unittest.TestCase):
     def test_add_event(self):
         self.cache.add_event("message")
         conn = self.get_connection()
-        events = conn.cursor().execute('SELECT `event_text`, `pending_delete` FROM `event`;').fetchall()
+        cursor = conn.cursor()
+        events = cursor.execute('SELECT `event_text`, `pending_delete` FROM `event`;').fetchall()
         self.assertEqual(len(events), 1)
         event = events[0]
         self.assertEqual(event['event_text'], 'message')
@@ -137,7 +142,6 @@ class DatabaseCacheTest(unittest.TestCase):
 
     # ----------------------------------------------------------------------
     def test_expire_events(self):
-        import time
         self.cache._event_ttl = 0
         self.cache.add_event('message')
         time.sleep(1)

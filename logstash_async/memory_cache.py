@@ -62,7 +62,7 @@ class MemoryCache(Cache):
             if event_to_queue:
                 event_to_queue['pending_delete'] = False
             else:
-                self.logger.warn(
+                self.logger.warning(
                     "Could not requeue event with id {}. "
                     "It does not appear to be in the cache.".format(event['id']))
 
@@ -90,6 +90,6 @@ class MemoryCache(Cache):
             # that we can do. This currently doesn't throw an error.
             event = self._cache.pop(event_id, None)
             if not event:
-                self.logger.warn(
+                self.logger.warning(
                     "Could not delete event with id {}. "
                     "It does not appear to be in the cache.".format(event_id))

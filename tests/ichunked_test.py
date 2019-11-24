@@ -8,6 +8,7 @@ import unittest
 
 from logstash_async.utils import ichunked
 
+
 CHUNK_SIZE_SMALL = 1
 CHUNK_SIZE_NORMAL = 100
 CHUNK_SIZE_BIG = 750

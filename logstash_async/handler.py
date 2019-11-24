@@ -39,6 +39,7 @@ class AsynchronousLogstashHandler(Handler):
     _worker_thread = None
 
     # ----------------------------------------------------------------------
+    # pylint: disable=too-many-arguments
     def __init__(self, host, port, database_path, transport='logstash_async.transport.TcpTransport',
                  ssl_enable=False, ssl_verify=True, keyfile=None, certfile=None, ca_certs=None,
                  enable=True, event_ttl=None, encoding='utf-8'):
@@ -70,8 +71,6 @@ class AsynchronousLogstashHandler(Handler):
         try:
             data = self._format_record(record)
             AsynchronousLogstashHandler._worker_thread.enqueue_event(data)
-        except (KeyboardInterrupt, SystemExit):
-            raise
         except Exception:
             self.handleError(record)
 
@@ -132,6 +131,8 @@ class AsynchronousLogstashHandler(Handler):
         if worker_thread is not None and worker_thread.is_alive():
             return True
 
+        return False
+
     # ----------------------------------------------------------------------
     def _format_record(self, record):
         self._create_formatter_if_necessary()
@@ -181,5 +182,5 @@ class AsynchronousLogstashHandler(Handler):
         try:
             if self._transport is not None:
                 self._transport.close()
-        except Exception as e:
-            safe_log_via_print('error', u'Error on closing transport: {}'.format(e))
+        except Exception as exc:
+            safe_log_via_print('error', u'Error on closing transport: {}'.format(exc))

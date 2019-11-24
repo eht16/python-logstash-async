@@ -95,9 +95,9 @@ class DatabaseCache(Cache):
 
     # ----------------------------------------------------------------------
     def _handle_sqlite_error(self):
-        _, e, traceback = sys.exc_info()
-        if str(e) == 'database is locked':
-            six.reraise(DatabaseLockedError, DatabaseLockedError(e), traceback)
+        _, exc, traceback = sys.exc_info()
+        if str(exc) == 'database is locked':
+            six.reraise(DatabaseLockedError, DatabaseLockedError(exc), traceback)
 
     # ----------------------------------------------------------------------
     def get_queued_events(self):

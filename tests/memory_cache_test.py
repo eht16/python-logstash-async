@@ -3,11 +3,14 @@
 # This software may be modified and distributed under the terms
 # of the MIT license.  See the LICENSE file for details.
 
-import unittest
 import datetime
+import unittest
 
 from logstash_async.constants import constants
 from logstash_async.memory_cache import MemoryCache
+
+
+# pylint: disable=protected-access
 
 
 class MemoryCacheTest(unittest.TestCase):
@@ -87,8 +90,14 @@ class MemoryCacheTest(unittest.TestCase):
     # ----------------------------------------------------------------------
     def test_expire_events(self):
         cache = MemoryCache({
-            "id1": {"pending_delete": False, "id": "id1", "entry_date": datetime.datetime.fromtimestamp(0)},
-            "id2": {"pending_delete": False, "id": "id2", "entry_date": datetime.datetime.now()}
+            "id1": {
+                "pending_delete": False,
+                "id": "id1",
+                "entry_date": datetime.datetime.fromtimestamp(0)},
+            "id2": {
+                "pending_delete": False,
+                "id": "id2",
+                "entry_date": datetime.datetime.now()}
         }, event_ttl=100)
         cache.expire_events()
         self.assertEqual(len(cache._cache), 1)

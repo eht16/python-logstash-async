@@ -213,7 +213,7 @@ class DjangoLogstashFormatter(LogstashFormatter):
 
     # ----------------------------------------------------------------------
     def _fetch_django_version(self):
-        from django import get_version
+        from django import get_version  # pylint: disable=import-error,import-outside-toplevel
         self._django_version = get_version()
 
     # ----------------------------------------------------------------------
@@ -281,16 +281,16 @@ class FlaskLogstashFormatter(LogstashFormatter):
     def __init__(self, *args, **kwargs):
         super(FlaskLogstashFormatter, self).__init__(*args, **kwargs)
         self._django_version = None
-        self._fetch_django_version()
+        self._fetch_flask_version()
 
     # ----------------------------------------------------------------------
-    def _fetch_django_version(self):
-        from flask import __version__
+    def _fetch_flask_version(self):
+        from flask import __version__  # pylint: disable=import-error,import-outside-toplevel
         self._flask_version = __version__
 
     # ----------------------------------------------------------------------
     def _get_extra_fields(self, record):
-        from flask import request
+        from flask import request  # pylint: disable=import-error,import-outside-toplevel
 
         extra_fields = super(FlaskLogstashFormatter, self)._get_extra_fields(record)
 

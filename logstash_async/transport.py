@@ -21,6 +21,7 @@ class UdpTransport(object):
     _keep_connection = False
 
     # ----------------------------------------------------------------------
+    # pylint: disable=unused-argument
     def __init__(self, host, port, timeout=TimeoutNotSet, **kwargs):
         self._host = host
         self._port = port

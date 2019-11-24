@@ -23,7 +23,7 @@ class ProcessingError(Exception):
     """"""
 
 
-class LogProcessingWorker(Thread):
+class LogProcessingWorker(Thread):  # pylint: disable=too-many-instance-attributes
     """"""
 
     # ----------------------------------------------------------------------
@@ -74,10 +74,10 @@ class LogProcessingWorker(Thread):
         self._setup_database()
         try:
             self._fetch_events()
-        except Exception as e:
+        except Exception as exc:
             # we really should not get anything here, and if, the worker thread is dying
             # too early resulting in undefined application behaviour
-            self._log_general_error(e)
+            self._log_general_error(exc)
         # check for empty queue and report if not
         self._warn_about_non_empty_queue_on_shutdown()
 
@@ -131,9 +131,9 @@ class LogProcessingWorker(Thread):
             except (DatabaseLockedError, ProcessingError):
                 if self._shutdown_requested():
                     return
-                else:
-                    self._requeue_event()
-                    self._delay_processing()
+
+                self._requeue_event()
+                self._delay_processing()
 
     # ----------------------------------------------------------------------
     def _fetch_event(self):
@@ -143,15 +143,15 @@ class LogProcessingWorker(Thread):
     def _process_event(self):
         try:
             self._write_event_to_database()
-        except DatabaseLockedError as e:
+        except DatabaseLockedError as exc:
             self._safe_log(
                 u'debug',
                 u'Database is locked, will try again later (queue length %d)',
                 self._queue.qsize(),
-                exc=e)
+                exc=exc)
             raise
-        except Exception as e:
-            self._log_processing_error(e)
+        except Exception as exc:
+            self._log_processing_error(exc)
             raise ProcessingError()
         else:
             self._event = None
@@ -212,12 +212,12 @@ class LogProcessingWorker(Thread):
             try:
                 events = [event['event_text'] for event in queued_events]
                 self._send_events(events)
-            except Exception as e:
+            except Exception as exc:
                 self._safe_log(
                     u'exception',
                     u'An error occurred while sending events: %s',
-                    e,
-                    exc=e)
+                    exc,
+                    exc=exc)
                 self._database.requeue_queued_events(queued_events)
             else:
                 self._delete_queued_events_from_database()
@@ -227,15 +227,15 @@ class LogProcessingWorker(Thread):
     def _fetch_queued_events_for_flush(self):
         try:
             return self._database.get_queued_events()
-        except DatabaseLockedError as e:
+        except DatabaseLockedError as exc:
             self._safe_log(
                 u'debug',
                 u'Database is locked, will try again later (queue length %d)',
                 self._queue.qsize(),
-                exc=e)
-        except Exception as e:
+                exc=exc)
+        except Exception as exc:
             # just log the exception and hope we can recover from the error
-            self._safe_log(u'exception', u'Error retrieving queued events: %s', e, exc=e)
+            self._safe_log(u'exception', u'Error retrieving queued events: %s', exc, exc=exc)
 
     # ----------------------------------------------------------------------
     def _delete_queued_events_from_database(self):
@@ -255,7 +255,7 @@ class LogProcessingWorker(Thread):
 
     # ----------------------------------------------------------------------
     def _send_events(self, events):
-        use_logging = False if self._shutdown_requested() else True
+        use_logging = not self._shutdown_requested()
         self._transport.send(events, use_logging=use_logging)
 
     # ----------------------------------------------------------------------
@@ -271,7 +271,7 @@ class LogProcessingWorker(Thread):
             rate_limit_allowed = self._rate_limit_check(kwargs)
             if rate_limit_allowed <= 0:
                 return  # skip further logging due to rate limiting
-            elif rate_limit_allowed == 1:
+            if rate_limit_allowed == 1:
                 # extend the message to indicate future rate limiting
                 message = \
                     u'{} (rate limiting effective, ' \
@@ -293,7 +293,7 @@ class LogProcessingWorker(Thread):
         return 2  # any value greater than 1 means allowed
 
     # ----------------------------------------------------------------------
-    def _factor_rate_limit_key(self, exc):
+    def _factor_rate_limit_key(self, exc):  # pylint: disable=no-self-use
         module_name = getattr(exc, '__module__', '__no_module__')
         class_name = exc.__class__.__name__
         key_items = [module_name, class_name]
