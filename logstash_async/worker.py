@@ -204,21 +204,11 @@ class LogProcessingWorker(Thread):
 
         self._clear_flush_event()
 
-        try:
-            queued_events = self._database.get_queued_events()
-        except DatabaseLockedError as e:
-            self._safe_log(
-                u'debug',
-                u'Database is locked, will try again later (queue length %d)',
-                self._queue.qsize(),
-                exc=e)
-            return  # try again later
-        except Exception as e:
-            # just log the exception and hope we can recover from the error
-            self._safe_log(u'exception', u'Error retrieving queued events: %s', e, exc=e)
-            return
+        while True:
+            queued_events = self._fetch_queued_events_for_flush()
+            if not queued_events:
+                break
 
-        if queued_events:
             try:
                 events = [event['event_text'] for event in queued_events]
                 self._send_events(events)
@@ -232,6 +222,20 @@ class LogProcessingWorker(Thread):
             else:
                 self._delete_queued_events_from_database()
                 self._reset_flush_counters()
+
+    # ----------------------------------------------------------------------
+    def _fetch_queued_events_for_flush(self):
+        try:
+            return self._database.get_queued_events()
+        except DatabaseLockedError as e:
+            self._safe_log(
+                u'debug',
+                u'Database is locked, will try again later (queue length %d)',
+                self._queue.qsize(),
+                exc=e)
+        except Exception as e:
+            # just log the exception and hope we can recover from the error
+            self._safe_log(u'exception', u'Error retrieving queued events: %s', e, exc=e)
 
     # ----------------------------------------------------------------------
     def _delete_queued_events_from_database(self):
