@@ -92,6 +92,12 @@ License
 ChangeLog
 ---------
 
+1.6.1 (Nov 25 2019)
++++++++++++++++++++
+
+  * Flush all pending events on shutdown
+
+
 1.6.0 (Nov 12 2019)
 +++++++++++++++++++
 
