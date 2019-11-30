@@ -92,6 +92,13 @@ License
 ChangeLog
 ---------
 
+1.6.2 (Nov 30 2019)
++++++++++++++++++++
+
+  * When sending all events, stop on errors.
+    Otherwise retrying happens forever on non-recoverable errors.
+
+
 1.6.1 (Nov 25 2019)
 +++++++++++++++++++
 
