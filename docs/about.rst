@@ -92,6 +92,13 @@ License
 ChangeLog
 ---------
 
+1.6.3 (Jan 23 2020)
++++++++++++++++++++
+
+  * Handle DisallowedHost exceptions in DjangoLogstashFormatter
+    to not trigger an exception while formatting.
+
+
 1.6.2 (Nov 30 2019)
 +++++++++++++++++++
 
