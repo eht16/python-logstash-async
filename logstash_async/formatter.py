@@ -282,7 +282,7 @@ class DjangoLogstashFormatter(LogstashFormatter):
             if 'HTTP_HOST' in request.META:
                 return request.META['HTTP_HOST']
             else:
-                return self.META['SERVER_NAME']
+                return request.META['SERVER_NAME']
 
 
 class FlaskLogstashFormatter(LogstashFormatter):
