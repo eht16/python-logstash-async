@@ -278,7 +278,7 @@ class DjangoLogstashFormatter(LogstashFormatter):
     def _try_to_get_host_from_remote(self, request):
         try:
             return request.get_host()
-        except:
+        except Exception:
             if 'HTTP_HOST' in request.META:
                 return request.META['HTTP_HOST']
             else:
