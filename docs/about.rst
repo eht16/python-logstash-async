@@ -92,6 +92,12 @@ License
 ChangeLog
 ---------
 
+1.6.4 (Jan 23 2020)
++++++++++++++++++++
+
+  * Fix accessing request's META attribute in DjangoLogstashFormatter
+
+
 1.6.3 (Jan 23 2020)
 +++++++++++++++++++
 
