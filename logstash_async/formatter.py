@@ -233,7 +233,7 @@ class DjangoLogstashFormatter(LogstashFormatter):
             extra_fields['django_version'] = self._django_version
             extra_fields['req_useragent'] = request.META.get('HTTP_USER_AGENT', '<none>')
             extra_fields['req_remote_address'] = request.META.get('REMOTE_ADDR', '<none>')
-            extra_fields['req_host'] = request.get_host()
+            extra_fields['req_host'] = self._try_to_get_host_from_remote(request)
             extra_fields['req_uri'] = request.get_raw_uri()
             extra_fields['req_user'] = text_type(request_user)
             extra_fields['req_method'] = request.META.get('REQUEST_METHOD', '')
@@ -273,6 +273,16 @@ class DjangoLogstashFormatter(LogstashFormatter):
                 return value
         # fallback
         return default
+
+    # ----------------------------------------------------------------------
+    def _try_to_get_host_from_remote(self, request):
+        try:
+            return request.get_host()
+        except:
+            if 'HTTP_HOST' in request.META:
+                return request.META['HTTP_HOST']
+            else:
+                return self.META['SERVER_NAME']
 
 
 class FlaskLogstashFormatter(LogstashFormatter):
