@@ -200,7 +200,7 @@ class LogstashFormatter(logging.Formatter):
         if sys.version_info < (3, 0):
             return json.dumps(message)
         else:
-            return bytes(json.dumps(message, ensure_ascii=self._ensure_ascii), 'utf-8')
+            return json.dumps(message, ensure_ascii=self._ensure_ascii)
 
 
 class DjangoLogstashFormatter(LogstashFormatter):
