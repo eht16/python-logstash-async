@@ -24,7 +24,7 @@ class LogstashFormatterTest(unittest.TestCase):
     def test_format(self):
         file_handler = ExceptionCatchingFileHandler(os.devnull)
         file_handler.setFormatter(LogstashFormatter(ensure_ascii=False))
-        file_handler.emit(makeLogRecord({"msg": "тест"}))
+        file_handler.emit(makeLogRecord({"msg": u"тест"}))
         file_handler.close()
 
         self.assertIsNone(file_handler.exception)
