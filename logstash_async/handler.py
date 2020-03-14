@@ -138,7 +138,7 @@ class AsynchronousLogstashHandler(Handler):
         self._create_formatter_if_necessary()
         formatted = self.formatter.format(record)
         if isinstance(formatted, text_type):
-            formatted = formatted.encode(self._encoding)
+            formatted = formatted.encode(self._encoding)  # pylint: disable=redefined-variable-type
         return formatted + b'\n'
 
     # ----------------------------------------------------------------------
