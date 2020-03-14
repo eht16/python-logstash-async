@@ -41,9 +41,7 @@ setup(
     },
     keywords='logging logstash asynchronous',
     install_requires=['limits', 'pylogbeat', 'six'],
-    setup_requires=['flake8', 'isort'],
     include_package_data=True,
-    test_suite='tests',
     classifiers=[
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
