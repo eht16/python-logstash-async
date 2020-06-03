@@ -98,6 +98,10 @@ class LogstashFormatter(logging.Formatter):
             'pid': record.process,
             'program': self._program_name,
             'type': self._message_type,
+            '@metadata': {
+                'beat': self._message_type,
+                'version': '1',
+            }
         }
         if self._tags:
             message['tags'] = self._tags
