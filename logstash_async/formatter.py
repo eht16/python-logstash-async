@@ -35,7 +35,7 @@ class LogstashFormatter(logging.Formatter):
             extra=None,
             ensure_ascii=True,
             metadata=None,
-    ):  
+    ):
         super(LogstashFormatter, self).__init__()
         self._message_type = message_type
         self._tags = tags if tags is not None else []
