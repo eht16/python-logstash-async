@@ -33,13 +33,16 @@ class LogstashFormatter(logging.Formatter):
             fqdn=False,
             extra_prefix='extra',
             extra=None,
-            ensure_ascii=True):
+            ensure_ascii=True,
+            metadata=None,
+    ):  
         super(LogstashFormatter, self).__init__()
         self._message_type = message_type
         self._tags = tags if tags is not None else []
         self._extra_prefix = extra_prefix
         self._extra = extra
         self._ensure_ascii = ensure_ascii
+        self._metadata = metadata
 
         self._interpreter = None
         self._interpreter_version = None
@@ -98,11 +101,9 @@ class LogstashFormatter(logging.Formatter):
             'pid': record.process,
             'program': self._program_name,
             'type': self._message_type,
-            '@metadata': {
-                'beat': self._message_type,
-                'version': '1',
-            }
         }
+        if self._metadata:
+            message['@metadata'] = self._metadata
         if self._tags:
             message['tags'] = self._tags
 
