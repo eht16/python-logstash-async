@@ -26,6 +26,7 @@ except ImportError:
 class LogstashFormatter(logging.Formatter):
 
     # ----------------------------------------------------------------------
+    # pylint: disable=too-many-arguments
     def __init__(
             self,
             message_type='python-logstash',
