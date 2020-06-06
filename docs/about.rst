@@ -92,6 +92,16 @@ License
 ChangeLog
 ---------
 
+1.6.5 (Jun 06 2020)
++++++++++++++++++++
+
+  * Add "@metadata" to the generated event in Formatter, useful for
+    common beats input configuration in Logstash
+    (#49, Sudheer Satyanarayana).
+  * Don't convert text to bytes in Formatter
+    (fix #45) (#46, Sergey Trofimov).
+
+
 1.6.4 (Jan 23 2020)
 +++++++++++++++++++
 
