@@ -213,6 +213,20 @@ Options:
     *Default*: None
 
 
+``metadata``
+
+    Dictionary with static items to be included in the message sent
+    to Logstash in the special `@metadata` field.
+    See https://www.elastic.co/guide/en/logstash/current/event-dependent-configuration.html#metadata
+    for documentation about the `@metadata` field and
+    https://www.elastic.co/guide/en/beats/metricbeat/current/logstash-output.html
+    for a common use.
+
+    *Type*: ``dict``
+
+    *Default*: None
+
+
 ``ensure_ascii``
 
     By default non-ASCII symbols in JSON are escaped with \uXXXX
