@@ -155,7 +155,7 @@ class BeatsTransport(object):
             certfile,
             ca_certs,
             timeout=TimeoutNotSet):
-        timeout_ = None if timeout is not TimeoutNotSet else timeout
+        timeout_ = None if timeout is TimeoutNotSet else timeout
         self._client_arguments = dict(
             host=host,
             port=port,
