@@ -92,6 +92,13 @@ License
 ChangeLog
 ---------
 
+1.6.6 (Jun 08 2020)
++++++++++++++++++++
+
+  * Fix socket timeout setting ignored for filebeat
+    (#50, Koert van der Veer).
+
+
 1.6.5 (Jun 06 2020)
 +++++++++++++++++++
 
