@@ -3,16 +3,68 @@
 # This software may be modified and distributed under the terms
 # of the MIT license.  See the LICENSE file for details.
 
+from abc import ABC, abstractmethod
+import json
+import logging
 import socket
 import ssl
 
+from requests.auth import HTTPBasicAuth
 import pylogbeat
+import requests
 
 from logstash_async.utils import ichunked
 
 
+logger = logging.getLogger(__name__)
+
+
 class TimeoutNotSet:
     pass
+
+
+class Transport(ABC):
+    """The :class:`Transport <Transport>` is the abstract base class of
+    all transport protocols.
+
+    :param host: The name of the host
+    :type host: str
+    :param port: The port number of the service
+    :type port: int
+    :param timeout: The timeout for the connection
+    :type timeout: float
+    :param ssl_enable: Use TLS for the transport.
+    :type ssl_enable: bool
+    :param ssl_verify: If True the class tries to verify the TLS certificate
+    with certifi. If you pass a string with a file location to CA certificate
+    the class tries to validate it against it.
+    :type ssl_verify: bool or str
+    """
+
+    def __init__(
+            self,
+            host,
+            port,
+            timeout,
+            ssl_enable,
+            ssl_verify,
+            use_logging,
+    ):
+        self._host = host
+        self._port = port
+        self._timeout = None if timeout is TimeoutNotSet else timeout
+        self._ssl_enable = ssl_enable
+        self._ssl_verify = ssl_verify
+        self._use_logging = use_logging
+        super().__init__()
+
+    @abstractmethod
+    def send(self, events, **kwargs):
+        pass
+
+    @abstractmethod
+    def close(self):
+        pass
 
 
 class UdpTransport:
@@ -89,7 +141,8 @@ class TcpTransport(UdpTransport):
             keyfile,
             certfile,
             ca_certs,
-            timeout=TimeoutNotSet):
+            timeout=TimeoutNotSet,
+            **kwargs):
         super().__init__(host, port)
         self._ssl_enable = ssl_enable
         self._ssl_verify = ssl_verify
@@ -150,7 +203,8 @@ class BeatsTransport:
             keyfile,
             certfile,
             ca_certs,
-            timeout=TimeoutNotSet):
+            timeout=TimeoutNotSet,
+            **kwargs):
         timeout_ = None if timeout is TimeoutNotSet else timeout
         self._client_arguments = dict(
             host=host,
@@ -160,7 +214,8 @@ class BeatsTransport:
             ssl_verify=ssl_verify,
             keyfile=keyfile,
             certfile=certfile,
-            ca_certs=ca_certs)
+            ca_certs=ca_certs,
+            **kwargs)
 
     # ----------------------------------------------------------------------
     def close(self):
@@ -172,3 +227,139 @@ class BeatsTransport:
         with client:
             for events_subset in ichunked(events, self._batch_size):
                 client.send(events_subset)
+
+
+class HttpTransport(Transport):
+    """The :class:`HttpTransport <HttpTransport>` implements a client for the
+    logstash plugin `inputs_http`.
+
+    For more details visit:
+    https://www.elastic.co/guide/en/logstash/current/plugins-inputs-http.html
+
+    :param host: The name of the host
+    :type host: str
+    :param port: The port number of the service
+    :type port: int
+    :param timeout: The timeout for the connection (Default: None)
+    :type timeout: float
+    :param ssl_enable: Use TLS for the transport (Default: True)
+    :type ssl_enable: bool
+    :param ssl_verify: If True the class tries to verify the TLS certificate
+    with certifi. If you pass a string with a file location to CA certificate
+    the class tries to validate it against it. (Default: True)
+    :type ssl_verify: bool or str
+    :param username: Username for basic authorization (Default: "")
+    :type username: str
+    :param password: Password for basic authorization (Default: "")
+    :type password: str
+    :param max_content_length: The max content of an HTTP request in bytes.
+    (Default: 100MB)
+    :type max_content_length: int
+    """
+
+    def __init__(
+            self,
+            host,
+            port,
+            timeout=TimeoutNotSet,
+            ssl_enable=True,
+            ssl_verify=True,
+            use_logging=False,
+            **kwargs
+    ):
+        super().__init__(host, port, timeout, ssl_enable, ssl_verify, use_logging)
+        self._username = kwargs.get('username', None)
+        self._password = kwargs.get('password', None)
+        self._max_content_length = kwargs.get('max_content_length', 100 * 1024 * 1024)
+        self.__session = None
+
+    @property
+    def url(self):
+        """The URL of the logstash pipeline based on the hostname, the port and
+        the TLS usage.
+
+        :return: The URL of the logstash pipeline
+        :rtype: str
+        """
+        protocol = 'http'
+        if self._ssl_enable:
+            protocol = 'https'
+        return '{}://{}:{}'.format(protocol, self._host, self._port)
+
+    def __batches(self, events):
+        """Generate dynamic sized batches based on the max content length.
+
+        :param events: A list of events
+        :type events: list
+        :return: A list of event batches
+        :rtype: collections.Iterable[list]
+        """
+        current_batch = []
+        event_iter = iter(events)
+        while True:
+            try:
+                current_event = next(event_iter)
+            except StopIteration:
+                current_event = None
+                if not current_batch:
+                    return
+                yield current_batch
+            if current_event is None:
+                return
+            if len(current_event) > self._max_content_length:
+                msg = 'The event size <%s> is greater than the max content length <%s>.'
+                msg += 'Skipping event.'
+                if self._use_logging:
+                    logger.warning(msg, len(current_event), self._max_content_length)
+                continue
+            obj = json.loads(current_event)
+            content_length = len(json.dumps(current_batch + [obj]).encode('utf8'))
+            if content_length > self._max_content_length:
+                batch = current_batch
+                current_batch = [obj]
+                yield batch
+            else:
+                current_batch += [obj]
+
+    def __auth(self):
+        """The authentication method for the logstash pipeline. If the username
+        or the password is not set correctly it will return None.
+
+        :return: A HTTP basic auth object or None
+        :rtype: HTTPBasicAuth
+        """
+        if self._username is None or self._password is None:
+            return None
+        return HTTPBasicAuth(self._username, self._password)
+
+    def close(self):
+        """The HTTP connection does not need to be closed because it's
+        stateless.
+        """
+        if self.__session is not None:
+            self.__session.close()
+
+    def send(self, events, **kwargs):
+        """Send events to the logstash pipeline
+
+        :param events: A list of events
+        :type events: list
+        :param use_logging: Not used!
+        :type use_logging: bool
+        """
+        self.__session = requests.Session()
+        for batch in self.__batches(events):
+            if self._use_logging:
+                logger.debug('Batch length: %s, Batch size: %s',
+                             len(batch), len(json.dumps(batch).encode('utf8')))
+            response = self.__session.post(
+                self.url,
+                headers={'Content-Type': 'application/json'},
+                json=batch,
+                verify=self._ssl_verify,
+                timeout=self._timeout,
+                auth=self.__auth())
+            if response.status_code != 200:
+                self.close()
+                response.raise_for_status()
+        self.close()
