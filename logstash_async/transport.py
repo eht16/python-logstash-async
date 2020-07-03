@@ -460,18 +460,17 @@ class HttpTransport(Transport):
         :type use_logging: bool
         """
         self.__session = requests.Session()
-        if self.__auth() is not None:
-            self.__session.auth = self.__auth()
-        self.__session.verify = self.ssl_verify
         for event in events:
             attempt = 0
             while attempt < self.__max_attempts:
                 if self.codec.lower() == "json":
                     response = requests.post(
-                        self.url, json=self.encode(event), headers=self.headers)
+                        self.url, json=self.encode(event), headers=self.headers,
+                        verify=self.ssl_verify, auth=self.__auth())
                 else:
                     response = requests.post(
-                        self.url, data=self.encode(event), headers=self.headers)
+                        self.url, data=self.encode(event), headers=self.headers,
+                        verify=self.ssl_verify, auth=self.__auth())
                 status_code = response.status_code
                 if status_code == 200:
                     break
