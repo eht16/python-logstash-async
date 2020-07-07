@@ -50,78 +50,6 @@ class Transport(ABC):
         self.ssl_verify = ssl_verify
         super().__init__()
 
-    @property
-    def host(self):
-        """host
-        :param name: The name of the host
-        :type name: str
-        :return: The current name of the host
-        :rtype: str
-        """
-        return self.__host
-
-    @host.setter
-    def host(self, name):
-        self.__host = name
-
-    @property
-    def port(self):
-        """port
-        :param number: The port number of the service
-        :type number: int
-        :return: The current port number
-        :rtype: int
-        """
-        return self.__port
-
-    @port.setter
-    def port(self, number):
-        self.__port = number
-
-    @property
-    def timeout(self):
-        """timout
-        :param time: The waiting time for a response.
-        :type time: float
-        :return: The current timeout
-        :rtype: float
-        """
-        return self.__timeout
-
-    @timeout.setter
-    def timeout(self, time):
-        self.__timeout = time
-
-    @property
-    def ssl_enable(self):
-        """ssl_enable
-        :param use: Enables or disables the TLS usage
-        :type use: bool
-        :return: False if TLS is disabled and True if TLS enabled
-        :rtype: bool
-        """
-        return self.__ssl_enable
-
-    @ssl_enable.setter
-    def ssl_enable(self, use):
-        self.__ssl_enable = use
-
-    @property
-    def ssl_verify(self):
-        """ssl_verify
-        :param use: Enables or disables the verification of the TLS certificate
-        :type use: bool or str
-        :return: False if the certificate should be not verified and in case of
-        a verification True or the path to a CA_BUNDLED file with with
-        certificates of trusted CAs.
-        :rtype: bool or str
-        """
-        return self.__ssl_verify
-
-    @ssl_verify.setter
-    def ssl_verify(self, use):
-        self.__ssl_verify = use
-
     @abstractmethod
     def send(self, events, **kwargs):
         pass
@@ -333,34 +261,6 @@ class HttpTransport(Transport):
         self.password = kwargs.get("password", None)
         self.__session = None
         self.__max_attempts = 3
-
-    @property
-    def username(self):
-        """username
-        :param name: The name of the user
-        :type name: str
-        :return: The current name of the user or None
-        :rtype: None or str
-        """
-        return self.__username
-
-    @username.setter
-    def username(self, name):
-        self.__username = name
-
-    @property
-    def password(self):
-        """password
-        :param word: The password of the user
-        :type word: str
-        :return: The current password or None
-        :rtype: None or str
-        """
-        return self.__password
-
-    @password.setter
-    def password(self, word):
-        self.__password = word
 
     @property
     def url(self):
