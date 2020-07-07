@@ -257,8 +257,8 @@ class HttpTransport(Transport):
             **kwargs
     ):
         super().__init__(host, port, timeout, ssl_enable, ssl_verify)
-        self.username = kwargs.get("username", None)
-        self.password = kwargs.get("password", None)
+        self.username = kwargs.get('username', None)
+        self.password = kwargs.get('password', None)
         self.__session = None
         self.__max_attempts = 3
 
@@ -270,10 +270,10 @@ class HttpTransport(Transport):
         :return: The URL of the logstash pipeline
         :rtype: str
         """
-        protocol = "http"
+        protocol = 'http'
         if self.ssl_enable:
-            protocol = "https"
-        return "{}://{}:{}".format(protocol, self.host, self.port)
+            protocol = 'https'
+        return '{}://{}:{}'.format(protocol, self.host, self.port)
 
     def encode(self, events):
         """Decodes a list of events
@@ -313,7 +313,7 @@ class HttpTransport(Transport):
         :param use_logging: Not used!
         :type use_logging: bool
         """
-        headers = {"Content-Type": "application/json"}
+        headers = {'Content-Type': 'application/json'}
         self.__session = requests.Session()
         attempt = 0
         while attempt < self.__max_attempts:
@@ -331,6 +331,6 @@ class HttpTransport(Transport):
                 attempt += 1
             else:
                 self.close()
-                error_msg = "Logstash respond with error {}".format(status_code)
+                error_msg = 'Logstash respond with error {}'.format(status_code)
                 raise RuntimeError(error_msg)
         self.close()
