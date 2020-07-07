@@ -275,6 +275,15 @@ class HttpTransport(Transport):
             protocol = "https"
         return "{}://{}:{}".format(protocol, self.host, self.port)
 
+    def encode(self, events):
+        """Decodes a list of events
+        :param events: A list of events
+        :type events: list
+        :return: A list of decoded events
+        :rtype: str
+        """
+        return [json.loads(event) for event in events]
+
     def __auth(self):
         """The authentication method for the logstash pipeline. If the username
         or the password is not set correctly it will return None.
@@ -306,23 +315,22 @@ class HttpTransport(Transport):
         """
         headers = {"Content-Type": "application/json"}
         self.__session = requests.Session()
-        for event in events:
-            attempt = 0
-            while attempt < self.__max_attempts:
-                response = requests.post(
-                    self.url,
-                    headers=headers,
-                    json=event.decode('utf-8'),
-                    verify=self.ssl_verify,
-                    auth=self.__auth())
-                status_code = response.status_code
-                if status_code == 200:
-                    break
-                if status_code == 429:
-                    sleep(self.__backoff(attempt))
-                    attempt += 1
-                else:
-                    self.close()
-                    error_msg = "Logstash respond with error {}".format(status_code)
-                    raise RuntimeError(error_msg)
+        attempt = 0
+        while attempt < self.__max_attempts:
+            response = requests.post(
+                self.url,
+                headers=headers,
+                json=self.encode(events),
+                verify=self.ssl_verify,
+                auth=self.__auth())
+            status_code = response.status_code
+            if status_code == 200:
+                break
+            if status_code == 429:
+                sleep(self.__backoff(attempt))
+                attempt += 1
+            else:
+                self.close()
+                error_msg = "Logstash respond with error {}".format(status_code)
+                raise RuntimeError(error_msg)
         self.close()
