@@ -5,7 +5,6 @@
 
 from abc import ABC, abstractmethod
 from time import sleep
-from typing import Union
 import json
 import random
 import socket
@@ -41,13 +40,13 @@ class Transport(ABC):
 
     def __init__(
             self,
-            host: str,
-            port: int,
-            timeout: float,
-            codec: str,
-            ssl_enable: bool = True,
-            ssl_verify: bool = True
-    ) -> None:
+            host,
+            port,
+            timeout,
+            codec,
+            ssl_enable=True,
+            ssl_verify=True
+    ):
         self.host = host
         self.port = port
         self.timeout = timeout
@@ -57,7 +56,7 @@ class Transport(ABC):
         super().__init__()
 
     @property
-    def host(self) -> str:
+    def host(self):
         """host
         :param name: The name of the host
         :type name: str
@@ -67,11 +66,11 @@ class Transport(ABC):
         return self.__host
 
     @host.setter
-    def host(self, name: str) -> None:
+    def host(self, name):
         self.__host = name
 
     @property
-    def port(self) -> int:
+    def port(self):
         """port
         :param number: The port number of the service
         :type number: int
@@ -81,11 +80,11 @@ class Transport(ABC):
         return self.__port
 
     @port.setter
-    def port(self, number: int) -> None:
+    def port(self, number):
         self.__port = number
 
     @property
-    def timeout(self) -> float:
+    def timeout(self):
         """timout
         :param time: The waiting time for a response.
         :type time: float
@@ -95,11 +94,11 @@ class Transport(ABC):
         return self.__timeout
 
     @timeout.setter
-    def timeout(self, time: float) -> None:
+    def timeout(self, time):
         self.__timeout = time
 
     @property
-    def codec(self) -> str:
+    def codec(self):
         """codec
         :param name: The codec which will be used to transform the data
         :type name: str
@@ -109,11 +108,11 @@ class Transport(ABC):
         return self.__codec
 
     @codec.setter
-    def codec(self, name: str) -> None:
+    def codec(self, name):
         self.__codec = name
 
     @property
-    def ssl_enable(self) -> bool:
+    def ssl_enable(self):
         """ssl_enable
         :param use: Enables or disables the TLS usage
         :type use: bool
@@ -123,11 +122,11 @@ class Transport(ABC):
         return self.__ssl_enable
 
     @ssl_enable.setter
-    def ssl_enable(self, use: bool) -> None:
+    def ssl_enable(self, use):
         self.__ssl_enable = use
 
     @property
-    def ssl_verify(self) -> Union[bool, str]:
+    def ssl_verify(self):
         """ssl_verify
         :param use: Enables or disables the verification of the TLS certificate
         :type use: bool or str
@@ -139,11 +138,11 @@ class Transport(ABC):
         return self.__ssl_verify
 
     @ssl_verify.setter
-    def ssl_verify(self, use: Union[bool, str]) -> None:
+    def ssl_verify(self, use):
         self.__ssl_verify = use
 
     @abstractmethod
-    def send(self, events: list, **kwargs: dict):
+    def send(self, events, **kwargs):
         pass
 
     @abstractmethod
@@ -344,12 +343,12 @@ class HttpTransport(Transport):
 
     def __init__(
             self,
-            host: str,
-            port: int,
-            timeout: float = 2.0,
-            codec: str = "json",
-            ssl_enable: bool = True,
-            ssl_verify: bool = True,
+            host,
+            port,
+            timeout=2.0,
+            codec="json",
+            ssl_enable=True,
+            ssl_verify=True,
             **kwargs
     ):
         super().__init__(host, port, timeout, codec, ssl_enable, ssl_verify)
@@ -359,7 +358,7 @@ class HttpTransport(Transport):
         self.__max_attempts = 3
 
     @property
-    def username(self) -> Union[None, str]:
+    def username(self):
         """username
         :param name: The name of the user
         :type name: str
@@ -369,11 +368,11 @@ class HttpTransport(Transport):
         return self.__username
 
     @username.setter
-    def username(self, name: Union[None, str]) -> None:
+    def username(self, name):
         self.__username = name
 
     @property
-    def password(self) -> Union[None, str]:
+    def password(self):
         """password
         :param word: The password of the user
         :type word: str
@@ -383,11 +382,11 @@ class HttpTransport(Transport):
         return self.__password
 
     @password.setter
-    def password(self, word: Union[None, str]) -> None:
+    def password(self, word):
         self.__password = word
 
     @property
-    def url(self) -> str:
+    def url(self):
         """The URL of the logstash pipeline based on the hostname, the port and
         the TLS usage.
 
@@ -411,7 +410,7 @@ class HttpTransport(Transport):
         return HTTPBasicAuth(self.username, self.password)
 
     @property
-    def headers(self) -> dict:
+    def headers(self):
         """The headers of the HTTP request
 
         :return: A dictionary with HTTP header fields
@@ -426,7 +425,7 @@ class HttpTransport(Transport):
             request_headers["Content-Type"] = "application/json"
         return request_headers
 
-    def encode(self, data: bytes) -> str:
+    def encode(self, data):
         """Encodes the data based on the chosen codec
 
         :param data: The input data
@@ -441,17 +440,17 @@ class HttpTransport(Transport):
             return json.loads(string)
         return string
 
-    def close(self) -> None:
+    def close(self):
         """The HTTP connection does not need to be closed because it's
         stateless.
         """
         if self.__session is not None:
             self.__session.close()
 
-    def __backoff(self, attempt, cap: int = 3000, base: int = 10):
+    def __backoff(self, attempt, cap=3000, base=10):
         return random.randrange(0, min(cap, base * 2 ** attempt))
 
-    def send(self, events: list, **kwargs: dict) -> None:
+    def send(self, events, **kwargs):
         """Send events to the logstash pipeline
 
         :param events: A list of events
