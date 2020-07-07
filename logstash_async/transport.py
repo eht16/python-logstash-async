@@ -396,7 +396,7 @@ class HttpTransport(Transport):
         protocol = "http"
         if self.ssl_enable:
             protocol = "https"
-        return f"{protocol}://{self.host}:{self.port}"
+        return "{}://{}:{}".format(protocol, self.host, self.port)
 
     def __auth(self):
         """The authentication method for the logstash pipeline. If the username
@@ -478,6 +478,6 @@ class HttpTransport(Transport):
                     attempt += 1
                 else:
                     self.close()
-                    error_msg = f"Logstash respond with error {status_code}"
+                    error_msg = "Logstash respond with error {}".format(status_code)
                     raise RuntimeError(error_msg)
         self.close()
