@@ -27,9 +27,6 @@ class Transport(ABC):
     :type port: int
     :param timeout: The timeout for the connection
     :type timeout: float
-    :param codec: The codec which will be used to de/encode the data (eg. plain
-    or json)
-    :type codec: str
     :param ssl_enable: Use TLS for the transport (Default: True)
     :type ssl_enable: bool
     :param ssl_verify: If True the class tries to verify the TLS certificate
@@ -43,14 +40,12 @@ class Transport(ABC):
             host,
             port,
             timeout,
-            codec,
             ssl_enable=True,
             ssl_verify=True
     ):
         self.host = host
         self.port = port
         self.timeout = timeout
-        self.codec = codec
         self.ssl_enable = ssl_enable
         self.ssl_verify = ssl_verify
         super().__init__()
@@ -96,20 +91,6 @@ class Transport(ABC):
     @timeout.setter
     def timeout(self, time):
         self.__timeout = time
-
-    @property
-    def codec(self):
-        """codec
-        :param name: The codec which will be used to transform the data
-        :type name: str
-        :return: The current codec
-        :rtype: str
-        """
-        return self.__codec
-
-    @codec.setter
-    def codec(self, name):
-        self.__codec = name
 
     @property
     def ssl_enable(self):
@@ -326,9 +307,6 @@ class HttpTransport(Transport):
     :type port: int
     :param timeout: The timeout for the connection (Default: 2.0 seconds)
     :type timeout: float
-    :param codec: The codec which will be used to de/encode the data. Besides
-    json everthing defaults to plain. (Default: json)
-    :type codec: str
     :param ssl_enable: Use TLS for the transport (Default: True)
     :type ssl_enable: bool
     :param ssl_verify: If True the class tries to verify the TLS certificate
@@ -346,12 +324,11 @@ class HttpTransport(Transport):
             host,
             port,
             timeout=2.0,
-            codec="json",
             ssl_enable=True,
             ssl_verify=True,
             **kwargs
     ):
-        super().__init__(host, port, timeout, codec, ssl_enable, ssl_verify)
+        super().__init__(host, port, timeout, ssl_enable, ssl_verify)
         self.username = kwargs.get("username", None)
         self.password = kwargs.get("password", None)
         self.__session = None
@@ -409,37 +386,6 @@ class HttpTransport(Transport):
             return None
         return HTTPBasicAuth(self.username, self.password)
 
-    @property
-    def headers(self):
-        """The headers of the HTTP request
-
-        :return: A dictionary with HTTP header fields
-        :rtype: dict
-        """
-        request_headers = {
-            "Content-Type": "text/plain",
-        }
-        if self.codec is None:
-            return request_headers
-        if self.codec.lower == "json":
-            request_headers["Content-Type"] = "application/json"
-        return request_headers
-
-    def encode(self, data):
-        """Encodes the data based on the chosen codec
-
-        :param data: The input data
-        :type data: bytes
-        :return: The encoded data
-        :rtype: str
-        """
-        if self.codec is None or data is None:
-            return data
-        string = data.decode("utf-8")
-        if self.codec.lower() == "json":
-            return json.loads(string)
-        return string
-
     def close(self):
         """The HTTP connection does not need to be closed because it's
         stateless.
@@ -458,18 +404,17 @@ class HttpTransport(Transport):
         :param use_logging: Not used!
         :type use_logging: bool
         """
+        headers = {"Content-Type": "application/json"}
         self.__session = requests.Session()
         for event in events:
             attempt = 0
             while attempt < self.__max_attempts:
-                if self.codec.lower() == "json":
-                    response = requests.post(
-                        self.url, json=self.encode(event), headers=self.headers,
-                        verify=self.ssl_verify, auth=self.__auth())
-                else:
-                    response = requests.post(
-                        self.url, data=self.encode(event), headers=self.headers,
-                        verify=self.ssl_verify, auth=self.__auth())
+                response = requests.post(
+                    self.url,
+                    headers=headers,
+                    json=event.decode('utf-8'),
+                    verify=self.ssl_verify,
+                    auth=self.__auth())
                 status_code = response.status_code
                 if status_code == 200:
                     break
