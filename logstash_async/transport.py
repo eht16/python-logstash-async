@@ -30,11 +30,11 @@ class Transport(ABC):
     :type port: int
     :param timeout: The timeout for the connection
     :type timeout: float
-    :param ssl_enable: Use TLS for the transport (Default: True)
+    :param ssl_enable: Use TLS for the transport.
     :type ssl_enable: bool
     :param ssl_verify: If True the class tries to verify the TLS certificate
     with certifi. If you pass a string with a file location to CA certificate
-    the class tries to validate it against it. (Default: True)
+    the class tries to validate it against it.
     :type ssl_verify: bool or str
     """
 
@@ -43,14 +43,14 @@ class Transport(ABC):
             host,
             port,
             timeout,
-            ssl_enable=True,
-            ssl_verify=True
+            ssl_enable,
+            ssl_verify
     ):
-        self.host = host
-        self.port = port
-        self.timeout = None if timeout is TimeoutNotSet else timeout
-        self.ssl_enable = ssl_enable
-        self.ssl_verify = ssl_verify
+        self._host = host
+        self._port = port
+        self._timeout = None if timeout is TimeoutNotSet else timeout
+        self._ssl_enable = ssl_enable
+        self._ssl_verify = ssl_verify
         super().__init__()
 
     @abstractmethod
@@ -256,8 +256,8 @@ class HttpTransport(Transport):
             **kwargs
     ):
         super().__init__(host, port, timeout, ssl_enable, ssl_verify)
-        self.username = kwargs.get('username', None)
-        self.password = kwargs.get('password', None)
+        self._username = kwargs.get('username', None)
+        self._password = kwargs.get('password', None)
         self.__session = None
 
     @property
@@ -269,9 +269,9 @@ class HttpTransport(Transport):
         :rtype: str
         """
         protocol = 'http'
-        if self.ssl_enable:
+        if self._ssl_enable:
             protocol = 'https'
-        return '{}://{}:{}'.format(protocol, self.host, self.port)
+        return '{}://{}:{}'.format(protocol, self._host, self._port)
 
     def __encode__(self, events):
         """Decodes a list of events
@@ -289,9 +289,9 @@ class HttpTransport(Transport):
         :return: A HTTP basic auth object or None
         :rtype: HTTPBasicAuth
         """
-        if self.username is None or self.password is None:
+        if self._username is None or self._password is None:
             return None
-        return HTTPBasicAuth(self.username, self.password)
+        return HTTPBasicAuth(self._username, self._password)
 
     def close(self):
         """The HTTP connection does not need to be closed because it's
@@ -314,8 +314,8 @@ class HttpTransport(Transport):
             self.url,
             headers=headers,
             json=self.__encode__(events),
-            verify=self.ssl_verify,
-            timeout=self.timeout,
+            verify=self._ssl_verify,
+            timeout=self._timeout,
             auth=self.__auth__())
         if response.status_code != 200:
             self.close()
