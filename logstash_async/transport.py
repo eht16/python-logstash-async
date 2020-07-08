@@ -4,9 +4,8 @@
 # of the MIT license.  See the LICENSE file for details.
 
 from abc import ABC, abstractmethod
-from time import sleep
 import json
-import random
+import logging
 import socket
 import ssl
 
@@ -15,6 +14,10 @@ import pylogbeat
 import requests
 
 from logstash_async.utils import ichunked
+
+
+class TimeoutNotSet:
+    pass
 
 
 class Transport(ABC):
@@ -45,7 +48,7 @@ class Transport(ABC):
     ):
         self.host = host
         self.port = port
-        self.timeout = timeout
+        self.timeout = None if timeout is TimeoutNotSet else timeout
         self.ssl_enable = ssl_enable
         self.ssl_verify = ssl_verify
         super().__init__()
@@ -57,10 +60,6 @@ class Transport(ABC):
     @abstractmethod
     def close(self):
         pass
-
-
-class TimeoutNotSet:
-    pass
 
 
 class UdpTransport:
@@ -233,7 +232,7 @@ class HttpTransport(Transport):
     :type host: str
     :param port: The port number of the service
     :type port: int
-    :param timeout: The timeout for the connection (Default: 2.0 seconds)
+    :param timeout: The timeout for the connection (Default: None)
     :type timeout: float
     :param ssl_enable: Use TLS for the transport (Default: True)
     :type ssl_enable: bool
@@ -251,7 +250,7 @@ class HttpTransport(Transport):
             self,
             host,
             port,
-            timeout=2.0,
+            timeout=TimeoutNotSet,
             ssl_enable=True,
             ssl_verify=True,
             **kwargs
@@ -260,7 +259,6 @@ class HttpTransport(Transport):
         self.username = kwargs.get('username', None)
         self.password = kwargs.get('password', None)
         self.__session = None
-        self.__max_attempts = 3
 
     @property
     def url(self):
@@ -302,9 +300,6 @@ class HttpTransport(Transport):
         if self.__session is not None:
             self.__session.close()
 
-    def __backoff(self, attempt, cap=3000, base=10):
-        return random.randrange(0, min(cap, base * 2 ** attempt))
-
     def send(self, events, **kwargs):
         """Send events to the logstash pipeline
 
@@ -315,22 +310,16 @@ class HttpTransport(Transport):
         """
         headers = {'Content-Type': 'application/json'}
         self.__session = requests.Session()
-        attempt = 0
-        while attempt < self.__max_attempts:
-            response = requests.post(
-                self.url,
-                headers=headers,
-                json=self.encode(events),
-                verify=self.ssl_verify,
-                auth=self.__auth())
-            status_code = response.status_code
-            if status_code == 200:
-                break
-            if status_code == 429:
-                sleep(self.__backoff(attempt))
-                attempt += 1
-            else:
-                self.close()
-                error_msg = 'Logstash respond with error {}'.format(status_code)
-                raise RuntimeError(error_msg)
+        response = requests.post(
+            self.url,
+            headers=headers,
+            json=self.encode(events),
+            verify=self.ssl_verify,
+            timeout=self.timeout,
+            auth=self.__auth())
+        if response.status_code != 200:
+            self.close()
+            error = '{code} - {reason}'.format(
+                code=response.status_code, msg=response.reason)
+            raise RuntimeError(error)
         self.close()
