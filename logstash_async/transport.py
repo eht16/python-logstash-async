@@ -273,7 +273,7 @@ class HttpTransport(Transport):
             protocol = 'https'
         return '{}://{}:{}'.format(protocol, self.host, self.port)
 
-    def encode(self, events):
+    def __encode__(self, events):
         """Decodes a list of events
         :param events: A list of events
         :type events: list
@@ -282,7 +282,7 @@ class HttpTransport(Transport):
         """
         return [json.loads(event) for event in events]
 
-    def __auth(self):
+    def __auth__(self):
         """The authentication method for the logstash pipeline. If the username
         or the password is not set correctly it will return None.
 
@@ -313,10 +313,10 @@ class HttpTransport(Transport):
         response = requests.post(
             self.url,
             headers=headers,
-            json=self.encode(events),
+            json=self.__encode__(events),
             verify=self.ssl_verify,
             timeout=self.timeout,
-            auth=self.__auth())
+            auth=self.__auth__())
         if response.status_code != 200:
             self.close()
             error = '{code} - {reason}'.format(
