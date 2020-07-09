@@ -266,7 +266,7 @@ class HttpTransport(Transport):
         super().__init__(host, port, timeout, ssl_enable, ssl_verify)
         self._username = kwargs.get('username', None)
         self._password = kwargs.get('password', None)
-        self._max_content_length = kwargs.get('max_content_length', 104857600)
+        self._max_content_length = kwargs.get('max_content_length', 100 * 1024 * 1024)
         self.__session = None
 
     @property
