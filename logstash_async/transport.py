@@ -282,7 +282,7 @@ class HttpTransport(Transport):
             protocol = 'https'
         return '{}://{}:{}'.format(protocol, self._host, self._port)
 
-    def __batches__(self, events):
+    def __batches(self, events):
         """Generate dynamic sized batches based on the max content length.
 
         :param events: A list of events.
@@ -316,7 +316,7 @@ class HttpTransport(Transport):
             else:
                 current_batch += [obj]
 
-    def __auth__(self):
+    def __auth(self):
         """The authentication method for the logstash pipeline. If the username
         or the password is not set correctly it will return None.
 
@@ -348,7 +348,7 @@ class HttpTransport(Transport):
         :type events: list
         """
         self.__session = requests.Session()
-        for batch in self.__batches__(events):
+        for batch in self.__batches(events):
             logger.debug('Batch length: %s', len(batch))
             logger.debug('Batch size: %s', len(json.dumps(batch).encode('utf8')))
             response = self.__session.post(
@@ -357,7 +357,7 @@ class HttpTransport(Transport):
                 json=batch,
                 verify=self._ssl_verify,
                 timeout=self._timeout,
-                auth=self.__auth__())
+                auth=self.__auth())
             if response.status_code != 200:
                 self.close()
                 error = '{code} - {reason}'.format(
