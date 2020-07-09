@@ -40,7 +40,7 @@ class AsynchronousLogstashHandler(Handler):
     # pylint: disable=too-many-arguments
     def __init__(self, host, port, database_path, transport='logstash_async.transport.TcpTransport',
                  ssl_enable=False, ssl_verify=True, keyfile=None, certfile=None, ca_certs=None,
-                 enable=True, event_ttl=None, encoding='utf-8'):
+                 enable=True, event_ttl=None, encoding='utf-8', **kwargs):
         super().__init__()
         self._host = host
         self._port = port
@@ -55,7 +55,7 @@ class AsynchronousLogstashHandler(Handler):
         self._transport = None
         self._event_ttl = event_ttl
         self._encoding = encoding
-        self._setup_transport()
+        self._setup_transport(**kwargs)
 
     # ----------------------------------------------------------------------
     def emit(self, record):
@@ -78,7 +78,7 @@ class AsynchronousLogstashHandler(Handler):
             self._worker_thread.force_flush_queued_events()
 
     # ----------------------------------------------------------------------
-    def _setup_transport(self):
+    def _setup_transport(self, **kwargs):
         if self._transport is not None:
             return
 
@@ -90,7 +90,8 @@ class AsynchronousLogstashHandler(Handler):
             ssl_verify=self._ssl_verify,
             keyfile=self._keyfile,
             certfile=self._certfile,
-            ca_certs=self._ca_certs)
+            ca_certs=self._ca_certs,
+            **kwargs)
         if isinstance(self._transport_path, str):
             transport_class = import_string(self._transport_path)
             self._transport = transport_class(**transport_args)

@@ -136,7 +136,8 @@ class TcpTransport(UdpTransport):
             keyfile,
             certfile,
             ca_certs,
-            timeout=TimeoutNotSet):
+            timeout=TimeoutNotSet,
+            **kwargs):
         super().__init__(host, port)
         self._ssl_enable = ssl_enable
         self._ssl_verify = ssl_verify
@@ -197,7 +198,8 @@ class BeatsTransport:
             keyfile,
             certfile,
             ca_certs,
-            timeout=TimeoutNotSet):
+            timeout=TimeoutNotSet,
+            **kwargs):
         timeout_ = None if timeout is TimeoutNotSet else timeout
         self._client_arguments = dict(
             host=host,
