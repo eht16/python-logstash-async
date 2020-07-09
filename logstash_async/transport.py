@@ -15,6 +15,8 @@ import requests
 
 from logstash_async.utils import ichunked
 
+logger = logging.getLogger(__name__)
+
 
 class TimeoutNotSet:
     pass
@@ -244,6 +246,9 @@ class HttpTransport(Transport):
     :type username: str
     :param password: Password for basic authorization (Default: "")
     :type password: str
+    :param max_content_length: The max content of an HTTP request in bytes.
+    (Default: 100MB)
+    :type max_content_length: int
     """
 
     def __init__(
@@ -258,6 +263,7 @@ class HttpTransport(Transport):
         super().__init__(host, port, timeout, ssl_enable, ssl_verify)
         self._username = kwargs.get('username', None)
         self._password = kwargs.get('password', None)
+        self._max_content_length = kwargs.get('max_content_length', 104857600)
         self.__session = None
 
     @property
@@ -273,14 +279,40 @@ class HttpTransport(Transport):
             protocol = 'https'
         return '{}://{}:{}'.format(protocol, self._host, self._port)
 
-    def __encode__(self, events):
-        """Decodes a list of events
+    def __batches__(self, events):
+        """Generate dynamic sized batches based on the max content length.
+
         :param events: A list of events
         :type events: list
-        :return: A list of decoded events
-        :rtype: str
+        :return: A list of event batches
+        :rtype: collections.Iterable[list]
         """
-        return [json.loads(event) for event in events]
+        current_batch = []
+        event_iter = iter(events)
+        while True:
+            try:
+                current_event = next(event_iter)
+            except StopIteration:
+                current_event = None
+                if len(current_batch) == 0:
+                    raise StopIteration()
+                yield current_batch
+            if current_event is None:
+                return
+            if len(current_event) > self._max_content_length:
+                logger.warning(
+                    "The event size <%s> is greater than the max content length <%s>."
+                    + " Skipping event.",
+                    len(current_event), self._max_content_length)
+                continue
+            obj = json.loads(current_event)
+            content_length = len(json.dumps(current_batch + [obj]).encode('utf8'))
+            if content_length > self._max_content_length:
+                batch = current_batch
+                current_batch = [obj]
+                yield batch
+            else:
+                current_batch += [obj]
 
     def __auth__(self):
         """The authentication method for the logstash pipeline. If the username
@@ -308,18 +340,20 @@ class HttpTransport(Transport):
         :param use_logging: Not used!
         :type use_logging: bool
         """
-        headers = {'Content-Type': 'application/json'}
         self.__session = requests.Session()
-        response = requests.post(
-            self.url,
-            headers=headers,
-            json=self.__encode__(events),
-            verify=self._ssl_verify,
-            timeout=self._timeout,
-            auth=self.__auth__())
-        if response.status_code != 200:
-            self.close()
-            error = '{code} - {reason}'.format(
-                code=response.status_code, msg=response.reason)
-            raise RuntimeError(error)
+        for batch in self.__batches__(events):
+            logger.debug("Batch length: %s", len(batch))
+            logger.debug("Batch size: %s", len(json.dumps(batch).encode('utf8')))
+            response = self.__session.post(
+                self.url,
+                headers={'Content-Type': 'application/json'},
+                json=batch,
+                verify=self._ssl_verify,
+                timeout=self._timeout,
+                auth=self.__auth__())
+            if response.status_code != 200:
+                self.close()
+                error = '{code} - {reason}'.format(
+                    code=response.status_code, msg=response.reason)
+                raise RuntimeError(error)
         self.close()
