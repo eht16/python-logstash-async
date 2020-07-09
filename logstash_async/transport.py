@@ -15,6 +15,7 @@ import requests
 
 from logstash_async.utils import ichunked
 
+
 logger = logging.getLogger(__name__)
 
 
@@ -209,7 +210,8 @@ class BeatsTransport:
             ssl_verify=ssl_verify,
             keyfile=keyfile,
             certfile=certfile,
-            ca_certs=ca_certs)
+            ca_certs=ca_certs,
+            **kwargs)
 
     # ----------------------------------------------------------------------
     def close(self):
@@ -295,16 +297,15 @@ class HttpTransport(Transport):
                 current_event = next(event_iter)
             except StopIteration:
                 current_event = None
-                if len(current_batch) == 0:
-                    raise StopIteration()
+                if not current_batch:
+                    return
                 yield current_batch
             if current_event is None:
                 return
             if len(current_event) > self._max_content_length:
-                logger.warning(
-                    "The event size <%s> is greater than the max content length <%s>."
-                    + " Skipping event.",
-                    len(current_event), self._max_content_length)
+                msg = 'The event size <%s> is greater than the max content length <%s>.'
+                msg += 'Skipping event.'
+                logger.warning(msg, len(current_event), self._max_content_length)
                 continue
             obj = json.loads(current_event)
             content_length = len(json.dumps(current_batch + [obj]).encode('utf8'))
@@ -348,8 +349,8 @@ class HttpTransport(Transport):
         """
         self.__session = requests.Session()
         for batch in self.__batches__(events):
-            logger.debug("Batch length: %s", len(batch))
-            logger.debug("Batch size: %s", len(json.dumps(batch).encode('utf8')))
+            logger.debug('Batch length: %s', len(batch))
+            logger.debug('Batch size: %s', len(json.dumps(batch).encode('utf8')))
             response = self.__session.post(
                 self.url,
                 headers={'Content-Type': 'application/json'},
@@ -360,6 +361,6 @@ class HttpTransport(Transport):
             if response.status_code != 200:
                 self.close()
                 error = '{code} - {reason}'.format(
-                    code=response.status_code, msg=response.reason)
+                    code=response.status_code, reason=response.reason)
                 raise RuntimeError(error)
         self.close()
