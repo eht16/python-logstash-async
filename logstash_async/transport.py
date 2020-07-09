@@ -26,17 +26,15 @@ class Transport(ABC):
     """The :class:`Transport <Transport>` is the abstract base class of
     all transport protocols.
 
-    :param host: The name of the host
+    :param host: The name of the host.
     :type host: str
-    :param port: The port number of the service
+    :param port: The TCP/UDP port.
     :type port: int
-    :param timeout: The timeout for the connection
-    :type timeout: float
-    :param ssl_enable: Use TLS for the transport.
+    :param timeout: The connection timeout.
+    :type timeout: None or float
+    :param ssl_enable: Activates TLS.
     :type ssl_enable: bool
-    :param ssl_verify: If True the class tries to verify the TLS certificate
-    with certifi. If you pass a string with a file location to CA certificate
-    the class tries to validate it against it.
+    :param ssl_verify: Activates the TLS certificate verification.
     :type ssl_verify: bool or str
     """
 
@@ -230,21 +228,22 @@ class HttpTransport(Transport):
     For more details visit:
     https://www.elastic.co/guide/en/logstash/current/plugins-inputs-http.html
 
-    :param host: The name of the host
+    :param host: The hostname of the logstash HTTP server.
     :type host: str
-    :param port: The port number of the service
+    :param port: The TCP port of the logstash HTTP server.
     :type port: int
-    :param timeout: The timeout for the connection (Default: None)
+    :param timeout: The connection timeout. (Default: None)
     :type timeout: float
-    :param ssl_enable: Use TLS for the transport (Default: True)
+    :param ssl_enable: Activates TLS. (Default: True)
     :type ssl_enable: bool
-    :param ssl_verify: If True the class tries to verify the TLS certificate
-    with certifi. If you pass a string with a file location to CA certificate
-    the class tries to validate it against it. (Default: True)
+    :param ssl_verify: Activates the TLS certificate verification. If the flag
+    is True the class tries to verify the TLS certificate with certifi. If you
+    pass a string with a file location to CA certificate the class tries to
+    validate it against it. (Default: True)
     :type ssl_verify: bool or str
-    :param username: Username for basic authorization (Default: "")
+    :param username: Username for basic authorization. (Default: "")
     :type username: str
-    :param password: Password for basic authorization (Default: "")
+    :param password: Password for basic authorization. (Default: "")
     :type password: str
     :param max_content_length: The max content of an HTTP request in bytes.
     (Default: 100MB)
@@ -271,7 +270,7 @@ class HttpTransport(Transport):
         """The URL of the logstash pipeline based on the hostname, the port and
         the TLS usage.
 
-        :return: The URL of the logstash pipeline
+        :return: The URL of the logstash HTTP pipeline.
         :rtype: str
         """
         protocol = 'http'
@@ -282,9 +281,9 @@ class HttpTransport(Transport):
     def __batches__(self, events):
         """Generate dynamic sized batches based on the max content length.
 
-        :param events: A list of events
+        :param events: A list of events.
         :type events: list
-        :return: A list of event batches
+        :return: A list of event batches.
         :rtype: collections.Iterable[list]
         """
         current_batch = []
@@ -318,7 +317,7 @@ class HttpTransport(Transport):
         """The authentication method for the logstash pipeline. If the username
         or the password is not set correctly it will return None.
 
-        :return: A HTTP basic auth object or None
+        :return: A HTTP basic auth object or None.
         :rtype: HTTPBasicAuth
         """
         if self._username is None or self._password is None:
@@ -326,19 +325,24 @@ class HttpTransport(Transport):
         return HTTPBasicAuth(self._username, self._password)
 
     def close(self):
-        """The HTTP connection does not need to be closed because it's
-        stateless.
+        """Close the HTTP session.
         """
         if self.__session is not None:
             self.__session.close()
 
     def send(self, events, **kwargs):
-        """Send events to the logstash pipeline
+        """Send events to the logstash pipeline.
+
+        Max Events: `logstash_async.Constants.QUEUED_EVENTS_BATCH_SIZE`
+        Max Content Length: `HttpTransport._max_content_length`
+
+        The method receives a list of events from the worker. It tries to send
+        as much of the events as possible in one request. If the total size of
+        the received events is greater than the maximal content length the
+        events will be divide into batches.
 
         :param events: A list of events
         :type events: list
-        :param use_logging: Not used!
-        :type use_logging: bool
         """
         self.__session = requests.Session()
         for batch in self.__batches__(events):
