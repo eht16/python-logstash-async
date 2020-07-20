@@ -365,7 +365,5 @@ class HttpTransport(Transport):
                 auth=self.__auth())
             if response.status_code != 200:
                 self.close()
-                error = '{code} - {reason}'.format(
-                    code=response.status_code, reason=response.reason)
-                raise RuntimeError(error)
+                response.raise_for_status()
         self.close()
