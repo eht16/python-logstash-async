@@ -45,13 +45,15 @@ class Transport(ABC):
             port,
             timeout,
             ssl_enable,
-            ssl_verify
+            ssl_verify,
+            use_logging,
     ):
         self._host = host
         self._port = port
         self._timeout = None if timeout is TimeoutNotSet else timeout
         self._ssl_enable = ssl_enable
         self._ssl_verify = ssl_verify
+        self._use_logging = use_logging
         super().__init__()
 
     @abstractmethod
@@ -261,9 +263,10 @@ class HttpTransport(Transport):
             timeout=TimeoutNotSet,
             ssl_enable=True,
             ssl_verify=True,
+            use_logging=False,
             **kwargs
     ):
-        super().__init__(host, port, timeout, ssl_enable, ssl_verify)
+        super().__init__(host, port, timeout, ssl_enable, ssl_verify, use_logging)
         self._username = kwargs.get('username', None)
         self._password = kwargs.get('password', None)
         self._max_content_length = kwargs.get('max_content_length', 100 * 1024 * 1024)
@@ -305,7 +308,8 @@ class HttpTransport(Transport):
             if len(current_event) > self._max_content_length:
                 msg = 'The event size <%s> is greater than the max content length <%s>.'
                 msg += 'Skipping event.'
-                logger.warning(msg, len(current_event), self._max_content_length)
+                if self._use_logging:
+                    logger.warning(msg, len(current_event), self._max_content_length)
                 continue
             obj = json.loads(current_event)
             content_length = len(json.dumps(current_batch + [obj]).encode('utf8'))
@@ -349,8 +353,9 @@ class HttpTransport(Transport):
         """
         self.__session = requests.Session()
         for batch in self.__batches(events):
-            logger.debug('Batch length: %s, Batch size: %s',
-                         len(batch), len(json.dumps(batch).encode('utf8')))
+            if self._use_logging:
+                logger.debug('Batch length: %s, Batch size: %s',
+                             len(batch), len(json.dumps(batch).encode('utf8')))
             response = self.__session.post(
                 self.url,
                 headers={'Content-Type': 'application/json'},
