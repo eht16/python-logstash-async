@@ -349,8 +349,8 @@ class HttpTransport(Transport):
         """
         self.__session = requests.Session()
         for batch in self.__batches(events):
-            logger.debug('Batch length: %s', len(batch))
-            logger.debug('Batch size: %s', len(json.dumps(batch).encode('utf8')))
+            logger.debug('Batch length: %s, Batch size: %s',
+                         len(batch), len(json.dumps(batch).encode('utf8')))
             response = self.__session.post(
                 self.url,
                 headers={'Content-Type': 'application/json'},
