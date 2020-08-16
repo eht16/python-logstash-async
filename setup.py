@@ -9,7 +9,7 @@ from shutil import rmtree
 import sys
 
 NAME = 'python-logstash-async'
-VERSION = '1.6.6'
+VERSION = '1.6.7'
 
 here = path.abspath(path.dirname(__file__))
 with open(path.join(here, 'README.rst'), 'rb') as f:
@@ -30,6 +30,7 @@ setup(
     version=VERSION,
     description='Asynchronous Python logging handler for Logstash.',
     long_description=LONG_DESCRIPTION,
+    long_description_content_type='text/x-rst',
     license='MIT',
     author='Enrico Tröger',
     author_email='enrico.troeger@uvena.de',
@@ -41,6 +42,7 @@ setup(
     },
     keywords='logging logstash asynchronous',
     install_requires=['limits', 'pylogbeat', 'six'],
+    python_requires='>2.7,!=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*',
     include_package_data=True,
     classifiers=[
         'Development Status :: 4 - Beta',

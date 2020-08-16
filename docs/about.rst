@@ -92,6 +92,14 @@ License
 ChangeLog
 ---------
 
+1.6.7 (Aug 16 2020)
++++++++++++++++++++
+
+  * Set `python_requires` to Python >=2.7 or Python >= 3.5 for
+    smooth upgrade to upcoming Python3 only.
+    This way Python2 only users will stay at this release.
+
+
 1.6.6 (Jun 08 2020)
 +++++++++++++++++++
 
