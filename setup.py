@@ -42,7 +42,7 @@ setup(
     },
     keywords='logging logstash asynchronous',
     install_requires=['limits', 'pylogbeat', 'six'],
-    python_requires='>2.7,!=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*',
+    python_requires='>3.5',
     include_package_data=True,
     classifiers=[
         'Development Status :: 4 - Beta',
@@ -50,7 +50,6 @@ setup(
         'License :: OSI Approved :: MIT License',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
-        'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 3',
         'Topic :: Internet :: WWW/HTTP',
         'Topic :: Software Development :: Libraries :: Python Modules',
