@@ -4,7 +4,7 @@
 # of the MIT license.  See the LICENSE file for details.
 
 
-class Constants(object):
+class Constants:
     """
     Collection of various constants which are meant to static but still changeable
     from the calling application at startup if necessary.

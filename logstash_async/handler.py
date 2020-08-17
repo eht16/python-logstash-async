@@ -5,8 +5,6 @@
 
 from logging import Handler
 
-from six import string_types, text_type
-
 from logstash_async.constants import constants
 from logstash_async.formatter import LogstashFormatter
 from logstash_async.utils import import_string, safe_log_via_print
@@ -93,7 +91,7 @@ class AsynchronousLogstashHandler(Handler):
             keyfile=self._keyfile,
             certfile=self._certfile,
             ca_certs=self._ca_certs)
-        if isinstance(self._transport_path, string_types):
+        if isinstance(self._transport_path, str):
             transport_class = import_string(self._transport_path)
             self._transport = transport_class(**transport_args)
         elif callable(self._transport_path):
@@ -137,7 +135,7 @@ class AsynchronousLogstashHandler(Handler):
     def _format_record(self, record):
         self._create_formatter_if_necessary()
         formatted = self.formatter.format(record)
-        if isinstance(formatted, text_type):
+        if isinstance(formatted, str):
             formatted = formatted.encode(self._encoding)  # pylint: disable=redefined-variable-type
         return formatted + b'\n'
 

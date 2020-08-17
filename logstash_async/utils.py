@@ -11,8 +11,6 @@ from itertools import chain, islice
 import sys
 import traceback
 
-import six
-
 
 # ----------------------------------------------------------------------
 def ichunked(seq, chunksize):
@@ -53,13 +51,14 @@ def import_string(dotted_path):
     """
     try:
         module_path, class_name = dotted_path.rsplit('.', 1)
-    except ValueError:
-        msg = "{} doesn't look like a module path".format(dotted_path)
-        six.reraise(ImportError, ImportError(msg), sys.exc_info()[2])
+    except ValueError as exc:
+        raise ImportError("%s doesn't look like a module path" % dotted_path) from exc
 
     module = import_module(module_path)
     try:
         return getattr(module, class_name)
-    except AttributeError:
-        msg = 'Module "{}" does not define a "{}" attribute/class'.format(module_path, class_name)
-        six.reraise(ImportError, ImportError(msg), sys.exc_info()[2])
+    except AttributeError as exc:
+        raise ImportError(
+            'Module "%s" does not define a "%s" attribute/class' % (
+                module_path,
+                class_name)) from exc

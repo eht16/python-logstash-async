@@ -3,16 +3,13 @@
 # This software may be modified and distributed under the terms
 # of the MIT license.  See the LICENSE file for details.
 
-import abc
-
-import six
+from abc import ABC, abstractmethod
 
 
-@six.add_metaclass(abc.ABCMeta)
-class Cache(object):
+class Cache(ABC):
 
     # ----------------------------------------------------------------------
-    @abc.abstractmethod
+    @abstractmethod
     def add_event(self, event):
         """Add the event to the cache.
 
@@ -26,7 +23,7 @@ class Cache(object):
         pass
 
     # ----------------------------------------------------------------------
-    @abc.abstractmethod
+    @abstractmethod
     def get_queued_events(self):
         """Get pending events and mark them to be deleted
 
@@ -35,7 +32,7 @@ class Cache(object):
         pass
 
     # ----------------------------------------------------------------------
-    @abc.abstractmethod
+    @abstractmethod
     def requeue_queued_events(self, events):
         """Mark pending_delete for events passed in to False.
 
@@ -48,7 +45,7 @@ class Cache(object):
         pass
 
     # ----------------------------------------------------------------------
-    @abc.abstractmethod
+    @abstractmethod
     def delete_queued_events(self):
         """Delete events marked for deletion
 
@@ -57,7 +54,7 @@ class Cache(object):
         pass
 
     # ----------------------------------------------------------------------
-    @abc.abstractmethod
+    @abstractmethod
     def expire_events(self):
         """Expire events older than the TTL. If no TTL is set, no action is taken.
 

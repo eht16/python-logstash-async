@@ -7,8 +7,6 @@ from contextlib import contextmanager
 import sqlite3
 import sys
 
-import six
-
 from logstash_async.cache import Cache
 from logstash_async.constants import constants
 from logstash_async.utils import ichunked
@@ -95,9 +93,9 @@ class DatabaseCache(Cache):
 
     # ----------------------------------------------------------------------
     def _handle_sqlite_error(self):
-        _, exc, traceback = sys.exc_info()
+        _, exc, _ = sys.exc_info()
         if str(exc) == 'database is locked':
-            six.reraise(DatabaseLockedError, DatabaseLockedError(exc), traceback)
+            raise DatabaseLockedError from exc
 
     # ----------------------------------------------------------------------
     def get_queued_events(self):

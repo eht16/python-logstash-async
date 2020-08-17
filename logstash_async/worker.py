@@ -5,13 +5,12 @@
 
 from datetime import datetime
 from logging import getLogger as get_logger
+from queue import Empty, Queue
 from threading import Event, Thread
 
 from limits import parse as parse_rate_limit
 from limits.storage import MemoryStorage
 from limits.strategies import FixedWindowRateLimiter
-from six import integer_types
-from six.moves.queue import Empty, Queue
 
 from logstash_async.constants import constants
 from logstash_async.database import DatabaseCache, DatabaseLockedError
@@ -298,7 +297,7 @@ class LogProcessingWorker(Thread):  # pylint: disable=too-many-instance-attribut
         module_name = getattr(exc, '__module__', '__no_module__')
         class_name = exc.__class__.__name__
         key_items = [module_name, class_name]
-        if hasattr(exc, 'errno') and isinstance(exc.errno, integer_types):
+        if hasattr(exc, 'errno') and isinstance(exc.errno, int):
             # in case of socket.error, include the errno as rate limiting key
             key_items.append(str(exc.errno))
         return '.'.join(key_items)

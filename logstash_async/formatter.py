@@ -11,8 +11,6 @@ import time
 import traceback
 import uuid
 
-from six import integer_types, string_types, text_type
-
 from logstash_async.constants import constants
 import logstash_async
 
@@ -132,7 +130,7 @@ class LogstashFormatter(logging.Formatter):
     # ----------------------------------------------------------------------
     def _get_record_fields(self, record):
         def value_repr(value):
-            easy_types = (bool, float, type(None)) + string_types + integer_types
+            easy_types = (type(None), bool, str, int, float)
 
             if isinstance(value, dict):
                 return {k: value_repr(v) for k, v in value.items()}
@@ -238,7 +236,7 @@ class DjangoLogstashFormatter(LogstashFormatter):
             extra_fields['req_remote_address'] = request.META.get('REMOTE_ADDR', '<none>')
             extra_fields['req_host'] = self._try_to_get_host_from_remote(request)
             extra_fields['req_uri'] = request.get_raw_uri()
-            extra_fields['req_user'] = text_type(request_user)
+            extra_fields['req_user'] = str(request_user)
             extra_fields['req_method'] = request.META.get('REQUEST_METHOD', '')
             extra_fields['req_referer'] = request.META.get('HTTP_REFERER', '')
 

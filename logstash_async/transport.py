@@ -5,18 +5,17 @@
 
 import socket
 import ssl
-import sys
 
 import pylogbeat
 
 from logstash_async.utils import ichunked
 
 
-class TimeoutNotSet(object):
+class TimeoutNotSet:
     pass
 
 
-class UdpTransport(object):
+class UdpTransport:
 
     _keep_connection = False
 
@@ -61,10 +60,7 @@ class UdpTransport(object):
 
     # ----------------------------------------------------------------------
     def _convert_data_to_send(self, data):
-        if sys.version_info < (3, 0):
-            return data
-        # Python3
-        elif not isinstance(data, bytes):
+        if not isinstance(data, bytes):
             return bytes(data, 'utf-8')
 
         return data
@@ -140,7 +136,7 @@ class TcpTransport(UdpTransport):
         self._sock.sendall(data_to_send)
 
 
-class BeatsTransport(object):
+class BeatsTransport:
 
     _batch_size = 10
 
