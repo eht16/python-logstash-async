@@ -41,7 +41,7 @@ class AsynchronousLogstashHandler(Handler):
     def __init__(self, host, port, database_path, transport='logstash_async.transport.TcpTransport',
                  ssl_enable=False, ssl_verify=True, keyfile=None, certfile=None, ca_certs=None,
                  enable=True, event_ttl=None, encoding='utf-8'):
-        super(AsynchronousLogstashHandler, self).__init__()
+        super().__init__()
         self._host = host
         self._port = port
         self._database_path = database_path
@@ -151,7 +151,7 @@ class AsynchronousLogstashHandler(Handler):
             self.shutdown()
         finally:
             self.release()
-        super(AsynchronousLogstashHandler, self).close()
+        super().close()
 
     # ----------------------------------------------------------------------
     def shutdown(self):

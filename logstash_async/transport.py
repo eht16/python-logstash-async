@@ -90,7 +90,7 @@ class TcpTransport(UdpTransport):
             certfile,
             ca_certs,
             timeout=TimeoutNotSet):
-        super(TcpTransport, self).__init__(host, port)
+        super().__init__(host, port)
         self._ssl_enable = ssl_enable
         self._ssl_verify = ssl_verify
         self._keyfile = keyfile

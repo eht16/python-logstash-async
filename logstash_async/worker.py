@@ -39,7 +39,7 @@ class LogProcessingWorker(Thread):  # pylint: disable=too-many-instance-attribut
         self._memory_cache = kwargs.pop('cache')
         self._event_ttl = kwargs.pop('event_ttl')
 
-        super(LogProcessingWorker, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.daemon = True
         self.name = self.__class__.__name__
 
@@ -151,7 +151,7 @@ class LogProcessingWorker(Thread):  # pylint: disable=too-many-instance-attribut
             raise
         except Exception as exc:
             self._log_processing_error(exc)
-            raise ProcessingError()
+            raise ProcessingError from exc
         else:
             self._event = None
 

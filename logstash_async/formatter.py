@@ -35,7 +35,7 @@ class LogstashFormatter(logging.Formatter):
             ensure_ascii=True,
             metadata=None,
     ):
-        super(LogstashFormatter, self).__init__()
+        super().__init__()
         self._message_type = message_type
         self._tags = tags if tags is not None else []
         self._extra_prefix = extra_prefix
@@ -216,7 +216,7 @@ class DjangoLogstashFormatter(LogstashFormatter):
 
     # ----------------------------------------------------------------------
     def __init__(self, *args, **kwargs):
-        super(DjangoLogstashFormatter, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._django_version = None
         self._fetch_django_version()
 
@@ -227,7 +227,7 @@ class DjangoLogstashFormatter(LogstashFormatter):
 
     # ----------------------------------------------------------------------
     def _get_extra_fields(self, record):
-        extra_fields = super(DjangoLogstashFormatter, self)._get_extra_fields(record)
+        extra_fields = super()._get_extra_fields(record)
 
         if hasattr(record, 'status_code'):
             extra_fields['status_code'] = record.status_code
@@ -298,7 +298,7 @@ class FlaskLogstashFormatter(LogstashFormatter):
 
     # ----------------------------------------------------------------------
     def __init__(self, *args, **kwargs):
-        super(FlaskLogstashFormatter, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._django_version = None
         self._fetch_flask_version()
 
@@ -311,7 +311,7 @@ class FlaskLogstashFormatter(LogstashFormatter):
     def _get_extra_fields(self, record):
         from flask import request  # pylint: disable=import-error,import-outside-toplevel
 
-        extra_fields = super(FlaskLogstashFormatter, self)._get_extra_fields(record)
+        extra_fields = super()._get_extra_fields(record)
 
         extra_fields['flask_version'] = self._flask_version
         if request:  # request might be unbound in other threads
