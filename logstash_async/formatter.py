@@ -111,6 +111,8 @@ class LogstashFormatter(logging.Formatter):
         message.update(record_fields)
         # prepare dynamic extra fields
         extra_fields = self._get_extra_fields(record)
+        # remove all fields to be excluded
+        self._remove_excluded_fields(message, extra_fields)
         # wrap extra fields in configurable namespace
         if self._extra_prefix:
             message[self._extra_prefix] = extra_fields
@@ -148,8 +150,7 @@ class LogstashFormatter(logging.Formatter):
         fields = {}
 
         for key, value in record.__dict__.items():
-            if key not in constants.FORMATTER_RECORD_FIELD_SKIP_LIST:
-                fields[key] = value_repr(value)
+            fields[key] = value_repr(value)
         return fields
 
     # ----------------------------------------------------------------------
@@ -182,6 +183,13 @@ class LogstashFormatter(logging.Formatter):
         else:
             stack_trace = ''
         return stack_trace
+
+    # ----------------------------------------------------------------------
+    def _remove_excluded_fields(self, message, extra_fields):
+        for fields in (message, extra_fields):
+            for field_name in list(fields):
+                if field_name in constants.FORMATTER_RECORD_FIELD_SKIP_LIST:
+                    del fields[field_name]
 
     # ----------------------------------------------------------------------
     def _move_extra_record_fields_to_prefix(self, message):

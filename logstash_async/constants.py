@@ -27,8 +27,9 @@ class Constants:
     DATABASE_EVENT_CHUNK_SIZE = 750
     # timeout in seconds to "connect" (i.e. open) the SQLite database
     DATABASE_TIMEOUT = 5.0
-    # list of Python standard LogRecord attributes which are filtered out from the event sent
-    # to Logstash. Usually this list does not need to be modified. Add/Remove elements to
+    # list of record attributes which are filtered out from the event sent
+    # to Logstash. By default, the list consists of some Python standard LogRecord attributes.
+    # Usually this list does not need to be modified. Add/Remove elements to
     # exclude/include them in the Logstash event, for the full list see:
     # http://docs.python.org/library/logging.html#logrecord-attributes
     FORMATTER_RECORD_FIELD_SKIP_LIST = [
