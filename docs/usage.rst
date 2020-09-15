@@ -170,7 +170,7 @@ Example code for Python's `logging.config.fileConfig`:
 
     fileConfig('logging.conf', disable_existing_loggers=True)
     logger = logging.getLogger()
-    test_logger.info('python-logstash-async: test logstash info message.')
+    logger.info('python-logstash-async: test logstash info message.')
 
 
 Example config for Python's `logging.config.fileConfig`:
