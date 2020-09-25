@@ -173,5 +173,5 @@ class BeatsTransport:
             with client:
                 for events_subset in ichunked(events, self._batch_size):
                     client.send(events_subset)
-        except (socket.gaierror, ConnectionError) as e:
-            print('Beats send error: ' + str(e))
+        except (socket.gaierror, ConnectionError) as send_exception:
+            print('Beats send error: ' + str(send_exception))
