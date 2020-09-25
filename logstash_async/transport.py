@@ -168,7 +168,10 @@ class BeatsTransport:
 
     # ----------------------------------------------------------------------
     def send(self, events, use_logging=False):
-        client = pylogbeat.PyLogBeatClient(use_logging=use_logging, **self._client_arguments)
-        with client:
-            for events_subset in ichunked(events, self._batch_size):
-                client.send(events_subset)
+        try:
+            client = pylogbeat.PyLogBeatClient(use_logging=use_logging, **self._client_arguments)
+            with client:
+                for events_subset in ichunked(events, self._batch_size):
+                    client.send(events_subset)
+        except (socket.gaierror, ConnectionError) as e:
+            print('Beats send error: ' + str(e))
