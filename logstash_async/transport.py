@@ -283,7 +283,7 @@ class HttpTransport(Transport):
         protocol = 'http'
         if self._ssl_enable:
             protocol = 'https'
-        return '{}://{}:{}'.format(protocol, self._host, self._port)
+        return f'{protocol}://{self._host}:{self._port}'
 
     def __batches(self, events):
         """Generate dynamic sized batches based on the max content length.
