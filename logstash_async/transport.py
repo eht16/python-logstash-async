@@ -4,6 +4,7 @@
 # of the MIT license.  See the LICENSE file for details.
 
 from abc import ABC, abstractmethod
+from typing import Iterator, Union
 import json
 import logging
 import socket
@@ -37,16 +38,18 @@ class Transport(ABC):
     :type ssl_enable: bool
     :param ssl_verify: Activates the TLS certificate verification.
     :type ssl_verify: bool or str
+    :param use_logging: Use logging for debugging.
+    :type use_logging: bool
     """
 
     def __init__(
             self,
-            host,
-            port,
-            timeout,
-            ssl_enable,
-            ssl_verify,
-            use_logging,
+            host: str,
+            port: int,
+            timeout: Union[None, float],
+            ssl_enable: bool,
+            ssl_verify: Union[bool, str],
+            use_logging: bool,
     ):
         self._host = host
         self._port = port
@@ -57,7 +60,7 @@ class Transport(ABC):
         super().__init__()
 
     @abstractmethod
-    def send(self, events, **kwargs):
+    def send(self, events: list, **kwargs):
         pass
 
     @abstractmethod
@@ -247,6 +250,8 @@ class HttpTransport(Transport):
     pass a string with a file location to CA certificate the class tries to
     validate it against it. (Default: True)
     :type ssl_verify: bool or str
+    :param use_logging: Use logging for debugging.
+    :type use_logging: bool
     :param username: Username for basic authorization. (Default: "")
     :type username: str
     :param password: Password for basic authorization. (Default: "")
@@ -258,12 +263,12 @@ class HttpTransport(Transport):
 
     def __init__(
             self,
-            host,
-            port,
-            timeout=TimeoutNotSet,
-            ssl_enable=True,
-            ssl_verify=True,
-            use_logging=False,
+            host: str,
+            port: int,
+            timeout: Union[None, float] = TimeoutNotSet,
+            ssl_enable: bool = True,
+            ssl_verify: Union[bool, str] = True,
+            use_logging: bool = False,
             **kwargs
     ):
         super().__init__(host, port, timeout, ssl_enable, ssl_verify, use_logging)
@@ -273,7 +278,7 @@ class HttpTransport(Transport):
         self.__session = None
 
     @property
-    def url(self):
+    def url(self) -> str:
         """The URL of the logstash pipeline based on the hostname, the port and
         the TLS usage.
 
@@ -283,15 +288,15 @@ class HttpTransport(Transport):
         protocol = 'http'
         if self._ssl_enable:
             protocol = 'https'
-        return '{}://{}:{}'.format(protocol, self._host, self._port)
+        return f'{protocol}://{self._host}:{self._port}'
 
-    def __batches(self, events):
+    def __batches(self, events: list) -> Iterator[list]:
         """Generate dynamic sized batches based on the max content length.
 
         :param events: A list of events.
         :type events: list
-        :return: A list of event batches.
-        :rtype: collections.Iterable[list]
+        :return: A iterator which generates batches of events.
+        :rtype: Iterator[list]
         """
         current_batch = []
         event_iter = iter(events)
@@ -320,7 +325,7 @@ class HttpTransport(Transport):
             else:
                 current_batch += [obj]
 
-    def __auth(self):
+    def __auth(self) -> HTTPBasicAuth:
         """The authentication method for the logstash pipeline. If the username
         or the password is not set correctly it will return None.
 
@@ -331,13 +336,13 @@ class HttpTransport(Transport):
             return None
         return HTTPBasicAuth(self._username, self._password)
 
-    def close(self):
+    def close(self) -> None:
         """Close the HTTP session.
         """
         if self.__session is not None:
             self.__session.close()
 
-    def send(self, events, **kwargs):
+    def send(self, events: list, **kwargs):
         """Send events to the logstash pipeline.
 
         Max Events: `logstash_async.Constants.QUEUED_EVENTS_BATCH_SIZE`
