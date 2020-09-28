@@ -174,5 +174,4 @@ class BeatsTransport:
                 for events_subset in ichunked(events, self._batch_size):
                     client.send(events_subset)
         except socket.gaierror as exc:
-            # this is where we are making the socket call, therefore this is where we should check for a socket error
             print('Irrecoverable socket error:', str(exc))

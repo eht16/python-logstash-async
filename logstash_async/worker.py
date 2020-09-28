@@ -212,12 +212,11 @@ class LogProcessingWorker(Thread):  # pylint: disable=too-many-instance-attribut
                 events = [event['event_text'] for event in queued_events]
                 self._send_events(events)
             # exception types for which we do not want a stack trace
-            except (ConnectionError, TimeoutError) as exc: 
+            except (ConnectionError, TimeoutError) as exc:
                 self._safe_log(
                     u'error',
                     u'An error occurred while sending events: %s',
-                    exc
-                    )
+                    exc)
                 self._database.requeue_queued_events(queued_events)
                 break
             except Exception as exc:
