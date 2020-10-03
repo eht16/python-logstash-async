@@ -7,6 +7,7 @@ from datetime import datetime
 from logging import getLogger as get_logger
 from queue import Empty, Queue
 from threading import Event, Thread
+from socket import gaierror as socket_gaierror
 
 from limits import parse as parse_rate_limit
 from limits.storage import MemoryStorage
@@ -215,6 +216,14 @@ class LogProcessingWorker(Thread):  # pylint: disable=too-many-instance-attribut
             except (ConnectionError, TimeoutError) as exc:
                 self._safe_log(
                     u'error',
+                    u'An error occurred while sending events: %s',
+                    exc)
+                self._database.requeue_queued_events(queued_events)
+                break
+            # exception types that are out-of-scope of this library
+            except socket_gaierror as exc:
+                self._safe_log(
+                    u'critical',
                     u'An error occurred while sending events: %s',
                     exc)
                 self._database.requeue_queued_events(queued_events)
