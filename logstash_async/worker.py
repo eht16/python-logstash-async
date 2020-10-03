@@ -6,8 +6,8 @@
 from datetime import datetime
 from logging import getLogger as get_logger
 from queue import Empty, Queue
-from threading import Event, Thread
 from socket import gaierror as socket_gaierror
+from threading import Event, Thread
 
 from limits import parse as parse_rate_limit
 from limits.storage import MemoryStorage
