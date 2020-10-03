@@ -56,6 +56,7 @@ Options for configuring the log handler
       ``logstash_async.transport.TcpTransport``
       ``logstash_async.transport.UdpTransport``
       ``logstash_async.transport.BeatsTransport``
+      ``logstash_async.transport.HttpTransport``
 
     *Type*: ``string``
 
@@ -65,8 +66,9 @@ Options for configuring the log handler
 ``ssl_enable``
 
     Should SSL be enabled for the connection?
-    Only used for `logstash_async.transport.TcpTransport` and
-    ``logstash_async.transport.BeatsTransport``.
+    Only used for `logstash_async.transport.TcpTransport`,
+    ``logstash_async.transport.BeatsTransport`` and
+    ``logstash_async.transport.HttpTransport``.
 
     *Type*: ``boolean``
 
@@ -76,8 +78,9 @@ Options for configuring the log handler
 ``ssl_verify``
 
     Should the server's SSL certificate be verified?
-    Only used for `logstash_async.transport.TcpTransport` and
-    ``logstash_async.transport.BeatsTransport``.
+    Only used for `logstash_async.transport.TcpTransport`,
+    ``logstash_async.transport.BeatsTransport`` and
+    ``logstash_async.transport.HttpTransport``.
 
     *Type*: ``boolean``
 
