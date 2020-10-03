@@ -47,3 +47,16 @@ Example ``logstash.conf`` for SSL-encrypted Beats transport::
             ssl_key         => "/etc/ssl/private/logstash.p8"
         }
     }
+
+
+Example ``logstash.conf`` for HTTP transport with basic authentication::
+
+  input {
+      http {
+          host      => "127.0.0.1"
+          port      => 5959
+          user      => "logstash"
+          password  => "testing"
+          codec     => "json"
+      }
+  }

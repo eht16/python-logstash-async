@@ -66,6 +66,93 @@ configured extra prefix, e.g.:
   test_logger.addHandler(logstash_handler)
   ...
 
+Usage with HttpTransport
+========================
+The `AsynchronousLogstashHandler` supports also the logstash `http input plugin <https://www.elastic.co/guide/en/logstash/current/plugins-inputs-http.html>`_.
+
+.. code-block:: python
+
+  import logging
+
+  from logstash_async.transport import HttpTransport
+  from logstash_async.handler import AsynchronousLogstashHandler
+
+  host = 'localhost'
+  port = 5959
+
+  test_logger = logging.getLogger('python-logstash-logger')
+  test_logger.setLevel(logging.INFO)
+
+  transport = HttpTransport(
+      host,
+      port,
+      timeout=5.0,
+  )
+
+  handler = AsynchronousLogstashHandler(
+      host,
+      port,
+      transport=transport,
+      database_path='logstash_test.db'
+  )
+
+  test_logger.addHandler(handler)
+  test_logger.error('python-logstash-async: test logstash error message.')
+  test_logger.info('python-logstash-async: test logstash info message.')
+  test_logger.warning('python-logstash-async: test logstash warning message.')
+
+If you are using a self-signed certificate, it's necessary to specify the CA bundled
+certificate.
+
+.. code-block:: python
+
+  transport = HttpTransport(
+      host,
+      port,
+      ssl_verify="/opt/ca/my_ca.crt"
+      timeout=5.0,
+  )
+
+Furthermore it's possible to deactivate the certificate verification. This is
+not recommended for production.
+
+.. code-block:: python
+
+  transport = HttpTransport(
+      host,
+      port,
+      ssl_verify=False
+      timeout=5.0,
+  )
+
+TLS is activated by default. If you are not using TLS, it is necessary to
+deactivate it explicitly. This is not recommended for production.
+
+.. code-block:: python
+
+  transport = HttpTransport(
+      host,
+      port,
+      ssl_enable=False
+      timeout=5.0,
+  )
+
+It is also possible to use HTTP basic access authentication when necessary. The
+username and the password should not be empty.
+
+.. code-block:: python
+
+  from get_docker_secret import get_docker_secret
+
+  transport = HttpTransport(
+      host,
+      port,
+      ssl_verify=False
+      timeout=5.0,
+      username="logstash",
+      password=get_docker_secret('LOGSTASH_PASSWORD')
+  )
+
 
 Usage with Django
 =================
