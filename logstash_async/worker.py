@@ -6,6 +6,7 @@
 from datetime import datetime
 from logging import getLogger as get_logger
 from queue import Empty, Queue
+from socket import gaierror as socket_gaierror
 from threading import Event, Thread
 
 from limits import parse as parse_rate_limit
@@ -211,6 +212,14 @@ class LogProcessingWorker(Thread):  # pylint: disable=too-many-instance-attribut
             try:
                 events = [event['event_text'] for event in queued_events]
                 self._send_events(events)
+            # exception types for which we do not want a stack trace
+            except (ConnectionError, TimeoutError, socket_gaierror) as exc:
+                self._safe_log(
+                    u'error',
+                    u'An error occurred while sending events: %s',
+                    exc)
+                self._database.requeue_queued_events(queued_events)
+                break
             except Exception as exc:
                 self._safe_log(
                     u'exception',
