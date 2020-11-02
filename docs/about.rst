@@ -92,6 +92,19 @@ License
 ChangeLog
 ---------
 
+2.1.0 (Nov 02 2020)
++++++++++++++++++++
+
+  * Remove "six" dependency.
+  * Add "HTTP Input" transport (#56, Jürgen Löhel).
+  * Skip logging stacktraces for common network errors
+    (#55, #56, Walter Macomber).
+  * Extend FORMATTER_RECORD_FIELD_SKIP_LIST to filter
+    all record fields (#52).
+  * Docs: Fix error in logging.config.fileConfig code example
+    (#54, Guy).
+
+
 2.0.0 (Aug 16 2020)
 +++++++++++++++++++
 
