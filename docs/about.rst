@@ -92,6 +92,12 @@ License
 ChangeLog
 ---------
 
+2.1.1 (Nov 04 2020)
++++++++++++++++++++
+
+  * Fix missing message field in events (#58).
+
+
 2.1.0 (Nov 02 2020)
 +++++++++++++++++++
 
