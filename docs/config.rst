@@ -28,6 +28,8 @@ Options for configuring the log handler
     To use an in-memory cache instead of a SQLite database,
     simply pass ``None``. See :doc:`persistence` for details.
 
+    This setting is only relevant for `AsynchronousLogstashHandler`.
+
     .. note::
         Using multiple instances of `AsynchronousLogstashHandler` with
         different `database_path` settings won't work because there is only one
@@ -135,6 +137,8 @@ Options for configuring the log handler
     TTL for messages that are waiting to be published.
     If a message is beyond it's TTL, it will be deleted from the cache
     and will not be published to logstash.
+
+    This setting is only relevant for `AsynchronousLogstashHandler`.
 
     *Type*: ``integer``
 

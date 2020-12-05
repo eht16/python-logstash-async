@@ -9,7 +9,7 @@ It adds the following features:
   * Asynchronous transport of log events
   * Store log events temporarily in a cache until transport
     to the Logstash server has been successful
-  * Transport of events via TCP, UDP the Beats protocol
+  * Transport of events via TCP, UDP and the Beats protocol
   * TCP transport optionally SSL-encrypted
   * Special formatter ready to be used in Django projects
   * Special formatter ready to be used in Flask projects
