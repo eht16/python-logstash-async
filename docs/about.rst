@@ -92,6 +92,14 @@ License
 ChangeLog
 ---------
 
+2.2.0 (Dec 05 2020)
++++++++++++++++++++
+
+  * Add SynchronousLogstashHandler: operates like the
+    AsynchronousLogstashHandler but synchronously and without any
+    event queueing and retrying (#59, #60, Sascha Pfeiffer).
+
+
 2.1.1 (Nov 04 2020)
 +++++++++++++++++++
 
