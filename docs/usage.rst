@@ -2,7 +2,8 @@ Usage
 -----
 
 `AsynchronousLogstashHandler` is a custom logging handler which
-sends Logstash messages using UDP and TCP. For example:
+sends Logstash messages using UDP and TCP. (`SynchronousLogstashHandler` is
+a synchronous alternative) For example:
 
 .. code-block:: python
 
@@ -68,7 +69,8 @@ configured extra prefix, e.g.:
 
 Usage with HttpTransport
 ========================
-The `AsynchronousLogstashHandler` supports also the logstash `http input plugin <https://www.elastic.co/guide/en/logstash/current/plugins-inputs-http.html>`_.
+The `AsynchronousLogstashHandler` and `SynchronousLogstashHandler` support also
+the logstash `http input plugin <https://www.elastic.co/guide/en/logstash/current/plugins-inputs-http.html>`_.
 
 .. code-block:: python
 

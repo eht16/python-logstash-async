@@ -16,12 +16,10 @@ class ProcessingError(Exception):
     """"""
 
 
-class AsynchronousLogstashHandler(Handler):
-    """Python logging handler for Logstash. Sends events over TCP by default.
+class SynchronousLogstashHandler(Handler):
+    """Sync Python logging handler for Logstash. Sends events over TCP by default.
     :param host: The host of the logstash server, required.
     :param port: The port of the logstash server, required.
-    :param database_path: The path to the file containing queued events, required.
-                          Use None to use a in-memory cache.
     :param transport: Callable or path to a compatible transport class.
     :param ssl_enable: Should SSL be enabled for the connection? Default is False.
     :param ssl_verify: Should the server's SSL certificate be verified?
@@ -30,21 +28,16 @@ class AsynchronousLogstashHandler(Handler):
     :param ca_certs: The path to the file containing recognized CA certificates.
     :param enable: Flag to enable log processing (default is True, disabling
                    might be handy for local testing, etc.)
-    :param event_ttl: Amount of time in seconds to wait before expiring log messages in
-                      the database. (Given in seconds. Default is None, and disables this feature)
     """
-
-    _worker_thread = None
 
     # ----------------------------------------------------------------------
     # pylint: disable=too-many-arguments
-    def __init__(self, host, port, database_path, transport='logstash_async.transport.TcpTransport',
+    def __init__(self, host, port, transport='logstash_async.transport.TcpTransport',
                  ssl_enable=False, ssl_verify=True, keyfile=None, certfile=None, ca_certs=None,
-                 enable=True, event_ttl=None, encoding='utf-8', **kwargs):
+                 enable=True, encoding='utf-8', **kwargs):
         super().__init__()
         self._host = host
         self._port = port
-        self._database_path = database_path
         self._transport_path = transport
         self._ssl_enable = ssl_enable
         self._ssl_verify = ssl_verify
@@ -53,7 +46,6 @@ class AsynchronousLogstashHandler(Handler):
         self._ca_certs = ca_certs
         self._enable = enable
         self._transport = None
-        self._event_ttl = event_ttl
         self._encoding = encoding
         self._setup_transport(**kwargs)
 
@@ -63,19 +55,13 @@ class AsynchronousLogstashHandler(Handler):
             return  # we should not do anything, so just leave
 
         self._setup_transport()
-        self._start_worker_thread()
 
         # basically same implementation as in logging.handlers.SocketHandler.emit()
         try:
             data = self._format_record(record)
-            AsynchronousLogstashHandler._worker_thread.enqueue_event(data)
+            self._transport.send([data], use_logging=False)
         except Exception:
             self.handleError(record)
-
-    # ----------------------------------------------------------------------
-    def flush(self):
-        if self._worker_thread_is_running():
-            self._worker_thread.force_flush_queued_events()
 
     # ----------------------------------------------------------------------
     def _setup_transport(self, **kwargs):
@@ -103,6 +89,85 @@ class AsynchronousLogstashHandler(Handler):
             raise RuntimeError(
                 'Invalid transport path: must be an importable module path, '
                 'a class or factory function or an instance.')
+
+    # ----------------------------------------------------------------------
+    def _format_record(self, record):
+        self._create_formatter_if_necessary()
+        formatted = self.formatter.format(record)
+        if isinstance(formatted, str):
+            formatted = formatted.encode(self._encoding)  # pylint: disable=redefined-variable-type
+        return formatted + b'\n'
+
+    # ----------------------------------------------------------------------
+    def _create_formatter_if_necessary(self):
+        if self.formatter is None:
+            self.formatter = LogstashFormatter()
+
+    # ----------------------------------------------------------------------
+    def close(self):
+        self.acquire()
+        try:
+            self.shutdown()
+        finally:
+            self.release()
+        super().close()
+
+    # ----------------------------------------------------------------------
+    def shutdown(self):
+        self._close_transport()
+
+    # ----------------------------------------------------------------------
+    def _close_transport(self):
+        try:
+            if self._transport is not None:
+                self._transport.close()
+        except Exception as exc:
+            safe_log_via_print('error', u'Error on closing transport: {}'.format(exc))
+
+
+class AsynchronousLogstashHandler(SynchronousLogstashHandler):
+    """Python logging handler for Logstash. Sends events over TCP by default.
+    (there are some more params coming from SynchronousLogstashHandler)
+    :param database_path: The path to the file containing queued events, required.
+                          Use None to use a in-memory cache.
+    :param event_ttl: Amount of time in seconds to wait before expiring log messages in
+                      the database. (Given in seconds. Default is None, and disables this feature)
+    """
+
+    _worker_thread = None
+
+    # ----------------------------------------------------------------------
+    # pylint: disable=too-many-arguments
+    def __init__(self, host, port, database_path, transport='logstash_async.transport.TcpTransport',
+                 ssl_enable=False, ssl_verify=True, keyfile=None, certfile=None, ca_certs=None,
+                 enable=True, event_ttl=None, encoding='utf-8', **kwargs):
+
+        self._database_path = database_path
+        self._event_ttl = event_ttl
+
+        super().__init__(host, port, transport,
+                 ssl_enable, ssl_verify, keyfile, certfile, ca_certs,
+                 enable, encoding, **kwargs)
+
+    # ----------------------------------------------------------------------
+    def emit(self, record):
+        if not self._enable:
+            return  # we should not do anything, so just leave
+
+        self._setup_transport()
+        self._start_worker_thread()
+
+        # basically same implementation as in logging.handlers.SocketHandler.emit()
+        try:
+            data = self._format_record(record)
+            AsynchronousLogstashHandler._worker_thread.enqueue_event(data)
+        except Exception:
+            self.handleError(record)
+
+    # ----------------------------------------------------------------------
+    def flush(self):
+        if self._worker_thread_is_running():
+            self._worker_thread.force_flush_queued_events()
 
     # ----------------------------------------------------------------------
     def _start_worker_thread(self):
@@ -133,28 +198,6 @@ class AsynchronousLogstashHandler(Handler):
         return False
 
     # ----------------------------------------------------------------------
-    def _format_record(self, record):
-        self._create_formatter_if_necessary()
-        formatted = self.formatter.format(record)
-        if isinstance(formatted, str):
-            formatted = formatted.encode(self._encoding)  # pylint: disable=redefined-variable-type
-        return formatted + b'\n'
-
-    # ----------------------------------------------------------------------
-    def _create_formatter_if_necessary(self):
-        if self.formatter is None:
-            self.formatter = LogstashFormatter()
-
-    # ----------------------------------------------------------------------
-    def close(self):
-        self.acquire()
-        try:
-            self.shutdown()
-        finally:
-            self.release()
-        super().close()
-
-    # ----------------------------------------------------------------------
     def shutdown(self):
         if self._worker_thread_is_running():
             self._trigger_worker_shutdown()
@@ -175,11 +218,3 @@ class AsynchronousLogstashHandler(Handler):
     # ----------------------------------------------------------------------
     def _reset_worker_thread(self):
         AsynchronousLogstashHandler._worker_thread = None
-
-    # ----------------------------------------------------------------------
-    def _close_transport(self):
-        try:
-            if self._transport is not None:
-                self._transport.close()
-        except Exception as exc:
-            safe_log_via_print('error', u'Error on closing transport: {}'.format(exc))
