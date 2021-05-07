@@ -131,27 +131,23 @@ class LogstashFormatter(logging.Formatter):
 
     # ----------------------------------------------------------------------
     def _get_record_fields(self, record):
-        def value_repr(value):
-            easy_types = (type(None), bool, str, int, float)
+        return {k: self._value_repr(v) for k, v in record.__dict__.items()}
 
-            if isinstance(value, dict):
-                return {k: value_repr(v) for k, v in value.items()}
-            elif isinstance(value, (tuple, list)):
-                return [value_repr(v) for v in value]
-            elif isinstance(value, (datetime, date)):
-                return self._format_timestamp(time.mktime(value.timetuple()))
-            elif isinstance(value, uuid.UUID):
-                return value.hex
-            elif isinstance(value, easy_types):
-                return value
-            else:
-                return repr(value)
+    def _value_repr(self, value):
+        easy_types = (type(None), bool, str, int, float)
 
-        fields = {}
-
-        for key, value in record.__dict__.items():
-            fields[key] = value_repr(value)
-        return fields
+        if isinstance(value, easy_types):
+            return value
+        elif isinstance(value, (datetime, date)):
+            return self._format_timestamp(time.mktime(value.timetuple()))
+        elif isinstance(value, uuid.UUID):
+            return value.hex
+        elif isinstance(value, dict):
+            return {k: self._value_repr(v) for k, v in value.items()}
+        elif isinstance(value, (tuple, list)):
+            return [self._value_repr(v) for v in value]
+        else:
+            return repr(value)
 
     # ----------------------------------------------------------------------
     def _get_extra_fields(self, record):
