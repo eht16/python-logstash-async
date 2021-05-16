@@ -169,17 +169,17 @@ class TcpTransport(UdpTransport):
                 return
             # SSL
             cert_reqs = ssl.CERT_REQUIRED
+            ssl_context = ssl.create_default_context(cafile=self._ca_certs)
             if not self._ssl_verify:
                 if self._ca_certs:
                     cert_reqs = ssl.CERT_OPTIONAL
                 else:
                     cert_reqs = ssl.CERT_NONE
-            self._sock = ssl.wrap_socket(
-                self._sock,
-                keyfile=self._keyfile,
-                certfile=self._certfile,
-                ca_certs=self._ca_certs,
-                cert_reqs=cert_reqs)
+
+            ssl_context.verify_mode = cert_reqs
+            ssl_context.check_hostname = False
+            ssl_context.load_cert_chain(self._certfile, self._keyfile)
+            self._sock = ssl_context.wrap_socket(self._sock, server_side=False)
         except socket.error:
             self._close()
             raise
