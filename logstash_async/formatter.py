@@ -144,7 +144,7 @@ class LogstashFormatter(logging.Formatter):
             return value.hex
         elif isinstance(value, dict):
             return {k: self._value_repr(v) for k, v in value.items()}
-        elif isinstance(value, (tuple, list)):
+        elif isinstance(value, (tuple, list, set)):
             return [self._value_repr(v) for v in value]
         else:
             return repr(value)
