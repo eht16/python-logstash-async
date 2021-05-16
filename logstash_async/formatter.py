@@ -23,6 +23,8 @@ except ImportError:
 
 class LogstashFormatter(logging.Formatter):
 
+    _basic_data_types = (type(None), bool, str, int, float)
+
     # ----------------------------------------------------------------------
     # pylint: disable=too-many-arguments
     def __init__(
@@ -135,9 +137,7 @@ class LogstashFormatter(logging.Formatter):
 
     # ----------------------------------------------------------------------
     def _value_repr(self, value):
-        easy_types = (type(None), bool, str, int, float)
-
-        if isinstance(value, easy_types):
+        if isinstance(value, self._basic_data_types):
             return value
         elif isinstance(value, (datetime, date)):
             return self._format_timestamp(time.mktime(value.timetuple()))
