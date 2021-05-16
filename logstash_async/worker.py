@@ -246,6 +246,8 @@ class LogProcessingWorker(Thread):  # pylint: disable=too-many-instance-attribut
             # just log the exception and hope we can recover from the error
             self._safe_log(u'exception', u'Error retrieving queued events: %s', exc, exc=exc)
 
+        return None
+
     # ----------------------------------------------------------------------
     def _delete_queued_events_from_database(self):
         try:

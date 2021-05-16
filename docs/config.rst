@@ -43,6 +43,7 @@ Options for configuring the log handler
 
 
 ``transport``
+
     Callable or path to a compatible transport class.
 
     You can specify your own transport class, e.g. to implement
