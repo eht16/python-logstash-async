@@ -92,6 +92,15 @@ License
 ChangeLog
 ---------
 
+2.3.0 (May 23 2021)
++++++++++++++++++++
+
+  * Consider `set` also as sequence type when formatting events.
+  * Improve formatter performance by converting simple types first
+    (#64, Johann Schmitz).
+  * Migrate from ssl.wrap_socket() to SSLContext.wrap_socket().
+
+
 2.2.0 (Dec 05 2020)
 +++++++++++++++++++
 
