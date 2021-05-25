@@ -133,7 +133,9 @@ class LogstashFormatter(logging.Formatter):
 
     # ----------------------------------------------------------------------
     def _get_record_fields(self, record):
-        return {k: self._value_repr(v) for k, v in record.__dict__.items()}
+        return {k: self._value_repr(v)
+                for k, v in record.__dict__.items()
+                if k not in constants.FORMATTER_RECORD_FIELD_SKIP_LIST}
 
     # ----------------------------------------------------------------------
     def _value_repr(self, value):

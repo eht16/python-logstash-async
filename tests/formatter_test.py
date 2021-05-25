@@ -29,6 +29,15 @@ class LogstashFormatterTest(unittest.TestCase):
 
         self.assertIsNone(file_handler.exception)
 
+    def test_fields_are_excluded_in_get_record_fields(self):
+        formatter = LogstashFormatter()
+        log_record = makeLogRecord({
+            'filename': 'foo.py',
+            'dummy': 'foobar'
+        })
+        self.assertDictEqual(formatter._get_record_fields(log_record), {
+            'dummy': 'foobar'
+        })
 
 if __name__ == "__main__":
     unittest.main()
