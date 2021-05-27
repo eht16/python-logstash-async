@@ -32,11 +32,11 @@ class Constants:
     # Usually this list does not need to be modified. Add/Remove elements to
     # exclude/include them in the Logstash event, for the full list see:
     # http://docs.python.org/library/logging.html#logrecord-attributes
-    FORMATTER_RECORD_FIELD_SKIP_LIST = [
+    FORMATTER_RECORD_FIELD_SKIP_LIST = {
         'args', 'asctime', 'created', 'exc_info', 'exc_text', 'filename',
         'funcName', 'id', 'levelname', 'levelno', 'lineno', 'module',
         'msecs', 'msg', 'name', 'pathname', 'process',
-        'processName', 'relativeCreated', 'stack_info', 'thread', 'threadName']
+        'processName', 'relativeCreated', 'stack_info', 'thread', 'threadName'}
     # fields to be set on the top-level of a Logstash event/message, do not modify this
     # unless you know what you are doing
     FORMATTER_LOGSTASH_MESSAGE_FIELD_LIST = [
