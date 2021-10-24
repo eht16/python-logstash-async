@@ -10,9 +10,9 @@ python-logstash-async
     :target: https://python-logstash-async.readthedocs.io/en/latest/
     :alt: Documentation Status
 
-.. image:: https://travis-ci.org/eht16/python-logstash-async.svg?branch=master
-    :target: https://travis-ci.org/eht16/python-logstash-async
-    :alt: Travis CI
+.. image:: https://github.com/eht16/python-logstash-async/actions/workflows/tests.yml/badge.svg
+    :target: https://github.com/eht16/python-logstash-async/actions/workflows/tests.yml
+    :alt: CI Tests
 
 .. image:: https://img.shields.io/pypi/pyversions/python-logstash-async.svg
     :target: https://pypi.org/project/python-logstash-async/
