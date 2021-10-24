@@ -25,7 +25,7 @@ class IChunkedTest(unittest.TestCase):
         test_sequence = list(range(test_sequence_size))
         # keep results for assertions
         iterations = 0
-        iterated_elements = list()
+        iterated_elements = []
         # test
         for sequence_subset in ichunked(test_sequence, chunk_size):
             iterations += 1
@@ -68,10 +68,10 @@ class IChunkedTest(unittest.TestCase):
     # ----------------------------------------------------------------------
     def test_empty_sequence(self):
         chunk_size = 5
-        test_sequence = list()
+        test_sequence = []
         # keep results for assertions
         iterations = 0
-        iterated_elements = list()
+        iterated_elements = []
         # test
         for sequence_subset in ichunked(test_sequence, chunk_size):
             iterations += 1

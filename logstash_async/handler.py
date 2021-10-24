@@ -122,7 +122,7 @@ class SynchronousLogstashHandler(Handler):
             if self._transport is not None:
                 self._transport.close()
         except Exception as exc:
-            safe_log_via_print('error', u'Error on closing transport: {}'.format(exc))
+            safe_log_via_print('error', f'Error on closing transport: {exc}')
 
 
 class AsynchronousLogstashHandler(SynchronousLogstashHandler):

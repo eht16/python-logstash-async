@@ -85,7 +85,7 @@ class DatabaseCache(Cache):
 
     # ----------------------------------------------------------------------
     def add_event(self, event):
-        query = u'''
+        query = '''
             INSERT INTO `event`
             (`event_text`, `pending_delete`, `entry_date`) VALUES (?, ?, datetime('now'))'''
         with self._connect() as connection:
@@ -137,8 +137,8 @@ class DatabaseCache(Cache):
         if self._event_ttl is None:
             return
 
-        query_delete = "DELETE FROM `event` WHERE `entry_date` < datetime('now', '-{} seconds');" \
-            .format(self._event_ttl)
+        query_delete = "DELETE FROM `event` WHERE " \
+                       f"`entry_date` < datetime('now', '-{self._event_ttl} seconds');"
         with self._connect() as connection:
             cursor = connection.cursor()
             cursor.execute(query_delete)

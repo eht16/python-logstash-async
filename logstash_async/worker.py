@@ -145,8 +145,8 @@ class LogProcessingWorker(Thread):  # pylint: disable=too-many-instance-attribut
             self._write_event_to_database()
         except DatabaseLockedError as exc:
             self._safe_log(
-                u'debug',
-                u'Database is locked, will try again later (queue length %d)',
+                'debug',
+                'Database is locked, will try again later (queue length %d)',
                 self._queue.qsize(),
                 exc=exc)
             raise
@@ -168,8 +168,8 @@ class LogProcessingWorker(Thread):  # pylint: disable=too-many-instance-attribut
     # ----------------------------------------------------------------------
     def _log_processing_error(self, exception):
         self._safe_log(
-            u'exception',
-            u'Log processing error (queue size: %3s): %s',
+            'exception',
+            'Log processing error (queue size: %3s): %s',
             self._queue.qsize(),
             exception,
             exc=exception)
@@ -215,15 +215,15 @@ class LogProcessingWorker(Thread):  # pylint: disable=too-many-instance-attribut
             # exception types for which we do not want a stack trace
             except (ConnectionError, TimeoutError, socket_gaierror) as exc:
                 self._safe_log(
-                    u'error',
-                    u'An error occurred while sending events: %s',
+                    'error',
+                    'An error occurred while sending events: %s',
                     exc)
                 self._database.requeue_queued_events(queued_events)
                 break
             except Exception as exc:
                 self._safe_log(
-                    u'exception',
-                    u'An error occurred while sending events: %s',
+                    'exception',
+                    'An error occurred while sending events: %s',
                     exc,
                     exc=exc)
                 self._database.requeue_queued_events(queued_events)
@@ -238,13 +238,13 @@ class LogProcessingWorker(Thread):  # pylint: disable=too-many-instance-attribut
             return self._database.get_queued_events()
         except DatabaseLockedError as exc:
             self._safe_log(
-                u'debug',
-                u'Database is locked, will try again later (queue length %d)',
+                'debug',
+                'Database is locked, will try again later (queue length %d)',
                 self._queue.qsize(),
                 exc=exc)
         except Exception as exc:
             # just log the exception and hope we can recover from the error
-            self._safe_log(u'exception', u'Error retrieving queued events: %s', exc, exc=exc)
+            self._safe_log('exception', 'Error retrieving queued events: %s', exc, exc=exc)
 
         return None
 
@@ -271,7 +271,7 @@ class LogProcessingWorker(Thread):  # pylint: disable=too-many-instance-attribut
 
     # ----------------------------------------------------------------------
     def _log_general_error(self, exc):
-        self._safe_log(u'exception', u'An unexpected error occurred: %s', exc, exc=exc)
+        self._safe_log('exception', 'An unexpected error occurred: %s', exc, exc=exc)
 
     # ----------------------------------------------------------------------
     def _safe_log(self, log_level, message, *args, **kwargs):
@@ -285,8 +285,7 @@ class LogProcessingWorker(Thread):  # pylint: disable=too-many-instance-attribut
             if rate_limit_allowed == 1:
                 # extend the message to indicate future rate limiting
                 message = \
-                    u'{} (rate limiting effective, ' \
-                    'further equal messages will be limited)'.format(message)
+                    f'{message} (rate limiting effective, further equal messages will be limited'
 
             self._safe_log_impl(log_level, message, *args, **kwargs)
 
@@ -324,6 +323,6 @@ class LogProcessingWorker(Thread):  # pylint: disable=too-many-instance-attribut
         if queue_size:
             self._safe_log(
                 'warn',
-                u'Non-empty queue while shutting down ({} events pending). '
-                u'This indicates a previous error.'.format(queue_size),
+                f'Non-empty queue while shutting down ({queue_size} events pending). '
+                'This indicates a previous error.',
                 extra=dict(queue_size=queue_size))

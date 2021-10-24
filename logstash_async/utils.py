@@ -30,7 +30,7 @@ def ichunked(seq, chunksize):
 # ----------------------------------------------------------------------
 def safe_log_via_print(log_level, message, *args, **kwargs):
     timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    log_message = u'{}: {}: {}'.format(timestamp, log_level, message)
+    log_message = f'{timestamp}: {log_level}: {message}'
     print(log_message % args, file=sys.stderr)
     # print stack trace if available
     exc_info = kwargs.get('exc_info', None)
@@ -52,13 +52,11 @@ def import_string(dotted_path):
     try:
         module_path, class_name = dotted_path.rsplit('.', 1)
     except ValueError as exc:
-        raise ImportError("%s doesn't look like a module path" % dotted_path) from exc
+        raise ImportError(f'{dotted_path} does not look like a module path') from exc
 
     module = import_module(module_path)
     try:
         return getattr(module, class_name)
     except AttributeError as exc:
         raise ImportError(
-            'Module "%s" does not define a "%s" attribute/class' % (
-                module_path,
-                class_name)) from exc
+            f'Module "{module_path}" does not define a "{class_name}" attribute/class') from exc

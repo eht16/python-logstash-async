@@ -67,10 +67,8 @@ class LogstashFormatter(logging.Formatter):
     # ----------------------------------------------------------------------
     def _prefetch_interpreter_version(self):
         """Override when needed"""
-        self._interpreter_version = u'{}.{}.{}'.format(
-            sys.version_info.major,
-            sys.version_info.minor,
-            sys.version_info.micro)
+        self._interpreter_version = \
+            f'{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}'
 
     # ----------------------------------------------------------------------
     def _prefetch_host(self, fqdn):
@@ -128,8 +126,10 @@ class LogstashFormatter(logging.Formatter):
 
     # ----------------------------------------------------------------------
     def _format_timestamp(self, time_):
-        tstamp = datetime.utcfromtimestamp(time_)
-        return tstamp.strftime("%Y-%m-%dT%H:%M:%S") + ".%03d" % (tstamp.microsecond / 1000) + "Z"
+        timestamp = datetime.utcfromtimestamp(time_)
+        formatted_timestamp = timestamp.strftime('%Y-%m-%dT%H:%M:%S')
+        microsecond = int(timestamp.microsecond / 1000)
+        return f'{formatted_timestamp}.{microsecond:03}Z'
 
     # ----------------------------------------------------------------------
     def _get_record_fields(self, record):
