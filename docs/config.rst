@@ -363,7 +363,7 @@ for easy modification.
     of the same errors. In case rate limiting is in effect, the last message before dropping further
     messages will contain a hint telling that further messages of this kind will be dropped.
     To disable set this to `None`, to enable use a string like '5 per minute',
-    for details see http://limits.readthedocs.io/en/stable/string-notation.html.
+    for details see https://limits.readthedocs.io/en/stable/quickstart.html#rate-limit-string-notation.
 
     .. note::
         This rate limit affects only error log messages emitted directly in
