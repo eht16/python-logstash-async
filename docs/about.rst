@@ -92,6 +92,16 @@ License
 ChangeLog
 ---------
 
+2.4.0 (Apr 04 2022)
++++++++++++++++++++
+
+  * Update link to docs for rate limit string notation
+    (#70, Garrett Hyde).
+  * Log connection and network errors as warnings (#71).
+  * Fix support for Django 4.0 by using Request.build_absolute_uri().
+  * Use datetime as column type for "entry_date" in database.
+
+
 2.3.0 (May 23 2021)
 +++++++++++++++++++
 
