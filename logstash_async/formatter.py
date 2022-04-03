@@ -191,7 +191,7 @@ class LogstashFormatter(logging.Formatter):
     # ----------------------------------------------------------------------
     def _move_extra_record_fields_to_prefix(self, message):
         """
-        Anythng added by the "extra" keyword in the logging call will be moved into the
+        Anything added by the "extra" keyword in the logging call will be moved into the
         configured "extra" prefix. This way the event in Logstash will be clean and any extras
         will be paired together in the configured extra prefix.
         If not extra prefix is configured, the message will be kept as is.
@@ -240,7 +240,7 @@ class DjangoLogstashFormatter(LogstashFormatter):
             extra_fields['req_useragent'] = request.META.get('HTTP_USER_AGENT', '<none>')
             extra_fields['req_remote_address'] = request.META.get('REMOTE_ADDR', '<none>')
             extra_fields['req_host'] = self._try_to_get_host_from_remote(request)
-            extra_fields['req_uri'] = request.get_raw_uri()
+            extra_fields['req_uri'] = self._try_to_get_full_request_uri(request)
             extra_fields['req_user'] = str(request_user)
             extra_fields['req_method'] = request.META.get('REQUEST_METHOD', '')
             extra_fields['req_referer'] = request.META.get('HTTP_REFERER', '')
@@ -289,6 +289,14 @@ class DjangoLogstashFormatter(LogstashFormatter):
                 return request.META['HTTP_HOST']
             else:
                 return request.META['SERVER_NAME']
+
+    # ----------------------------------------------------------------------
+    def _try_to_get_full_request_uri(self, request):
+        try:
+            return request.build_absolute_uri()
+        except Exception:
+            # build_absolute_uri() may fail with DisallowedHost errors and maybe more
+            return None
 
 
 class FlaskLogstashFormatter(LogstashFormatter):
