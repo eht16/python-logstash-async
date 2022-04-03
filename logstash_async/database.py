@@ -18,7 +18,7 @@ DATABASE_SCHEMA_STATEMENTS = [
     `event_id`          INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     `event_text`        TEXT NOT NULL,
     `pending_delete`    INTEGER NOT NULL,
-    `entry_date`        TEXT NOT NULL);
+    `entry_date`        DATETIME NOT NULL);
     ''',
     '''CREATE INDEX IF NOT EXISTS `idx_pending_delete` ON `event` (pending_delete);''',
     '''CREATE INDEX IF NOT EXISTS `idx_entry_date` ON `event` (entry_date);''',
