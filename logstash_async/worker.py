@@ -14,7 +14,7 @@ from limits.storage import MemoryStorage
 from limits.strategies import FixedWindowRateLimiter
 
 from logstash_async.constants import constants
-from logstash_async.database import DatabaseCache, DatabaseLockedError
+from logstash_async.database import DatabaseCache, DatabaseLockedError, DatabaseDiskIOError
 from logstash_async.memory_cache import MemoryCache
 from logstash_async.utils import safe_log_via_print
 
@@ -128,7 +128,7 @@ class LogProcessingWorker(Thread):  # pylint: disable=too-many-instance-attribut
                 self._flush_queued_events(force=force_flush)
                 self._delay_processing()
                 self._expire_events()
-            except (DatabaseLockedError, ProcessingError):
+            except (DatabaseLockedError, ProcessingError, DatabaseDiskIOError):
                 if self._shutdown_requested():
                     return
 
@@ -150,6 +150,13 @@ class LogProcessingWorker(Thread):  # pylint: disable=too-many-instance-attribut
                 self._queue.qsize(),
                 exc=exc)
             raise
+        except DatabaseDiskIOError as exc:
+            self._safe_log(
+                'debug',
+                'Disk I/O error, will try again later (queue length %d)',
+                self._queue.qsize(),
+                exc=exc)
+            raise
         except Exception as exc:
             self._log_processing_error(exc)
             raise ProcessingError from exc
@@ -160,7 +167,7 @@ class LogProcessingWorker(Thread):  # pylint: disable=too-many-instance-attribut
     def _expire_events(self):
         try:
             self._database.expire_events()
-        except DatabaseLockedError:
+        except (DatabaseLockedError, DatabaseDiskIOError):
             # Nothing to handle, if it fails, we will either successfully publish
             # these messages next time or we will delete them on the next pass.
             pass
@@ -242,6 +249,13 @@ class LogProcessingWorker(Thread):  # pylint: disable=too-many-instance-attribut
                 'Database is locked, will try again later (queue length %d)',
                 self._queue.qsize(),
                 exc=exc)
+        except DatabaseDiskIOError as exc:
+            self._safe_log(
+                'debug',
+                'Disk I/O error, will try again later (queue length %d)',
+                self._queue.qsize(),
+                exc=exc)
+            raise
         except Exception as exc:
             # just log the exception and hope we can recover from the error
             self._safe_log('exception', 'Error retrieving queued events: %s', exc, exc=exc)
@@ -252,7 +266,7 @@ class LogProcessingWorker(Thread):  # pylint: disable=too-many-instance-attribut
     def _delete_queued_events_from_database(self):
         try:
             self._database.delete_queued_events()
-        except DatabaseLockedError:
+        except (DatabaseLockedError, DatabaseDiskIOError):
             pass  # nothing to handle, if it fails, we delete those events in a later run
 
     # ----------------------------------------------------------------------

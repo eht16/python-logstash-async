@@ -7,16 +7,16 @@ import os
 import sqlite3
 import time
 import unittest
+from stat import S_IREAD, S_IRGRP, S_IROTH, S_IWUSR
 
 from logstash_async.constants import constants
-from logstash_async.database import DATABASE_SCHEMA_STATEMENTS, DatabaseCache
+from logstash_async.database import DATABASE_SCHEMA_STATEMENTS, DatabaseCache, DatabaseDiskIOError
 
 
 # pylint: disable=protected-access
 
 
 class DatabaseCacheTest(unittest.TestCase):
-
     TEST_DB_FILENAME = "test.db"
     _connection = None
 
@@ -62,6 +62,15 @@ class DatabaseCacheTest(unittest.TestCase):
         if cls._connection:
             cls._connection.close()
         cls._connection = None
+
+    # ----------------------------------------------------------------------
+    def testIOException(self):
+        self.cache.add_event("message")
+        with self.assertRaises(DatabaseDiskIOError):
+            # change permissions to produce error
+            os.chmod(os.path.abspath("test.db"), S_IREAD | S_IRGRP | S_IROTH)
+            self.cache.add_event("message")
+        os.chmod(os.path.abspath("test.db"), S_IWUSR | S_IREAD)
 
     # ----------------------------------------------------------------------
     def test_add_event(self):
