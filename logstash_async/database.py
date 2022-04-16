@@ -11,6 +11,7 @@ from logstash_async.cache import Cache
 from logstash_async.constants import constants
 from logstash_async.utils import ichunked
 
+
 DATABASE_SCHEMA_STATEMENTS = [
     '''
     CREATE TABLE IF NOT EXISTS `event` (

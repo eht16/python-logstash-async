@@ -14,7 +14,7 @@ from limits.storage import MemoryStorage
 from limits.strategies import FixedWindowRateLimiter
 
 from logstash_async.constants import constants
-from logstash_async.database import DatabaseCache, DatabaseLockedError, DatabaseDiskIOError
+from logstash_async.database import DatabaseCache, DatabaseDiskIOError, DatabaseLockedError
 from logstash_async.memory_cache import MemoryCache
 from logstash_async.utils import safe_log_via_print
 
