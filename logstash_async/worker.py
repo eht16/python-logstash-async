@@ -5,7 +5,7 @@
 
 from datetime import datetime
 from logging import getLogger as get_logger
-from queue import Empty, Queue
+from queue import Empty, PriorityQueue
 from socket import gaierror as socket_gaierror
 from threading import Event, Thread
 
@@ -46,7 +46,7 @@ class LogProcessingWorker(Thread):  # pylint: disable=too-many-instance-attribut
 
         self._shutdown_event = Event()
         self._flush_event = Event()
-        self._queue = Queue()
+        self._queue = PriorityQueue()
 
         self._event = None
         self._database = None
