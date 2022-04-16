@@ -92,6 +92,14 @@ License
 ChangeLog
 ---------
 
+2.5.0 (Apr 16 2022)
++++++++++++++++++++
+
+  * Handle database disk errors (#72, Peter Mazarovich).
+  * Use Python's PriorityQueue to reduce memory consumption
+    (#73, Peter Mazarovich).
+
+
 2.4.0 (Apr 04 2022)
 +++++++++++++++++++
 
