@@ -34,7 +34,7 @@ class MemoryCacheTest(unittest.TestCase):
 
     # ----------------------------------------------------------------------
     def test_get_queued_events_batch_size(self):
-        constants.QUEUED_EVENTS_BATCH_SIZE = 3
+        constants.QUEUED_EVENTS_BATCH_SIZE = 3  # pylint: disable=invalid-name
 
         cache = MemoryCache({
             "id1": {"pending_delete": True},
