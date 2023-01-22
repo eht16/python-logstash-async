@@ -12,11 +12,28 @@ from threading import Event, Thread
 from limits import parse as parse_rate_limit
 from limits.storage import MemoryStorage
 from limits.strategies import FixedWindowRateLimiter
+from requests.exceptions import ConnectionError as RequestsConnectionError
+from requests.exceptions import ConnectTimeout, HTTPError, ProxyError, RetryError, Timeout
 
 from logstash_async.constants import constants
 from logstash_async.database import DatabaseCache, DatabaseDiskIOError, DatabaseLockedError
 from logstash_async.memory_cache import MemoryCache
 from logstash_async.utils import safe_log_via_print
+
+
+NETWORK_EXCEPTIONS = (
+    # Python
+    ConnectionError,
+    TimeoutError,
+    socket_gaierror,
+    # Requests
+    ConnectTimeout,
+    RequestsConnectionError,
+    HTTPError,
+    ProxyError,
+    RetryError,
+    Timeout,
+)
 
 
 class ProcessingError(Exception):
@@ -220,7 +237,7 @@ class LogProcessingWorker(Thread):  # pylint: disable=too-many-instance-attribut
                 events = [event['event_text'] for event in queued_events]
                 self._send_events(events)
             # Log connection and network errors as warnings as they are rather harmless
-            except (ConnectionError, TimeoutError, socket_gaierror) as exc:
+            except NETWORK_EXCEPTIONS as exc:
                 self._safe_log(
                     'warning',
                     'An error occurred while sending events: %s',
