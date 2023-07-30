@@ -92,6 +92,13 @@ License
 ChangeLog
 ---------
 
+2.6.0 (Jul 30 2023)
++++++++++++++++++++
+
+  * Load certificate chain only if a certificate was specified (#79).
+  * Handle network errors raised by "requests" in HttpTransport (#75).
+
+
 2.5.0 (Apr 16 2022)
 +++++++++++++++++++
 
