@@ -5,10 +5,14 @@
 
 from abc import ABC, abstractmethod
 from typing import Iterator, Union
+import fcntl
 import json
 import logging
 import socket
 import ssl
+import struct
+import termios
+import time
 
 from requests.auth import HTTPBasicAuth
 import pylogbeat
@@ -122,8 +126,18 @@ class UdpTransport:
     def _close(self, force=False):
         if not self._keep_connection or force:
             if self._sock:
+                while not self._is_sock_write_buff_empty():
+                    time.sleep(0.05)
                 self._sock.close()
                 self._sock = None
+
+    # ----------------------------------------------------------------------
+    def _is_sock_write_buff_empty(self):
+        socket_fd = self._sock.fileno()
+        buffer_size = struct.pack('I', 0)
+        ioctl_result = fcntl.ioctl(socket_fd, termios.TIOCOUTQ, buffer_size)
+        buffer_size = struct.unpack('I', ioctl_result)[0]
+        return not buffer_size
 
     # ----------------------------------------------------------------------
     def close(self):
