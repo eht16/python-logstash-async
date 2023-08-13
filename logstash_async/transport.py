@@ -128,6 +128,7 @@ class UdpTransport:
             if self._sock:
                 while not self._is_sock_write_buff_empty():
                     time.sleep(0.05)
+                self._sock.shutdown(socket.SHUT_WR)
                 self._sock.close()
                 self._sock = None
 
