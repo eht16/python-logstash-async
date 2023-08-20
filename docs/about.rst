@@ -92,6 +92,16 @@ License
 ChangeLog
 ---------
 
+2.7.0 (Aug 20 2023)
++++++++++++++++++++
+
+  * Add a wait until all data is sent, before closing socket on TCP
+    transport (#81, Alisher Nazarkhanov).
+  * Explicitly shutdown the socket connection in Udp/TcpTransport to
+    prevent peer connection errors.
+  * Implement optional database VACUUM on shutdown (#80).
+
+
 2.6.0 (Jul 30 2023)
 +++++++++++++++++++
 
