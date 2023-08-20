@@ -152,3 +152,9 @@ class DatabaseCache(Cache):
         with self._connect() as connection:
             cursor = connection.cursor()
             cursor.execute(query_delete)
+
+    # ----------------------------------------------------------------------
+    def vacuum(self):
+        with self._connect() as connection:
+            cursor = connection.cursor()
+            cursor.execute("VACUUM;")

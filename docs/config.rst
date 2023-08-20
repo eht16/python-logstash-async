@@ -375,6 +375,16 @@ for easy modification.
     *Default*: None
 
 
+``constants.DATABASE_VACUUM_ON_SHUTDOWN``
+
+    Vacuum SQLite database on shutdown - when enabled, the database will be vacuumed on shutdown
+    to reduce its size on disk.
+
+    *Type*: ``boolean``
+
+    *Default*: False
+
+
 Example usage:
 
 .. code-block:: python

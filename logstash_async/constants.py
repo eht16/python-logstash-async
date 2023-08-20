@@ -47,6 +47,9 @@ class Constants:
     # Use a string like '5 per minute' or None to disable (default), for details see
     # http://limits.readthedocs.io/en/stable/string-notation.html
     ERROR_LOG_RATE_LIMIT = None
+    # Vacuum SQLite database on shutdown - when enabled, the database will be vacuumed on shutdown
+    # to reduce its size on disk
+    DATABASE_VACUUM_ON_SHUTDOWN = False
 
 
 constants = Constants()  # pylint: disable=invalid-name

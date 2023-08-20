@@ -97,6 +97,7 @@ class LogProcessingWorker(Thread):  # pylint: disable=too-many-instance-attribut
             self._log_general_error(exc)
         # check for empty queue and report if not
         self._warn_about_non_empty_queue_on_shutdown()
+        self._vaccum_database()
 
     # ----------------------------------------------------------------------
     def force_flush_queued_events(self):
@@ -357,3 +358,13 @@ class LogProcessingWorker(Thread):  # pylint: disable=too-many-instance-attribut
                 f'Non-empty queue while shutting down ({queue_size} events pending). '
                 'This indicates a previous error.',
                 extra=dict(queue_size=queue_size))
+
+    # ----------------------------------------------------------------------
+    def _vaccum_database(self):
+        if not constants.DATABASE_VACUUM_ON_SHUTDOWN:
+            return
+
+        try:
+            self._database.vacuum()
+        except DatabaseLockedError:
+            self._safe_log('debug', 'Database is locked, ignore vacuuming database')
