@@ -5,14 +5,20 @@
 
 from abc import ABC, abstractmethod
 from typing import Iterator, Union
-import fcntl
 import json
 import logging
 import socket
 import ssl
-import struct
-import termios
 import time
+
+
+# Use fcntl to control socket buffering if available
+try:
+    import fcntl
+    import struct
+    import termios
+except ImportError:
+    fcntl = None
 
 from requests.auth import HTTPBasicAuth
 import pylogbeat
@@ -145,6 +151,9 @@ class UdpTransport:
 
     # ----------------------------------------------------------------------
     def _is_sock_write_buff_empty(self):
+        if fcntl is None:
+            return True
+
         socket_fd = self._sock.fileno()
         buffer_size = struct.pack('I', 0)
         ioctl_result = fcntl.ioctl(socket_fd, termios.TIOCOUTQ, buffer_size)
