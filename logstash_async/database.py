@@ -158,3 +158,12 @@ class DatabaseCache(Cache):
         with self._connect() as connection:
             cursor = connection.cursor()
             cursor.execute("VACUUM;")
+
+    # ----------------------------------------------------------------------
+    def get_non_flushed_event_count(self):
+        query_fetch = '''SELECT count(*) FROM `event` WHERE `pending_delete` = 0;'''
+        with self._connect() as connection:
+            cursor = connection.cursor()
+            cursor.execute(query_fetch)
+            count = cursor.fetchone()[0]
+        return count

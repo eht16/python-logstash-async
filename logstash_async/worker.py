@@ -129,6 +129,8 @@ class LogProcessingWorker(Thread):  # pylint: disable=too-many-instance-attribut
         else:
             self._database = MemoryCache(cache=self._memory_cache, event_ttl=self._event_ttl)
 
+        self._non_flushed_event_count = self._database.get_non_flushed_event_count()
+
     # ----------------------------------------------------------------------
     def _fetch_events(self):
         while True:
