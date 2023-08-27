@@ -13,6 +13,8 @@ class Constants:
     """
     # timeout in seconds for TCP connections
     SOCKET_TIMEOUT = 5.0
+    # maximum time in seconds to wait for the socket's write buffer to get empty
+    SOCKET_CLOSE_WAIT_TIMEOUT = 30.0
     # interval in seconds to check the internal queue for new messages to be cached in the database
     QUEUE_CHECK_INTERVAL = 2.0
     # interval in seconds to send cached events from the database to Logstash

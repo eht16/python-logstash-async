@@ -267,6 +267,16 @@ for easy modification.
     *Default*: ``5.0``
 
 
+``constants.SOCKET_CLOSE_WAIT_TIMEOUT``
+
+    Maximum time in seconds to wait for the socket's write buffer to get empty.
+    Set to 0 to disable waiting for the socket write buffer to get empty.
+
+    *Type*: ``float``
+
+    *Default*: ``30.0``
+
+
 ``constants.QUEUE_CHECK_INTERVAL``
 
     Interval in seconds to check the internal queue for new messages

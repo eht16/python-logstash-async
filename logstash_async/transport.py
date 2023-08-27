@@ -18,6 +18,7 @@ from requests.auth import HTTPBasicAuth
 import pylogbeat
 import requests
 
+from logstash_async.constants import constants
 from logstash_async.utils import ichunked
 
 
@@ -126,11 +127,21 @@ class UdpTransport:
     def _close(self, force=False):
         if not self._keep_connection or force:
             if self._sock:
-                while not self._is_sock_write_buff_empty():
-                    time.sleep(0.05)
+                self._wait_for_socket_buffer_empty()
                 self._sock.shutdown(socket.SHUT_WR)
                 self._sock.close()
                 self._sock = None
+
+    # ----------------------------------------------------------------------
+    def _wait_for_socket_buffer_empty(self):
+        wait_timeout = constants.SOCKET_CLOSE_WAIT_TIMEOUT
+        interval = 0.05
+        time_waited = 0
+        # wait until the socket's write buffer is empty
+        # but do not wait longer than SOCKET_CLOSE_WAIT_TIMEOUT
+        while not self._is_sock_write_buff_empty() and time_waited < wait_timeout:
+            time_waited += interval
+            time.sleep(interval)
 
     # ----------------------------------------------------------------------
     def _is_sock_write_buff_empty(self):
