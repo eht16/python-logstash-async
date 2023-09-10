@@ -92,6 +92,14 @@ License
 ChangeLog
 ---------
 
+2.7.1 (Sep 10 2023)
++++++++++++++++++++
+
+  * Wait for empty socket write buffer only if "fnctl" is available (#82).
+  * Wait at most 30s for empty socket write buffer (#83).
+  * Read pending events from database on startup for immediate flushing (#85).
+
+
 2.7.0 (Aug 20 2023)
 +++++++++++++++++++
 
