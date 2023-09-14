@@ -92,6 +92,12 @@ License
 ChangeLog
 ---------
 
+2.7.2 (Sep 14 2023)
++++++++++++++++++++
+
+  * Implement get_non_flushed_event_count() for MemoryCache (#88).
+
+
 2.7.1 (Sep 10 2023)
 +++++++++++++++++++
 
