@@ -61,3 +61,12 @@ class Cache(ABC):
         :return:
         """
         pass
+
+    # ----------------------------------------------------------------------
+    @abstractmethod
+    def get_non_flushed_event_count(self):
+        """Determine the count of pending events in the cache which need to be sent to Logstash.
+
+        :return: Count of pending events
+        """
+        pass

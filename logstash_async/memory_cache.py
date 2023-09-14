@@ -93,3 +93,7 @@ class MemoryCache(Cache):
                 self.logger.warning(
                     "Could not delete event with id %s. It does not appear to be in the cache.",
                     event_id)
+
+    # ----------------------------------------------------------------------
+    def get_non_flushed_event_count(self):
+        return len([event for event in self._cache.values() if not event['pending_delete']])
