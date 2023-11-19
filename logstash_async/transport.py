@@ -145,7 +145,7 @@ class UdpTransport:
         time_waited = 0
         # wait until the socket's write buffer is empty
         # but do not wait longer than SOCKET_CLOSE_WAIT_TIMEOUT
-        while not self._is_sock_write_buff_empty() and time_waited < wait_timeout:
+        while time_waited < wait_timeout and not self._is_sock_write_buff_empty():
             time_waited += interval
             time.sleep(interval)
 
