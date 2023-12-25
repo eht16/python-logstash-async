@@ -3,15 +3,39 @@
 # This software may be modified and distributed under the terms
 # of the MIT license.  See the LICENSE file for details.
 
+import socket
+from contextlib import suppress
 from logging import FileHandler, makeLogRecord
 import os
 import sys
 import unittest
+from types import SimpleNamespace
+from unittest.mock import patch
 
-from logstash_async.formatter import LogstashFormatter
-
+import logstash_async
+from logstash_async.formatter import LogstashFormatter, DjangoLogstashFormatter, FlaskLogstashFormatter, \
+    LogstashEcsFormatter, DjangoLogstashEcsFormatter, FlaskLogstashEcsFormatter
 
 # pylint: disable=protected-access
+
+_interpreter_version = f'{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}'
+
+
+def create_log_record(**kwargs):
+    return makeLogRecord({
+        'msg': 'test',
+        'created': 1635082335.024747,
+        'levelname': 'INFO',
+        'process': 1,
+        'funcName': 'f',
+        'lineno': 2,
+        'name': 'foo',
+        'pathname': 'a/b/c',
+        'processName': 'bar',
+        'threadName': 'baz',
+        'exc_info': (ValueError, None, None),
+        **kwargs,
+    })
 
 
 class ExceptionCatchingFileHandler(FileHandler):
@@ -59,6 +83,343 @@ class LogstashFormatterTest(unittest.TestCase):
         test_time_microsecond2 = 1635082335.024747
         result = formatter._format_timestamp(test_time_microsecond2)
         self.assertEqual(result, '2021-10-24T13:32:15.024Z')
+
+    @patch.object(LogstashFormatter, '_serialize', lambda s, m: m)
+    @patch.object(LogstashFormatter, '_format_exception', lambda s, e: e)
+    def test_default_schema(self):
+        formatter = LogstashFormatter(tags=['t1', 't2'])
+        result = formatter.format(create_log_record())
+        self.assertDictEqual(result, {
+            '@timestamp': '2021-10-24T13:32:15.024Z',
+            '@version': '1',
+            'host': socket.gethostname(),
+            'level': 'INFO',
+            'logsource': socket.gethostname(),
+            'message': 'test',
+            'pid': 1,
+            'program': sys.argv[0],
+            'type': 'python-logstash',
+            'tags': ['t1', 't2'],
+            'extra': {
+                'func_name': 'f',
+                'interpreter': sys.executable,
+                'interpreter_version': _interpreter_version,
+                'line': 2,
+                'logger_name': 'foo',
+                'logstash_async_version': logstash_async.__version__,
+                'path': 'a/b/c',
+                'process_name': 'bar',
+                'thread_name': 'baz',
+                'taskName': None,
+                'stack_trace': (ValueError, None, None),
+                'error_type': 'ValueError',
+            }
+        })
+
+
+class LogstashEcsFormatterTest(unittest.TestCase):
+    @patch.object(LogstashEcsFormatter, '_serialize', lambda s, m: m)
+    @patch.object(LogstashEcsFormatter, '_format_exception', lambda s, e: e)
+    def test_default_schema(self):
+        formatter = LogstashEcsFormatter(tags=['t1', 't2'])
+        result = formatter.format(create_log_record())
+        self.assertDictEqual(result, {
+            '@timestamp': '2021-10-24T13:32:15.024Z',
+            '@version': '1',
+            'ecs.version': '8.11.0',
+            'event.module': 'python-logstash',
+            'host.hostname': socket.gethostname(),
+            'log.level': 'INFO',
+            'log.syslog.hostname': socket.gethostname(),
+            'log.origin.file.line': 2,
+            'log.origin.file.name': 'a/b/c',
+            'log.origin.function': 'f',
+            'log.logger': 'foo',
+            'message': 'test',
+            'process.thread.name': 'baz',
+            'process.name': 'bar',
+            'process.pid': 1,
+            'process.executable': sys.argv[0],
+            'error.stack_trace': (ValueError, None, None),
+            'error.type': 'ValueError',
+            'tags': ['t1', 't2'],
+            'extra': {
+                'interpreter': sys.executable,
+                'interpreter_version': _interpreter_version,
+                'logstash_async_version': logstash_async.__version__,
+                'taskName': None,
+            }
+        })
+
+
+class DjangoTestMixin:
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+
+        import django
+        from django.conf import settings
+        from django.http import HttpRequest
+
+        with suppress(RuntimeError):
+            settings.configure()
+        cls.HttpRequest = HttpRequest
+        cls.django_version = django.get_version()
+
+    def _create_request(self):
+        request = self.HttpRequest()
+        request.user = 'usr'
+        request.META.update({
+            'HTTP_USER_AGENT': 'dj-agent',
+            'REMOTE_ADDR': 'dj-addr',
+            'HTTP_HOST': 'dj-host',
+            'HTTP_REFERER': 'dj-ref',
+            'REQUEST_METHOD': 'GET',
+            'HTTP_X_FORWARDED_PROTO': 'dj-f-proto',
+            'HTTP_X_FORWARDED_FOR': 'dj-f1, dj-f2',
+        })
+        return request
+
+
+class DjangoLogstashFormatterTest(DjangoTestMixin, unittest.TestCase):
+    @patch.object(DjangoLogstashFormatter, '_serialize', lambda s, m: m)
+    @patch.object(DjangoLogstashFormatter, '_format_exception', lambda s, e: e)
+    def test_default_schema(self):
+        formatter = DjangoLogstashFormatter(tags=['t1', 't2'])
+        exc_info = (ValueError, SimpleNamespace(template_debug={
+            'name': 'tpl',
+            'line': 3,
+            'message': 'tmsg',
+            'during': 'd',
+        }), None)
+        result = formatter.format(create_log_record(
+            status_code=500,
+            request=self._create_request(),
+            exc_info=exc_info,
+        ))
+        self.assertDictEqual(result, {
+            '@timestamp': '2021-10-24T13:32:15.024Z',
+            '@version': '1',
+            'host': socket.gethostname(),
+            'level': 'INFO',
+            'logsource': socket.gethostname(),
+            'message': 'test',
+            'pid': 1,
+            'program': sys.argv[0],
+            'type': 'python-logstash',
+            'tags': ['t1', 't2'],
+            'extra': {
+                'func_name': 'f',
+                'interpreter': sys.executable,
+                'interpreter_version': _interpreter_version,
+                'line': 2,
+                'logger_name': 'foo',
+                'logstash_async_version': logstash_async.__version__,
+                'path': 'a/b/c',
+                'process_name': 'bar',
+                'thread_name': 'baz',
+                'taskName': None,
+                'stack_trace': exc_info,
+                'error_type': 'ValueError',
+                'status_code': 500,
+                'django_version': self.django_version,
+                'req_useragent': 'dj-agent',
+                'req_remote_address': 'dj-addr',
+                'req_host': 'dj-host',
+                'req_uri': None,
+                'req_user': 'usr',
+                'req_method': 'GET',
+                'req_referer': 'dj-ref',
+                'req_forwarded_proto': 'dj-f-proto',
+                'req_forwarded_for': ['dj-f1', 'dj-f2'],
+                'tmpl_name': 'tpl',
+                'tmpl_line': 3,
+                'tmpl_message': 'tmsg',
+                'tmpl_during': 'd',
+                'request': '<HttpRequest>',
+            }
+        })
+
+
+class DjangoLogstashEcsFormatterTest(DjangoTestMixin, unittest.TestCase):
+    @patch.object(DjangoLogstashEcsFormatter, '_serialize', lambda s, m: m)
+    @patch.object(DjangoLogstashEcsFormatter, '_format_exception', lambda s, e: e)
+    def test_default_schema(self):
+        formatter = DjangoLogstashEcsFormatter(tags=['t1', 't2'])
+        exc_info = (ValueError, SimpleNamespace(template_debug={
+            'name': 'tpl',
+            'line': 3,
+            'message': 'tmsg',
+            'during': 'd',
+        }), None)
+        result = formatter.format(create_log_record(
+            status_code=500,
+            request=self._create_request(),
+            exc_info=exc_info,
+        ))
+        self.assertDictEqual(result, {
+            '@timestamp': '2021-10-24T13:32:15.024Z',
+            '@version': '1',
+            'ecs.version': '8.11.0',
+            'event.module': 'python-logstash',
+            'host.hostname': socket.gethostname(),
+            'client.domain': 'dj-host',
+            'client.ip': 'dj-addr',
+            'http.request.method': 'GET',
+            'http.request.referrer': 'dj-ref',
+            'http.response.status_code': 500,
+            'url.original': None,
+            'user.name': 'usr',
+            'user_agent.original': 'dj-agent',
+            'log.level': 'INFO',
+            'log.syslog.hostname': socket.gethostname(),
+            'log.origin.file.line': 2,
+            'log.origin.file.name': 'a/b/c',
+            'log.origin.function': 'f',
+            'log.logger': 'foo',
+            'message': 'test',
+            'process.thread.name': 'baz',
+            'process.name': 'bar',
+            'process.pid': 1,
+            'process.executable': sys.argv[0],
+            'error.stack_trace': exc_info,
+            'error.type': 'ValueError',
+            'tags': ['t1', 't2'],
+            'extra': {
+                'interpreter': sys.executable,
+                'interpreter_version': _interpreter_version,
+                'logstash_async_version': logstash_async.__version__,
+                'taskName': None,
+                'req_forwarded_proto': 'dj-f-proto',
+                'req_forwarded_for': ['dj-f1', 'dj-f2'],
+                'tmpl_name': 'tpl',
+                'tmpl_line': 3,
+                'tmpl_message': 'tmsg',
+                'tmpl_during': 'd',
+                'request': '<HttpRequest>',
+                'django_version': self.django_version,
+            }
+        })
+
+
+class FlaskTestMixin:
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+
+        from flask import __version__
+        cls.flask_version = __version__
+
+    def _create_request(self):
+        return SimpleNamespace(
+            user_agent='f-agent',
+            remote_addr='f-addr',
+            host='f-host:80',
+            url='f-url',
+            method='GET',
+            referrer='f-ref',
+            remote_user='usr',
+            headers={
+                'X-Request-ID': 'x-id',
+                'X-Forwarded-Proto': 'f-proto',
+                'X-Forwarded-For': 'f1, f2',
+            },
+        )
+
+
+class FlaskLogstashFormatterTest(FlaskTestMixin, unittest.TestCase):
+    @patch.object(FlaskLogstashFormatter, '_serialize', lambda s, m: m)
+    @patch.object(FlaskLogstashFormatter, '_format_exception', lambda s, e: e)
+    def test_default_schema(self):
+        self.enterContext(patch('flask.request', self._create_request()))
+        formatter = FlaskLogstashFormatter(tags=['t1', 't2'])
+        result = formatter.format(create_log_record(status_code=500))
+        self.assertDictEqual(result, {
+            '@timestamp': '2021-10-24T13:32:15.024Z',
+            '@version': '1',
+            'host': socket.gethostname(),
+            'level': 'INFO',
+            'logsource': socket.gethostname(),
+            'message': 'test',
+            'pid': 1,
+            'program': sys.argv[0],
+            'type': 'python-logstash',
+            'tags': ['t1', 't2'],
+            'extra': {
+                'func_name': 'f',
+                'interpreter': sys.executable,
+                'interpreter_version': _interpreter_version,
+                'line': 2,
+                'logger_name': 'foo',
+                'logstash_async_version': logstash_async.__version__,
+                'path': 'a/b/c',
+                'process_name': 'bar',
+                'thread_name': 'baz',
+                'taskName': None,
+                'error_type': 'ValueError',
+                'stack_trace': (ValueError, None, None),
+                'status_code': 500,
+                'flask_version': self.flask_version,
+                'req_useragent': 'f-agent',
+                'req_remote_address': 'f-addr',
+                'req_host': 'f-host',
+                'req_uri': 'f-url',
+                'req_user': 'usr',
+                'req_method': 'GET',
+                'req_referer': 'f-ref',
+                'req_forwarded_proto': 'f-proto',
+                'req_forwarded_for': ['f1', 'f2'],
+                'request_id': 'x-id',
+            }
+        })
+
+
+class FlaskLogstashEcsFormatterTest(FlaskTestMixin, unittest.TestCase):
+    @patch.object(FlaskLogstashEcsFormatter, '_serialize', lambda s, m: m)
+    @patch.object(FlaskLogstashEcsFormatter, '_format_exception', lambda s, e: e)
+    def test_default_schema(self):
+        self.enterContext(patch('flask.request', self._create_request()))
+        formatter = FlaskLogstashEcsFormatter(tags=['t1', 't2'])
+        result = formatter.format(create_log_record(status_code=500))
+        self.assertDictEqual(result, {
+            '@timestamp': '2021-10-24T13:32:15.024Z',
+            '@version': '1',
+            'ecs.version': '8.11.0',
+            'event.module': 'python-logstash',
+            'host.hostname': socket.gethostname(),
+            'client.domain': 'f-host',
+            'client.ip': 'f-addr',
+            'http.request.id': 'x-id',
+            'http.request.method': 'GET',
+            'http.request.referrer': 'f-ref',
+            'http.response.status_code': 500,
+            'url.original': 'f-url',
+            'user.name': 'usr',
+            'user_agent.original': 'f-agent',
+            'log.level': 'INFO',
+            'log.syslog.hostname': socket.gethostname(),
+            'log.origin.file.line': 2,
+            'log.origin.file.name': 'a/b/c',
+            'log.origin.function': 'f',
+            'log.logger': 'foo',
+            'message': 'test',
+            'process.thread.name': 'baz',
+            'process.name': 'bar',
+            'process.pid': 1,
+            'process.executable': sys.argv[0],
+            'error.stack_trace': (ValueError, None, None),
+            'error.type': 'ValueError',
+            'tags': ['t1', 't2'],
+            'extra': {
+                'interpreter': sys.executable,
+                'interpreter_version': _interpreter_version,
+                'logstash_async_version': logstash_async.__version__,
+                'taskName': None,
+                'req_forwarded_proto': 'f-proto',
+                'req_forwarded_for': ['f1', 'f2'],
+                'flask_version': self.flask_version,
+            }
+        })
 
 
 if __name__ == '__main__':
