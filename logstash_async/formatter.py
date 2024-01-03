@@ -424,6 +424,7 @@ class FlaskLogstashFormatter(LogstashFormatter):
     # ----------------------------------------------------------------------
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self._flask_version = None
         self._fetch_flask_version()
 
     # ----------------------------------------------------------------------
