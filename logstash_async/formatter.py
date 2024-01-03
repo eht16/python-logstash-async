@@ -120,6 +120,11 @@ class LogstashFormatter(logging.Formatter):
 
     # ----------------------------------------------------------------------
     def format(self, record):
+        message = self._format_to_dict(record)
+        return self._serialize(message)
+
+    # ----------------------------------------------------------------------
+    def _format_to_dict(self, record):
         Schema = self.MessageSchema
         message = {
             Schema.TIMESTAMP: self._format_timestamp(record.created),
@@ -150,7 +155,7 @@ class LogstashFormatter(logging.Formatter):
         self._move_extra_record_fields_to_prefix(message)
         self._post_process_message(message)
 
-        return self._serialize(message)
+        return message
 
     # ----------------------------------------------------------------------
     def _format_timestamp(self, time_):

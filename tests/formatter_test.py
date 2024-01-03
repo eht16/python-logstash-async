@@ -84,11 +84,10 @@ class LogstashFormatterTest(unittest.TestCase):
         result = formatter._format_timestamp(test_time_microsecond2)
         self.assertEqual(result, '2021-10-24T13:32:15.024Z')
 
-    @patch.object(LogstashFormatter, '_serialize', lambda s, m: m)
     @patch.object(LogstashFormatter, '_format_exception', lambda s, e: e)
     def test_default_schema(self):
         formatter = LogstashFormatter(tags=['t1', 't2'])
-        result = formatter.format(create_log_record())
+        result = formatter._format_to_dict(create_log_record())
         self.assertDictEqual(result, {
             '@timestamp': '2021-10-24T13:32:15.024Z',
             '@version': '1',
@@ -118,11 +117,10 @@ class LogstashFormatterTest(unittest.TestCase):
 
 
 class LogstashEcsFormatterTest(unittest.TestCase):
-    @patch.object(LogstashEcsFormatter, '_serialize', lambda s, m: m)
     @patch.object(LogstashEcsFormatter, '_format_exception', lambda s, e: e)
     def test_default_schema(self):
         formatter = LogstashEcsFormatter(tags=['t1', 't2'])
-        result = formatter.format(create_log_record())
+        result = formatter._format_to_dict(create_log_record())
         self.assertDictEqual(result, {
             '@timestamp': '2021-10-24T13:32:15.024Z',
             '@version': '1',
@@ -182,7 +180,6 @@ class DjangoTestMixin:
 
 
 class DjangoLogstashFormatterTest(DjangoTestMixin, unittest.TestCase):
-    @patch.object(DjangoLogstashFormatter, '_serialize', lambda s, m: m)
     @patch.object(DjangoLogstashFormatter, '_format_exception', lambda s, e: e)
     def test_default_schema(self):
         formatter = DjangoLogstashFormatter(tags=['t1', 't2'])
@@ -192,7 +189,7 @@ class DjangoLogstashFormatterTest(DjangoTestMixin, unittest.TestCase):
             'message': 'tmsg',
             'during': 'd',
         }), None)
-        result = formatter.format(create_log_record(
+        result = formatter._format_to_dict(create_log_record(
             status_code=500,
             request=self._create_request(),
             exc_info=exc_info,
@@ -242,7 +239,6 @@ class DjangoLogstashFormatterTest(DjangoTestMixin, unittest.TestCase):
 
 
 class DjangoLogstashEcsFormatterTest(DjangoTestMixin, unittest.TestCase):
-    @patch.object(DjangoLogstashEcsFormatter, '_serialize', lambda s, m: m)
     @patch.object(DjangoLogstashEcsFormatter, '_format_exception', lambda s, e: e)
     def test_default_schema(self):
         formatter = DjangoLogstashEcsFormatter(tags=['t1', 't2'])
@@ -252,7 +248,7 @@ class DjangoLogstashEcsFormatterTest(DjangoTestMixin, unittest.TestCase):
             'message': 'tmsg',
             'during': 'd',
         }), None)
-        result = formatter.format(create_log_record(
+        result = formatter._format_to_dict(create_log_record(
             status_code=500,
             request=self._create_request(),
             exc_info=exc_info,
@@ -328,12 +324,11 @@ class FlaskTestMixin:
 
 
 class FlaskLogstashFormatterTest(FlaskTestMixin, unittest.TestCase):
-    @patch.object(FlaskLogstashFormatter, '_serialize', lambda s, m: m)
     @patch.object(FlaskLogstashFormatter, '_format_exception', lambda s, e: e)
     def test_default_schema(self):
         self.enterContext(patch('flask.request', self._create_request()))
         formatter = FlaskLogstashFormatter(tags=['t1', 't2'])
-        result = formatter.format(create_log_record(status_code=500))
+        result = formatter._format_to_dict(create_log_record(status_code=500))
         self.assertDictEqual(result, {
             '@timestamp': '2021-10-24T13:32:15.024Z',
             '@version': '1',
@@ -375,12 +370,11 @@ class FlaskLogstashFormatterTest(FlaskTestMixin, unittest.TestCase):
 
 
 class FlaskLogstashEcsFormatterTest(FlaskTestMixin, unittest.TestCase):
-    @patch.object(FlaskLogstashEcsFormatter, '_serialize', lambda s, m: m)
     @patch.object(FlaskLogstashEcsFormatter, '_format_exception', lambda s, e: e)
     def test_default_schema(self):
         self.enterContext(patch('flask.request', self._create_request()))
         formatter = FlaskLogstashEcsFormatter(tags=['t1', 't2'])
-        result = formatter.format(create_log_record(status_code=500))
+        result = formatter._format_to_dict(create_log_record(status_code=500))
         self.assertDictEqual(result, {
             '@timestamp': '2021-10-24T13:32:15.024Z',
             '@version': '1',
