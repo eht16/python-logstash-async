@@ -21,31 +21,6 @@ except ImportError:
     import simplejson as json
 
 
-class _LogstashMessageSchema:
-    TIMESTAMP = '@timestamp'
-    VERSION = '@version'
-    METADATA = '@metadata'
-    HOST = 'host'
-    LOG_LEVEL = 'level'
-    LOG_SOURCE = 'logsource'
-    LOGGER_NAME = 'logger_name'
-    LINE = 'line'
-    MESSAGE = 'message'
-    MESSAGE_TYPE = 'type'
-    FUNC_NAME = 'func_name'
-    THREAD_NAME = 'thread_name'
-    PROCESS_NAME = 'process_name'
-    INTERPRETER = 'interpreter'
-    INTERPRETER_VERSION = 'interpreter_version'
-    PATH = 'path'
-    PID = 'pid'
-    PROGRAM = 'program'
-    STACK_TRACE = 'stack_trace'
-    ERROR_TYPE = 'error_type'
-    TAGS = 'tags'
-    LOGSTASH_ASYNC_VERSION = 'logstash_async_version'
-
-
 class LogstashFormatter(logging.Formatter):
 
     _basic_data_types = (type(None), bool, str, int, float)
@@ -53,7 +28,29 @@ class LogstashFormatter(logging.Formatter):
     formatter_record_field_skip_list = constants.FORMATTER_RECORD_FIELD_SKIP_LIST
     formatter_logstash_message_field_list = constants.FORMATTER_LOGSTASH_MESSAGE_FIELD_LIST
 
-    MessageSchema = _LogstashMessageSchema
+    class MessageSchema:
+        TIMESTAMP = '@timestamp'
+        VERSION = '@version'
+        METADATA = '@metadata'
+        HOST = 'host'
+        LOG_LEVEL = 'level'
+        LOG_SOURCE = 'logsource'
+        LOGGER_NAME = 'logger_name'
+        LINE = 'line'
+        MESSAGE = 'message'
+        MESSAGE_TYPE = 'type'
+        FUNC_NAME = 'func_name'
+        THREAD_NAME = 'thread_name'
+        PROCESS_NAME = 'process_name'
+        INTERPRETER = 'interpreter'
+        INTERPRETER_VERSION = 'interpreter_version'
+        PATH = 'path'
+        PID = 'pid'
+        PROGRAM = 'program'
+        STACK_TRACE = 'stack_trace'
+        ERROR_TYPE = 'error_type'
+        TAGS = 'tags'
+        LOGSTASH_ASYNC_VERSION = 'logstash_async_version'
 
     # ----------------------------------------------------------------------
     # pylint: disable=too-many-arguments
