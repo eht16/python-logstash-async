@@ -25,8 +25,8 @@ class LogstashFormatter(logging.Formatter):
 
     _basic_data_types = (type(None), bool, str, int, float)
 
-    formatter_record_field_skip_list = constants.FORMATTER_RECORD_FIELD_SKIP_LIST
-    formatter_logstash_message_field_list = constants.FORMATTER_LOGSTASH_MESSAGE_FIELD_LIST
+    formatter_record_field_skip_set = set(constants.FORMATTER_RECORD_FIELD_SKIP_LIST)
+    formatter_logstash_message_field_set = set(constants.FORMATTER_LOGSTASH_MESSAGE_FIELD_LIST)
 
     class MessageSchema:
         TIMESTAMP = '@timestamp'
@@ -217,7 +217,7 @@ class LogstashFormatter(logging.Formatter):
     def _remove_excluded_fields(self, message, extra_fields):
         for fields in (message, extra_fields):
             for field_name in list(fields):
-                if field_name in self.formatter_record_field_skip_list:
+                if field_name in self.formatter_record_field_skip_set:
                     del fields[field_name]
 
     # ----------------------------------------------------------------------
@@ -232,9 +232,9 @@ class LogstashFormatter(logging.Formatter):
             return  # early out if no prefix is configured
 
         message.setdefault(self._extra_prefix, {})
-        field_skip_list = self.formatter_logstash_message_field_list + [self._extra_prefix]
+        field_skip_set = self.formatter_logstash_message_field_set | {self._extra_prefix}
         for key in list(message):
-            if key not in field_skip_list:
+            if key not in field_skip_set:
                 message[self._extra_prefix][key] = message.pop(key)
 
     # ----------------------------------------------------------------------
@@ -266,8 +266,8 @@ class LogstashEcsFormatter(LogstashFormatter):
         'THREAD_NAME': 'process.thread.name',
     }
 
-    formatter_logstash_message_field_list = (LogstashFormatter.formatter_logstash_message_field_list
-                                             + list(__schema_dict.values()))
+    formatter_logstash_message_field_set = (LogstashFormatter.formatter_logstash_message_field_set
+                                            | set(__schema_dict.values()))
     MessageSchema = type('MessageSchema', (LogstashFormatter.MessageSchema,), __schema_dict)
 
     def _post_process_message(self, message):
@@ -395,8 +395,8 @@ class DjangoLogstashEcsFormatter(DjangoLogstashFormatter, LogstashEcsFormatter):
         'REQ_REFERER': 'http.request.referrer',
     }
 
-    formatter_logstash_message_field_list = (LogstashEcsFormatter.formatter_logstash_message_field_list
-                                             + list(__schema_dict.values()))
+    formatter_logstash_message_field_set = (LogstashEcsFormatter.formatter_logstash_message_field_set
+                                            | set(__schema_dict.values()))
     MessageSchema = type(
         'MessageSchema',
         (DjangoLogstashFormatter.MessageSchema, LogstashEcsFormatter.MessageSchema),
@@ -486,8 +486,8 @@ class FlaskLogstashEcsFormatter(FlaskLogstashFormatter, LogstashEcsFormatter):
         'REQ_ID': 'http.request.id',
     }
 
-    formatter_logstash_message_field_list = (LogstashEcsFormatter.formatter_logstash_message_field_list
-                                             + list(__schema_dict.values()))
+    formatter_logstash_message_field_set = (LogstashEcsFormatter.formatter_logstash_message_field_set
+                                            | set(__schema_dict.values()))
     MessageSchema = type(
         'MessageSchema',
         (FlaskLogstashFormatter.MessageSchema, LogstashEcsFormatter.MessageSchema),
