@@ -12,8 +12,8 @@ import traceback
 import uuid
 
 from logstash_async.constants import constants
-import logstash_async
 from logstash_async.utils import normalize_ecs_dict
+import logstash_async
 
 try:
     import json
@@ -25,8 +25,8 @@ class LogstashFormatter(logging.Formatter):
 
     _basic_data_types = (type(None), bool, str, int, float)
 
-    formatter_record_field_skip_set = set(constants.FORMATTER_RECORD_FIELD_SKIP_LIST)
-    formatter_logstash_message_field_set = set(constants.FORMATTER_LOGSTASH_MESSAGE_FIELD_LIST)
+    field_skip_set = set(constants.FORMATTER_RECORD_FIELD_SKIP_LIST)
+    top_level_field_set = set(constants.FORMATTER_LOGSTASH_MESSAGE_FIELD_LIST)
 
     class MessageSchema:
         TIMESTAMP = '@timestamp'
@@ -122,35 +122,18 @@ class LogstashFormatter(logging.Formatter):
 
     # ----------------------------------------------------------------------
     def _format_to_dict(self, record):
-        Schema = self.MessageSchema
-        message = {
-            Schema.TIMESTAMP: self._format_timestamp(record.created),
-            Schema.VERSION: '1',
-            Schema.HOST: self._host,
-            Schema.LOG_LEVEL: record.levelname,
-            Schema.LOG_SOURCE: self._logsource,
-            Schema.MESSAGE: record.getMessage(),
-            Schema.PID: record.process,
-            Schema.PROGRAM: self._program_name,
-            Schema.MESSAGE_TYPE: self._message_type,
-        }
-        if self._metadata:
-            message[Schema.METADATA] = self._metadata
-        if self._tags:
-            message[Schema.TAGS] = self._tags
-
+        message = self._get_primary_fields(record)
         # record fields
         record_fields = self._get_record_fields(record)
         message.update(record_fields)
         # prepare dynamic extra fields
         extra_fields = self._get_extra_fields(record)
-        # remove all fields to be excluded
-        self._remove_excluded_fields(message, extra_fields)
         message.update(extra_fields)
 
+        # remove all fields to be excluded
+        self._remove_excluded_fields(message)
         # move existing extra record fields into the configured prefix
         self._move_extra_record_fields_to_prefix(message)
-        self._post_process_message(message)
 
         return message
 
@@ -179,6 +162,26 @@ class LogstashFormatter(logging.Formatter):
             return [self._value_repr(v) for v in value]
         else:
             return repr(value)
+
+    # ----------------------------------------------------------------------
+    def _get_primary_fields(self, record):
+        Schema = self.MessageSchema
+        primary_fields = {
+            Schema.TIMESTAMP: self._format_timestamp(record.created),
+            Schema.VERSION: '1',
+            Schema.HOST: self._host,
+            Schema.LOG_LEVEL: record.levelname,
+            Schema.LOG_SOURCE: self._logsource,
+            Schema.MESSAGE: record.getMessage(),
+            Schema.PID: record.process,
+            Schema.PROGRAM: self._program_name,
+            Schema.MESSAGE_TYPE: self._message_type,
+        }
+        if self._metadata:
+            primary_fields[Schema.METADATA] = self._metadata
+        if self._tags:
+            primary_fields[Schema.TAGS] = self._tags
+        return primary_fields
 
     # ----------------------------------------------------------------------
     def _get_extra_fields(self, record):
@@ -214,11 +217,10 @@ class LogstashFormatter(logging.Formatter):
         return stack_trace
 
     # ----------------------------------------------------------------------
-    def _remove_excluded_fields(self, message, extra_fields):
-        for fields in (message, extra_fields):
-            for field_name in list(fields):
-                if field_name in self.formatter_record_field_skip_set:
-                    del fields[field_name]
+    def _remove_excluded_fields(self, message):
+        for field_name in list(message):
+            if field_name in self.field_skip_set:
+                del message[field_name]
 
     # ----------------------------------------------------------------------
     def _move_extra_record_fields_to_prefix(self, message):
@@ -232,14 +234,10 @@ class LogstashFormatter(logging.Formatter):
             return  # early out if no prefix is configured
 
         message.setdefault(self._extra_prefix, {})
-        field_skip_set = self.formatter_logstash_message_field_set | {self._extra_prefix}
+        field_skip_set = self.top_level_field_set | {self._extra_prefix}
         for key in list(message):
             if key not in field_skip_set:
                 message[self._extra_prefix][key] = message.pop(key)
-
-    # ----------------------------------------------------------------------
-    def _post_process_message(self, message):
-        """Override when needed"""
 
     # ----------------------------------------------------------------------
     def _serialize(self, message):
@@ -267,14 +265,14 @@ class LogstashEcsFormatter(LogstashFormatter):
     }
 
     normalize_ecs_message = constants.FORMATTER_LOGSTASH_ECS_NORMALIZE_MESSAGE
-    formatter_logstash_message_field_set = (LogstashFormatter.formatter_logstash_message_field_set
-                                            | set(__schema_dict.values()))
+    top_level_field_set = LogstashFormatter.top_level_field_set | set(__schema_dict.values())
     MessageSchema = type('MessageSchema', (LogstashFormatter.MessageSchema,), __schema_dict)
 
-    def _post_process_message(self, message):
-        super()._post_process_message(message)
+    def _get_primary_fields(self, record):
+        message = super()._get_primary_fields(record)
         Schema = self.MessageSchema
         message[Schema.ECS_VERSION] = self.ecs_version
+        return message
 
     def _format_to_dict(self, record):
         message = super()._format_to_dict(record)
@@ -402,17 +400,16 @@ class DjangoLogstashEcsFormatter(DjangoLogstashFormatter, LogstashEcsFormatter):
         'REQ_REFERER': 'http.request.referrer',
     }
 
-    formatter_logstash_message_field_set = (LogstashEcsFormatter.formatter_logstash_message_field_set
-                                            | set(__schema_dict.values()))
+    top_level_field_set = LogstashEcsFormatter.top_level_field_set | set(__schema_dict.values())
     MessageSchema = type(
         'MessageSchema',
         (DjangoLogstashFormatter.MessageSchema, LogstashEcsFormatter.MessageSchema),
         __schema_dict,
     )
 
-    def _remove_excluded_fields(self, message, extra_fields):
+    def _remove_excluded_fields(self, message):
         message.pop('status_code', None)
-        super()._remove_excluded_fields(message, extra_fields)
+        super()._remove_excluded_fields(message)
 
 
 class FlaskLogstashFormatter(LogstashFormatter):
@@ -493,14 +490,13 @@ class FlaskLogstashEcsFormatter(FlaskLogstashFormatter, LogstashEcsFormatter):
         'REQ_ID': 'http.request.id',
     }
 
-    formatter_logstash_message_field_set = (LogstashEcsFormatter.formatter_logstash_message_field_set
-                                            | set(__schema_dict.values()))
+    top_level_field_set = LogstashEcsFormatter.top_level_field_set | set(__schema_dict.values())
     MessageSchema = type(
         'MessageSchema',
         (FlaskLogstashFormatter.MessageSchema, LogstashEcsFormatter.MessageSchema),
         __schema_dict,
     )
 
-    def _remove_excluded_fields(self, message, extra_fields):
+    def _remove_excluded_fields(self, message):
         message.pop('status_code', None)
-        super()._remove_excluded_fields(message, extra_fields)
+        super()._remove_excluded_fields(message)
