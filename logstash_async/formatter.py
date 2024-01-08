@@ -13,7 +13,7 @@ import uuid
 
 from logstash_async.constants import constants
 import logstash_async
-
+from logstash_async.utils import normalize_ecs_dict
 
 try:
     import json
@@ -266,6 +266,7 @@ class LogstashEcsFormatter(LogstashFormatter):
         'THREAD_NAME': 'process.thread.name',
     }
 
+    normalize_ecs_message = constants.FORMATTER_LOGSTASH_ECS_NORMALIZE_MESSAGE
     formatter_logstash_message_field_set = (LogstashFormatter.formatter_logstash_message_field_set
                                             | set(__schema_dict.values()))
     MessageSchema = type('MessageSchema', (LogstashFormatter.MessageSchema,), __schema_dict)
@@ -274,6 +275,12 @@ class LogstashEcsFormatter(LogstashFormatter):
         super()._post_process_message(message)
         Schema = self.MessageSchema
         message[Schema.ECS_VERSION] = self.ecs_version
+
+    def _format_to_dict(self, record):
+        message = super()._format_to_dict(record)
+        if self.normalize_ecs_message:
+            message = normalize_ecs_dict(message)
+        return message
 
 
 class DjangoLogstashFormatter(LogstashFormatter):

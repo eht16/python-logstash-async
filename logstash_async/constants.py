@@ -44,6 +44,8 @@ class Constants:
     FORMATTER_LOGSTASH_MESSAGE_FIELD_LIST = [
         '@timestamp', '@version', 'host', 'level', 'logsource', 'message',
         'pid', 'program', 'type', 'tags', '@metadata']
+    # convert dotted ecs fields into nested objects
+    FORMATTER_LOGSTASH_ECS_NORMALIZE_MESSAGE = True
     # enable rate limiting for error messages (e.g. network errors) emitted by the logger
     # used in LogProcessingWorker, i.e. when transmitting log messages to the Logstash server.
     # Use a string like '5 per minute' or None to disable (default), for details see

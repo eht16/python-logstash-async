@@ -116,10 +116,48 @@ class LogstashFormatterTest(unittest.TestCase):
         })
 
 
+@patch.object(LogstashEcsFormatter, '_format_exception', lambda s, e: e)
 class LogstashEcsFormatterTest(unittest.TestCase):
-    @patch.object(LogstashEcsFormatter, '_format_exception', lambda s, e: e)
     def test_default_schema(self):
         formatter = LogstashEcsFormatter(tags=['t1', 't2'])
+        result = formatter._format_to_dict(create_log_record())
+        self.assertDictEqual(result, {
+            '@timestamp': '2021-10-24T13:32:15.024Z',
+            '@version': '1',
+            'ecs': {'version': '8.11.0'},
+            'event': {'module': 'python-logstash'},
+            'host': {'hostname': socket.gethostname()},
+            'log': {
+                'level': 'INFO',
+                'syslog': {'hostname': socket.gethostname()},
+                'origin': {
+                    'file': {'line': 2, 'name': 'a/b/c'},
+                    'function': 'f',
+                },
+                'logger': 'foo',
+            },
+            'message': 'test',
+            'process': {
+                'thread': {'name': 'baz'},
+                'name': 'bar',
+                'pid': 1,
+                'executable': sys.argv[0],
+            },
+            'error': {'stack_trace': (ValueError, None, None), 'type': 'ValueError'},
+            'tags': ['t1', 't2'],
+            'extra': {
+                'interpreter': sys.executable,
+                'interpreter_version': _interpreter_version,
+                'logstash_async_version': logstash_async.__version__,
+                'taskName': None,
+            }
+        })
+
+    def test_dotted_schema(self):
+        class _LogstashEcsFormatter(LogstashEcsFormatter):
+            normalize_ecs_message = False
+
+        formatter = _LogstashEcsFormatter(tags=['t1', 't2'])
         result = formatter._format_to_dict(create_log_record())
         self.assertDictEqual(result, {
             '@timestamp': '2021-10-24T13:32:15.024Z',
@@ -256,30 +294,34 @@ class DjangoLogstashEcsFormatterTest(DjangoTestMixin, unittest.TestCase):
         self.assertDictEqual(result, {
             '@timestamp': '2021-10-24T13:32:15.024Z',
             '@version': '1',
-            'ecs.version': '8.11.0',
-            'event.module': 'python-logstash',
-            'host.hostname': socket.gethostname(),
-            'client.domain': 'dj-host',
-            'client.ip': 'dj-addr',
-            'http.request.method': 'GET',
-            'http.request.referrer': 'dj-ref',
-            'http.response.status_code': 500,
-            'url.original': None,
-            'user.name': 'usr',
-            'user_agent.original': 'dj-agent',
-            'log.level': 'INFO',
-            'log.syslog.hostname': socket.gethostname(),
-            'log.origin.file.line': 2,
-            'log.origin.file.name': 'a/b/c',
-            'log.origin.function': 'f',
-            'log.logger': 'foo',
+            'ecs': {'version': '8.11.0'},
+            'event': {'module': 'python-logstash'},
+            'host': {'hostname': socket.gethostname()},
+            'client': {'domain': 'dj-host', 'ip': 'dj-addr'},
+            'http': {
+                'request': {'method': 'GET', 'referrer': 'dj-ref'},
+                'response': {'status_code': 500},
+            },
+            'url': {'original': None},
+            'user': {'name': 'usr'},
+            'user_agent': {'original': 'dj-agent'},
+            'log': {
+                'level': 'INFO',
+                'syslog': {'hostname': socket.gethostname()},
+                'origin': {
+                    'file': {'line': 2, 'name': 'a/b/c'},
+                    'function': 'f',
+                },
+                'logger': 'foo',
+            },
             'message': 'test',
-            'process.thread.name': 'baz',
-            'process.name': 'bar',
-            'process.pid': 1,
-            'process.executable': sys.argv[0],
-            'error.stack_trace': exc_info,
-            'error.type': 'ValueError',
+            'process': {
+                'thread': {'name': 'baz'},
+                'name': 'bar',
+                'pid': 1,
+                'executable': sys.argv[0],
+            },
+            'error': {'stack_trace': exc_info, 'type': 'ValueError'},
             'tags': ['t1', 't2'],
             'extra': {
                 'interpreter': sys.executable,
@@ -378,31 +420,34 @@ class FlaskLogstashEcsFormatterTest(FlaskTestMixin, unittest.TestCase):
         self.assertDictEqual(result, {
             '@timestamp': '2021-10-24T13:32:15.024Z',
             '@version': '1',
-            'ecs.version': '8.11.0',
-            'event.module': 'python-logstash',
-            'host.hostname': socket.gethostname(),
-            'client.domain': 'f-host',
-            'client.ip': 'f-addr',
-            'http.request.id': 'x-id',
-            'http.request.method': 'GET',
-            'http.request.referrer': 'f-ref',
-            'http.response.status_code': 500,
-            'url.original': 'f-url',
-            'user.name': 'usr',
-            'user_agent.original': 'f-agent',
-            'log.level': 'INFO',
-            'log.syslog.hostname': socket.gethostname(),
-            'log.origin.file.line': 2,
-            'log.origin.file.name': 'a/b/c',
-            'log.origin.function': 'f',
-            'log.logger': 'foo',
+            'ecs': {'version': '8.11.0'},
+            'event': {'module': 'python-logstash'},
+            'host': {'hostname': socket.gethostname()},
+            'client': {'domain': 'f-host', 'ip': 'f-addr'},
+            'http': {
+                'request': {'id': 'x-id', 'method': 'GET', 'referrer': 'f-ref'},
+                'response': {'status_code': 500},
+            },
+            'url': {'original': 'f-url'},
+            'user': {'name': 'usr'},
+            'user_agent': {'original': 'f-agent'},
+            'log': {
+                'level': 'INFO',
+                'syslog': {'hostname': socket.gethostname()},
+                'origin': {
+                    'file': {'line': 2, 'name': 'a/b/c'},
+                    'function': 'f',
+                },
+                'logger': 'foo',
+            },
             'message': 'test',
-            'process.thread.name': 'baz',
-            'process.name': 'bar',
-            'process.pid': 1,
-            'process.executable': sys.argv[0],
-            'error.stack_trace': (ValueError, None, None),
-            'error.type': 'ValueError',
+            'process': {
+                'thread': {'name': 'baz'},
+                'name': 'bar',
+                'pid': 1,
+                'executable': sys.argv[0],
+            },
+            'error': {'stack_trace': (ValueError, None, None), 'type': 'ValueError'},
             'tags': ['t1', 't2'],
             'extra': {
                 'interpreter': sys.executable,
