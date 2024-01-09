@@ -265,7 +265,7 @@ class LogstashEcsFormatter(LogstashFormatter):
     }
 
     normalize_ecs_message = constants.FORMATTER_LOGSTASH_ECS_NORMALIZE_MESSAGE
-    top_level_field_set = LogstashFormatter.top_level_field_set | set(__schema_dict.values())
+    top_level_field_set = {*constants.FORMATTER_LOGSTASH_ECS_MESSAGE_FIELD_LIST, *__schema_dict.values()}
     MessageSchema = type('MessageSchema', (LogstashFormatter.MessageSchema,), __schema_dict)
 
     def _get_primary_fields(self, record):
