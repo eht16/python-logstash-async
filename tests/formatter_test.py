@@ -3,18 +3,25 @@
 # This software may be modified and distributed under the terms
 # of the MIT license.  See the LICENSE file for details.
 
-import socket
 from contextlib import suppress
 from logging import FileHandler, makeLogRecord
-import os
-import sys
-import unittest
 from types import SimpleNamespace
 from unittest.mock import patch
+import os
+import socket
+import sys
+import unittest
 
+from logstash_async.formatter import (
+    DjangoLogstashEcsFormatter,
+    DjangoLogstashFormatter,
+    FlaskLogstashEcsFormatter,
+    FlaskLogstashFormatter,
+    LogstashEcsFormatter,
+    LogstashFormatter,
+)
 import logstash_async
-from logstash_async.formatter import LogstashFormatter, DjangoLogstashFormatter, FlaskLogstashFormatter, \
-    LogstashEcsFormatter, DjangoLogstashEcsFormatter, FlaskLogstashEcsFormatter
+
 
 # pylint: disable=protected-access
 
@@ -190,12 +197,15 @@ class LogstashEcsFormatterTest(unittest.TestCase):
 
 class DjangoTestMixin:
     @classmethod
-    def setUpClass(cls):
+    def setUpClass(cls):  # pylint: disable=invalid-name
         super().setUpClass()
 
-        import django
+        # pylint: disable=import-outside-toplevel
         from django.conf import settings
         from django.http import HttpRequest
+        import django
+
+        # pylint: enable=import-outside-toplevel
 
         with suppress(RuntimeError):
             settings.configure()
@@ -342,9 +352,10 @@ class DjangoLogstashEcsFormatterTest(DjangoTestMixin, unittest.TestCase):
 
 class FlaskTestMixin:
     @classmethod
-    def setUpClass(cls):
+    def setUpClass(cls):  # pylint: disable=invalid-name
         super().setUpClass()
 
+        # pylint: disable-next=import-outside-toplevel,no-name-in-module
         from flask import __version__
         cls.flask_version = __version__
 

@@ -44,7 +44,8 @@ class Constants:
     FORMATTER_LOGSTASH_MESSAGE_FIELD_LIST = [
         '@timestamp', '@version', 'host', 'level', 'logsource', 'message',
         'pid', 'program', 'type', 'tags', '@metadata']
-    FORMATTER_LOGSTASH_ECS_MESSAGE_FIELD_LIST = ['@timestamp', '@version', '@metadata', 'message', 'labels', 'tags']
+    FORMATTER_LOGSTASH_ECS_MESSAGE_FIELD_LIST = [
+        '@timestamp', '@version', '@metadata', 'message', 'labels', 'tags']
     # convert dotted ECS fields into nested objects
     FORMATTER_LOGSTASH_ECS_NORMALIZE_MESSAGE = True
     # enable rate limiting for error messages (e.g. network errors) emitted by the logger

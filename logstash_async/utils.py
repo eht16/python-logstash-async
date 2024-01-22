@@ -64,6 +64,7 @@ def import_string(dotted_path):
 
 
 # ----------------------------------------------------------------------
+# pylint: disable-next=invalid-name
 class normalize_ecs_dict:
     """
     Convert dotted ecs fields into nested objects.

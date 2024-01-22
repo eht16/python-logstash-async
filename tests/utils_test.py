@@ -1,5 +1,5 @@
-import unittest
 from copy import deepcopy
+import unittest
 
 from logstash_async.utils import normalize_ecs_dict
 
@@ -45,5 +45,6 @@ class NormalizeEcsDictTest(unittest.TestCase):
 
         with self.subTest('source dict not mutated'):
             self.assertDictEqual(d, d_copy)
+            # pylint: disable-next=unsubscriptable-object
             result['c']['d'].append(22)
             self.assertDictEqual(d, d_copy)

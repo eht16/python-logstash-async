@@ -15,6 +15,7 @@ from logstash_async.constants import constants
 from logstash_async.utils import normalize_ecs_dict
 import logstash_async
 
+
 try:
     import json
 except ImportError:
@@ -265,7 +266,8 @@ class LogstashEcsFormatter(LogstashFormatter):
     }
 
     normalize_ecs_message = constants.FORMATTER_LOGSTASH_ECS_NORMALIZE_MESSAGE
-    top_level_field_set = {*constants.FORMATTER_LOGSTASH_ECS_MESSAGE_FIELD_LIST, *__schema_dict.values()}
+    top_level_field_set = {*constants.FORMATTER_LOGSTASH_ECS_MESSAGE_FIELD_LIST,
+                           *__schema_dict.values()}
     MessageSchema = type('MessageSchema', (LogstashFormatter.MessageSchema,), __schema_dict)
 
     def _get_primary_fields(self, record):
@@ -277,6 +279,7 @@ class LogstashEcsFormatter(LogstashFormatter):
     def _format_to_dict(self, record):
         message = super()._format_to_dict(record)
         if self.normalize_ecs_message:
+            # pylint: disable-next=redefined-variable-type
             message = normalize_ecs_dict(message)
         return message
 
@@ -435,19 +438,22 @@ class FlaskLogstashFormatter(LogstashFormatter):
 
     # ----------------------------------------------------------------------
     def _fetch_flask_version(self):
-        from flask import __version__  # pylint: disable=import-error,import-outside-toplevel
+        # pylint: disable-next=import-error,import-outside-toplevel,no-name-in-module
+        from flask import __version__
         self._flask_version = __version__
 
     # ----------------------------------------------------------------------
     def _get_extra_fields(self, record):
-        from flask import request  # pylint: disable=import-error,import-outside-toplevel
+        # pylint: disable-next=import-error,import-outside-toplevel
+        from flask import request
 
         extra_fields = super()._get_extra_fields(record)
         Schema = self.MessageSchema
 
         extra_fields[Schema.FLASK_VERSION] = self._flask_version
         if request:  # request might be unbound in other threads
-            extra_fields[Schema.REQ_USER_AGENT] = str(request.user_agent) if request.user_agent else ''
+            extra_fields[Schema.REQ_USER_AGENT] = (str(request.user_agent)
+                                                   if request.user_agent else '')
             extra_fields[Schema.REQ_REMOTE_ADDRESS] = request.remote_addr
             extra_fields[Schema.REQ_HOST] = request.host.split(':', 1)[0]
             extra_fields[Schema.REQ_URI] = request.url
