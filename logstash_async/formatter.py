@@ -4,6 +4,7 @@
 # of the MIT license.  See the LICENSE file for details.
 
 from datetime import date, datetime
+import importlib.metadata
 import logging
 import socket
 import sys
@@ -438,9 +439,7 @@ class FlaskLogstashFormatter(LogstashFormatter):
 
     # ----------------------------------------------------------------------
     def _fetch_flask_version(self):
-        # pylint: disable-next=import-error,import-outside-toplevel,no-name-in-module
-        from flask import __version__
-        self._flask_version = __version__
+        self._flask_version = importlib.metadata.version('flask')
 
     # ----------------------------------------------------------------------
     def _get_extra_fields(self, record):

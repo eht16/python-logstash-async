@@ -7,6 +7,7 @@ from contextlib import suppress
 from logging import FileHandler, makeLogRecord
 from types import SimpleNamespace
 from unittest.mock import patch
+import importlib.metadata
 import os
 import socket
 import sys
@@ -354,10 +355,7 @@ class FlaskTestMixin:
     @classmethod
     def setUpClass(cls):  # pylint: disable=invalid-name
         super().setUpClass()
-
-        # pylint: disable-next=import-outside-toplevel,no-name-in-module
-        from flask import __version__
-        cls.flask_version = __version__
+        cls.flask_version = importlib.metadata.version('flask')
 
     def _create_request(self):
         return SimpleNamespace(
