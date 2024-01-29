@@ -117,7 +117,6 @@ class LogstashFormatterTest(unittest.TestCase):
                 'path': 'a/b/c',
                 'process_name': 'bar',
                 'thread_name': 'baz',
-                'taskName': None,
                 'stack_trace': (ValueError, None, None),
                 'error_type': 'ValueError',
             }
@@ -157,7 +156,6 @@ class LogstashEcsFormatterTest(unittest.TestCase):
                 'interpreter': sys.executable,
                 'interpreter_version': _interpreter_version,
                 'logstash_async_version': logstash_async.__version__,
-                'taskName': None,
             }
         })
 
@@ -191,7 +189,6 @@ class LogstashEcsFormatterTest(unittest.TestCase):
                 'interpreter': sys.executable,
                 'interpreter_version': _interpreter_version,
                 'logstash_async_version': logstash_async.__version__,
-                'taskName': None,
             }
         })
 
@@ -264,7 +261,6 @@ class DjangoLogstashFormatterTest(DjangoTestMixin, unittest.TestCase):
                 'path': 'a/b/c',
                 'process_name': 'bar',
                 'thread_name': 'baz',
-                'taskName': None,
                 'stack_trace': exc_info,
                 'error_type': 'ValueError',
                 'status_code': 500,
@@ -338,7 +334,6 @@ class DjangoLogstashEcsFormatterTest(DjangoTestMixin, unittest.TestCase):
                 'interpreter': sys.executable,
                 'interpreter_version': _interpreter_version,
                 'logstash_async_version': logstash_async.__version__,
-                'taskName': None,
                 'req_forwarded_proto': 'dj-f-proto',
                 'req_forwarded_for': ['dj-f1', 'dj-f2'],
                 'tmpl_name': 'tpl',
@@ -377,9 +372,9 @@ class FlaskTestMixin:
 class FlaskLogstashFormatterTest(FlaskTestMixin, unittest.TestCase):
     @patch.object(FlaskLogstashFormatter, '_format_exception', lambda s, e: e)
     def test_default_schema(self):
-        self.enterContext(patch('flask.request', self._create_request()))
-        formatter = FlaskLogstashFormatter(tags=['t1', 't2'])
-        result = formatter._format_to_dict(create_log_record(status_code=500))
+        with patch('flask.request', self._create_request()):
+            formatter = FlaskLogstashFormatter(tags=['t1', 't2'])
+            result = formatter._format_to_dict(create_log_record(status_code=500))
         self.assertDictEqual(result, {
             '@timestamp': '2021-10-24T13:32:15.024Z',
             '@version': '1',
@@ -401,7 +396,6 @@ class FlaskLogstashFormatterTest(FlaskTestMixin, unittest.TestCase):
                 'path': 'a/b/c',
                 'process_name': 'bar',
                 'thread_name': 'baz',
-                'taskName': None,
                 'error_type': 'ValueError',
                 'stack_trace': (ValueError, None, None),
                 'status_code': 500,
@@ -423,9 +417,9 @@ class FlaskLogstashFormatterTest(FlaskTestMixin, unittest.TestCase):
 class FlaskLogstashEcsFormatterTest(FlaskTestMixin, unittest.TestCase):
     @patch.object(FlaskLogstashEcsFormatter, '_format_exception', lambda s, e: e)
     def test_default_schema(self):
-        self.enterContext(patch('flask.request', self._create_request()))
-        formatter = FlaskLogstashEcsFormatter(tags=['t1', 't2'])
-        result = formatter._format_to_dict(create_log_record(status_code=500))
+        with patch('flask.request', self._create_request()):
+            formatter = FlaskLogstashEcsFormatter(tags=['t1', 't2'])
+            result = formatter._format_to_dict(create_log_record(status_code=500))
         self.assertDictEqual(result, {
             '@timestamp': '2021-10-24T13:32:15.024Z',
             '@version': '1',
@@ -462,7 +456,6 @@ class FlaskLogstashEcsFormatterTest(FlaskTestMixin, unittest.TestCase):
                 'interpreter': sys.executable,
                 'interpreter_version': _interpreter_version,
                 'logstash_async_version': logstash_async.__version__,
-                'taskName': None,
                 'req_forwarded_proto': 'f-proto',
                 'req_forwarded_for': ['f1', 'f2'],
                 'flask_version': self.flask_version,

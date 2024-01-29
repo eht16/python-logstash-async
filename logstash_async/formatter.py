@@ -42,6 +42,7 @@ class LogstashFormatter(logging.Formatter):
         MESSAGE = 'message'
         MESSAGE_TYPE = 'type'
         FUNC_NAME = 'func_name'
+        TASK_NAME = 'task_name'
         THREAD_NAME = 'thread_name'
         PROCESS_NAME = 'process_name'
         INTERPRETER = 'interpreter'
@@ -202,6 +203,8 @@ class LogstashFormatter(logging.Formatter):
         # static extra fields
         if self._extra:
             extra_fields.update(self._extra)
+        if getattr(record, 'taskName', None):
+            extra_fields[Schema.TASK_NAME] = record.taskName
         # exceptions
         if record.exc_info:
             extra_fields[Schema.ERROR_TYPE] = record.exc_info[0].__name__
