@@ -41,6 +41,9 @@ setup(
     },
     keywords='logging logstash asynchronous',
     install_requires=['limits', 'pylogbeat', 'requests'],
+    extras_require={
+        'dev': ['django', 'flask'],
+    },
     python_requires='>3.5',
     include_package_data=True,
     classifiers=[

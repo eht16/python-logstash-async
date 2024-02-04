@@ -5,6 +5,7 @@
 
 from __future__ import print_function
 
+from copy import deepcopy
 from datetime import datetime
 from importlib import import_module
 from itertools import chain, islice
@@ -60,3 +61,61 @@ def import_string(dotted_path):
     except AttributeError as exc:
         raise ImportError(
             f'Module "{module_path}" does not define a "{class_name}" attribute/class') from exc
+
+
+# ----------------------------------------------------------------------
+# pylint: disable-next=invalid-name
+class normalize_ecs_dict:
+    """
+    Convert dotted ecs fields into nested objects.
+    """
+
+    def __new__(cls, ecs_dict):
+        new_dict = deepcopy(ecs_dict)
+        cls.normalize_dict(new_dict)
+        return new_dict
+
+    @classmethod
+    def normalize_dict(cls, ecs_dict):
+        for key in list(ecs_dict):
+            if '.' in key:
+                cls.merge_dicts(ecs_dict, cls.de_dot_record(key, ecs_dict.pop(key)))
+        for key, val in ecs_dict.items():
+            cls.normalize_value(val)
+
+    @classmethod
+    def normalize_sequence(cls, ecs_sequence):
+        for val in ecs_sequence:
+            cls.normalize_value(val)
+
+    @classmethod
+    def normalize_value(cls, ecs_value):
+        if isinstance(ecs_value, dict):
+            cls.normalize_dict(ecs_value)
+        if isinstance(ecs_value, (list, tuple, set)):
+            cls.normalize_sequence(ecs_value)
+
+    @classmethod
+    def merge_dicts(cls, target, src):
+        """
+        Merge dicts recursively.
+        Mutates `target`.
+        Uses references from `src` which may lead to `src` mutation.
+        """
+        for key, src_value in src.items():
+            if key in target:
+                target_value = target[key]
+                if isinstance(target_value, dict) and isinstance(src_value, dict):
+                    cls.merge_dicts(target_value, src_value)
+                else:
+                    target[key] = src_value
+            else:
+                target[key] = src_value
+
+    @classmethod
+    def de_dot_record(cls, key, value):
+        keys = key.split('.')
+        res = {keys.pop(): value}
+        for k in reversed(keys):
+            res = {k: res}
+        return res
