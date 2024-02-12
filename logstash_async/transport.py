@@ -133,10 +133,12 @@ class UdpTransport:
     def _close(self, force=False):
         if not self._keep_connection or force:
             if self._sock:
-                self._wait_for_socket_buffer_empty()
-                self._sock.shutdown(socket.SHUT_WR)
-                self._sock.close()
-                self._sock = None
+                try:
+                    self._wait_for_socket_buffer_empty()
+                    self._sock.shutdown(socket.SHUT_WR)
+                    self._sock.close()
+                finally:
+                    self._sock = None
 
     # ----------------------------------------------------------------------
     def _wait_for_socket_buffer_empty(self):
