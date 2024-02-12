@@ -150,10 +150,19 @@ Options for configuring the log handler
 Options for configuring the log formatter
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The following settings are only valid for the provided formatters
-`logstash_async.handler.LogstashFormatter`,
-`logstash_async.handler.DjangoLogstashFormatter` and
-`logstash_async.handler.FlaskLogstashFormatter`.
+The following settings are only valid for the provided formatters:
+
+- `logstash_async.handler.LogstashFormatter`
+- `logstash_async.handler.LogstashEcsFormatter`
+- `logstash_async.handler.DjangoLogstashFormatter`
+- `logstash_async.handler.DjangoLogstashEcsFormatter`
+- `logstash_async.handler.FlaskLogstashFormatter`
+- `logstash_async.handler.FlaskLogstashEcsFormatter`
+
+The included formatter classes with the "Ecs" infix generate
+events to be stored using the Elastic Common Schema
+(ECS, https://www.elastic.co/blog/introducing-the-elastic-common-schema)
+and should be used if the target ElasticSearch index uses this schema.
 
 You can use any other formatter by configuring Python's logging
 system accordingly. Any other formatter's `format()` method just
@@ -359,6 +368,39 @@ for easy modification.
     *Type*: ``list``
 
     *Default*: <see source code>
+
+
+``constants.FORMATTER_LOGSTASH_ECS_MESSAGE_FIELD_LIST``
+
+    Fields to be set on the top-level of a Logstash event/message, do not modify this
+    unless you know what you are doing. This list is used by "ECS" formatters
+    (Elastic Common Schema).
+
+    *Type*: ``list``
+
+    *Default*: <see source code>
+
+
+``constants.FORMATTER_LOGSTASH_ECS_NORMALIZE_MESSAGE``
+
+    Whether to adapt dotted ECS fields into nested objects in the Logstash event structure.
+    Logstash/ElasticSearch can process both variants however nested objects are encouraged
+    to use.
+
+    Example: `field.nested.key` becomes:
+
+    .. code-block:: json
+
+        "field": {
+            "nested": {
+                "key": "..."
+            }
+        }
+
+
+    *Type*: ``boolean``
+
+    *Default*: True
 
 
 ``constants.ERROR_LOG_RATE_LIMIT``

@@ -13,6 +13,8 @@ It adds the following features:
   * TCP transport optionally SSL-encrypted
   * Special formatter ready to be used in Django projects
   * Special formatter ready to be used in Flask projects
+  * Support for Elastic Common Schema (ECS,
+    https://www.elastic.co/blog/introducing-the-elastic-common-schema)
 
 
 Asynchronous processing
