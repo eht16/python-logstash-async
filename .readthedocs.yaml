@@ -7,8 +7,8 @@ python:
   install:
     - method: pip
       path: .
-    - method: pip
-      path: sphinx-rtd-theme
+      extra_requirements:
+        - docs
 
 build:
   os: ubuntu-22.04

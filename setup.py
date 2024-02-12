@@ -43,6 +43,7 @@ setup(
     install_requires=['limits', 'pylogbeat', 'requests'],
     extras_require={
         'dev': ['django', 'flask'],
+        'docs': ['sphinx-rtd-theme'],
     },
     python_requires='>3.5',
     include_package_data=True,
