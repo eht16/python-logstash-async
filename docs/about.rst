@@ -94,6 +94,14 @@ License
 ChangeLog
 ---------
 
+3.0.0 (Feb 12 2024)
++++++++++++++++++++
+
+  * Add ECS (Elastic Common Schema) formatter support (#91, Andrii Lahuta).
+  * On closing UDP/TCP socket, make sure it is reset (#89, #92).
+  * Ensure to not check for socket write buffer if disabled.
+
+
 2.7.2 (Sep 14 2023)
 +++++++++++++++++++
 
