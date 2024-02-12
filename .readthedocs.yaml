@@ -3,6 +3,10 @@ version: 2
 sphinx:
   configuration: docs/conf.py
 
+python:
+  install:
+  - sphinx-rtd-theme
+
 build:
   os: ubuntu-22.04
   tools:
