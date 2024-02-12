@@ -5,7 +5,10 @@ sphinx:
 
 python:
   install:
-  - sphinx-rtd-theme
+    - method: pip
+      path: .
+    - method: pip
+      path: sphinx-rtd-theme
 
 build:
   os: ubuntu-22.04
