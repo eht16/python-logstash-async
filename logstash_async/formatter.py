@@ -27,7 +27,6 @@ class LogstashFormatter(logging.Formatter):
 
     _basic_data_types = (type(None), bool, str, int, float)
 
-    field_skip_set = set(constants.FORMATTER_RECORD_FIELD_SKIP_LIST)
     top_level_field_set = set(constants.FORMATTER_LOGSTASH_MESSAGE_FIELD_LIST)
 
     class MessageSchema:
@@ -88,6 +87,8 @@ class LogstashFormatter(logging.Formatter):
         self._prefetch_host(fqdn)
         self._prefetch_logsource()
         self._prefetch_program_name()
+
+        self.field_skip_set = set(constants.FORMATTER_RECORD_FIELD_SKIP_LIST)
 
     # ----------------------------------------------------------------------
     def _prefetch_interpreter(self):
