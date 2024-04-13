@@ -230,8 +230,6 @@ class TcpTransport(UdpTransport):
 
 class BeatsTransport:
 
-    _batch_size = 10
-
     # ----------------------------------------------------------------------
     def __init__(  # pylint: disable=too-many-arguments
             self,
@@ -264,7 +262,7 @@ class BeatsTransport:
     def send(self, events, use_logging=False):
         client = pylogbeat.PyLogBeatClient(use_logging=use_logging, **self._client_arguments)
         with client:
-            for events_subset in ichunked(events, self._batch_size):
+            for events_subset in ichunked(events, constants.QUEUED_EVENTS_BEATS_BATCH_SIZE):
                 client.send(events_subset)
 
 

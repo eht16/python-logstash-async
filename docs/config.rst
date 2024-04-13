@@ -329,6 +329,17 @@ for easy modification.
     *Default*: ``50``
 
 
+``constants.QUEUED_EVENTS_BEATS_BATCH_SIZE``
+
+    Maximum number of events to be sent to Logstash in one batch when using the Beats transport,
+    each batch of events is sent using the same connection and can be considered as a kind
+    of transaction. Should be smaller than `QUEUED_EVENTS_BATCH_SIZE`.
+
+    *Type*: ``integer``
+
+    *Default*: ``25``
+
+
 ``constants.DATABASE_EVENT_CHUNK_SIZE``
 
     Maximum number of events to be updated within one SQLite statement

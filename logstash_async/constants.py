@@ -25,6 +25,10 @@ class Constants:
     QUEUED_EVENTS_FLUSH_COUNT = 50
     # maximum number of events to be sent to Logstash in one batch (i.e. using a single connection)
     QUEUED_EVENTS_BATCH_SIZE = 50
+    # maximum number of events to be sent to Logstash in one batch when using the Beats transport,
+    # each batch of events is sent using the same connection and can be considered as a kind
+    # of transaction. Should be smaller than QUEUED_EVENTS_BATCH_SIZE.
+    QUEUED_EVENTS_BEATS_BATCH_SIZE = 25
     # maximum number of events to be updated within one SQLite statement
     DATABASE_EVENT_CHUNK_SIZE = 750
     # timeout in seconds to "connect" (i.e. open) the SQLite database
