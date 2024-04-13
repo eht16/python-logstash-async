@@ -27,8 +27,6 @@ class LogstashFormatter(logging.Formatter):
 
     _basic_data_types = (type(None), bool, str, int, float)
 
-    top_level_field_set = set(constants.FORMATTER_LOGSTASH_MESSAGE_FIELD_LIST)
-
     class MessageSchema:
         TIMESTAMP = '@timestamp'
         VERSION = '@version'
@@ -89,6 +87,7 @@ class LogstashFormatter(logging.Formatter):
         self._prefetch_program_name()
 
         self.field_skip_set = set(constants.FORMATTER_RECORD_FIELD_SKIP_LIST)
+        self.top_level_field_set = set(constants.FORMATTER_LOGSTASH_MESSAGE_FIELD_LIST)
 
     # ----------------------------------------------------------------------
     def _prefetch_interpreter(self):
@@ -271,9 +270,12 @@ class LogstashEcsFormatter(LogstashFormatter):
     }
 
     normalize_ecs_message = constants.FORMATTER_LOGSTASH_ECS_NORMALIZE_MESSAGE
-    top_level_field_set = {*constants.FORMATTER_LOGSTASH_ECS_MESSAGE_FIELD_LIST,
-                           *__schema_dict.values()}
     MessageSchema = type('MessageSchema', (LogstashFormatter.MessageSchema,), __schema_dict)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.top_level_field_set = {*constants.FORMATTER_LOGSTASH_ECS_MESSAGE_FIELD_LIST,
+                                    *self.__schema_dict.values()}
 
     def _get_primary_fields(self, record):
         message = super()._get_primary_fields(record)
@@ -408,12 +410,15 @@ class DjangoLogstashEcsFormatter(DjangoLogstashFormatter, LogstashEcsFormatter):
         'REQ_REFERER': 'http.request.referrer',
     }
 
-    top_level_field_set = LogstashEcsFormatter.top_level_field_set | set(__schema_dict.values())
     MessageSchema = type(
         'MessageSchema',
         (DjangoLogstashFormatter.MessageSchema, LogstashEcsFormatter.MessageSchema),
         __schema_dict,
     )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.top_level_field_set = self.top_level_field_set | set(self.__schema_dict.values())
 
     def _remove_excluded_fields(self, message):
         message.pop('status_code', None)
@@ -499,12 +504,15 @@ class FlaskLogstashEcsFormatter(FlaskLogstashFormatter, LogstashEcsFormatter):
         'REQ_ID': 'http.request.id',
     }
 
-    top_level_field_set = LogstashEcsFormatter.top_level_field_set | set(__schema_dict.values())
     MessageSchema = type(
         'MessageSchema',
         (FlaskLogstashFormatter.MessageSchema, LogstashEcsFormatter.MessageSchema),
         __schema_dict,
     )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.top_level_field_set = self.top_level_field_set | set(self.__schema_dict.values())
 
     def _remove_excluded_fields(self, message):
         message.pop('status_code', None)
