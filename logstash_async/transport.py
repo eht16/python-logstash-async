@@ -135,8 +135,7 @@ class UdpTransport:
             if self._sock:
                 try:
                     self._wait_for_socket_buffer_empty()
-                    self._sock.shutdown(socket.SHUT_WR)
-                    self._sock.close()
+                    self._try_to_close_socket()
                 finally:
                     self._sock = None
 
@@ -161,6 +160,15 @@ class UdpTransport:
         ioctl_result = fcntl.ioctl(socket_fd, termios.TIOCOUTQ, buffer_size)
         buffer_size = struct.unpack('I', ioctl_result)[0]
         return not buffer_size
+
+    # ----------------------------------------------------------------------
+    def _try_to_close_socket(self):
+        try:
+            self._sock.shutdown(socket.SHUT_WR)
+            self._sock.close()
+        except Exception as exc:
+            msg = f'Error on closing the transport socket: {exc}'
+            logger.warning(msg)
 
     # ----------------------------------------------------------------------
     def close(self):
