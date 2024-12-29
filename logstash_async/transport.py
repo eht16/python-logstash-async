@@ -43,6 +43,8 @@ class Transport(ABC):
     :type host: str
     :param port: The TCP/UDP port.
     :type port: int
+    :param path: The path for the transport.
+    :type path: str
     :param timeout: The connection timeout.
     :type timeout: None or float
     :param ssl_enable: Activates TLS.
@@ -57,6 +59,7 @@ class Transport(ABC):
             self,
             host: str,
             port: int,
+            path: str,
             timeout: Union[None, float],
             ssl_enable: bool,
             ssl_verify: Union[bool, str],
@@ -64,6 +67,7 @@ class Transport(ABC):
     ):
         self._host = host
         self._port = port
+        self._path = path
         self._timeout = None if timeout is TimeoutNotSet else timeout
         self._ssl_enable = ssl_enable
         self._ssl_verify = ssl_verify
@@ -277,6 +281,8 @@ class HttpTransport(Transport):
     :type host: str
     :param port: The TCP port of the logstash HTTP server.
     :type port: int
+    :param path: The path of the logstash HTTP server.
+    :type path: str
     :param timeout: The connection timeout. (Default: None)
     :type timeout: float
     :param ssl_enable: Activates TLS. (Default: True)
@@ -301,13 +307,14 @@ class HttpTransport(Transport):
             self,
             host: str,
             port: int,
+            path: str = '',
             timeout: Union[None, float] = TimeoutNotSet,
             ssl_enable: bool = True,
             ssl_verify: Union[bool, str] = True,
             use_logging: bool = False,
             **kwargs
     ):
-        super().__init__(host, port, timeout, ssl_enable, ssl_verify, use_logging)
+        super().__init__(host, port, path, timeout, ssl_enable, ssl_verify, use_logging)
         self._username = kwargs.get('username', None)
         self._password = kwargs.get('password', None)
         self._max_content_length = kwargs.get('max_content_length', 100 * 1024 * 1024)
@@ -324,7 +331,7 @@ class HttpTransport(Transport):
         protocol = 'http'
         if self._ssl_enable:
             protocol = 'https'
-        return f'{protocol}://{self._host}:{self._port}'
+        return f'{protocol}://{self._host}:{self._port}/{self._path}'
 
     def __batches(self, events: list) -> Iterator[list]:
         """Generate dynamic sized batches based on the max content length.
