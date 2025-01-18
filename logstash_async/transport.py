@@ -167,8 +167,12 @@ class UdpTransport:
             self._sock.shutdown(socket.SHUT_WR)
             self._sock.close()
         except Exception as exc:
-            msg = f'Error on closing the transport socket: {exc}'
-            logger.warning(msg)
+            self._log_close_socket_error(exc)
+
+    # ----------------------------------------------------------------------
+    def _log_close_socket_error(self, exc):
+        msg = f'Error on closing the transport socket: {exc}'
+        logger.warning(msg)
 
     # ----------------------------------------------------------------------
     def close(self):
