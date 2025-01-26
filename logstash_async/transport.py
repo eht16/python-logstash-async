@@ -277,6 +277,8 @@ class HttpTransport(Transport):
     :type host: str
     :param port: The TCP port of the logstash HTTP server.
     :type port: int
+    :param path: The path of the logstash HTTP server.
+    :type path: str
     :param timeout: The connection timeout. (Default: None)
     :type timeout: float
     :param ssl_enable: Activates TLS. (Default: True)
@@ -305,12 +307,14 @@ class HttpTransport(Transport):
             ssl_enable: bool = True,
             ssl_verify: Union[bool, str] = True,
             use_logging: bool = False,
+            path: str = '',
             **kwargs
     ):
         super().__init__(host, port, timeout, ssl_enable, ssl_verify, use_logging)
         self._username = kwargs.get('username', None)
         self._password = kwargs.get('password', None)
         self._max_content_length = kwargs.get('max_content_length', 100 * 1024 * 1024)
+        self._path = path
         self.__session = None
 
     @property
@@ -324,7 +328,7 @@ class HttpTransport(Transport):
         protocol = 'http'
         if self._ssl_enable:
             protocol = 'https'
-        return f'{protocol}://{self._host}:{self._port}'
+        return f'{protocol}://{self._host}:{self._port}/{self._path}'
 
     def __batches(self, events: list) -> Iterator[list]:
         """Generate dynamic sized batches based on the max content length.
