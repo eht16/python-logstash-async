@@ -1,11 +1,9 @@
-# -*- coding: utf-8 -*-
-#
 # This software may be modified and distributed under the terms
 # of the MIT license.  See the LICENSE file for details.
 
-from datetime import datetime, timedelta
-from logging import getLogger as get_logger
 import uuid
+from datetime import datetime, timedelta, UTC
+from logging import getLogger as get_logger  # noqa: N813
 
 from logstash_async.cache import Cache
 from logstash_async.constants import constants
@@ -31,10 +29,10 @@ class MemoryCache(Cache):
     def add_event(self, event):
         event_id = uuid.uuid4()
         self._cache[event_id] = {
-            "event_text": event,
-            "pending_delete": False,
-            "entry_date": datetime.now(),
-            "id": event_id
+            'event_text': event,
+            'pending_delete': False,
+            'entry_date': datetime.now(tz=UTC),
+            'id': event_id
         }
 
     # ----------------------------------------------------------------------
@@ -63,7 +61,7 @@ class MemoryCache(Cache):
                 event_to_queue['pending_delete'] = False
             else:
                 self.logger.warning(
-                    "Could not requeue event with id %s. It does not appear to be in the cache.",
+                    'Could not requeue event with id %s. It does not appear to be in the cache.',
                     event['id'])
 
     # ----------------------------------------------------------------------
@@ -76,7 +74,7 @@ class MemoryCache(Cache):
         if self._event_ttl is None:
             return
 
-        delete_time = datetime.now() - timedelta(seconds=self._event_ttl)
+        delete_time = datetime.now(tz=UTC) - timedelta(seconds=self._event_ttl)
         ids_to_delete = [
             event['id']
             for event in self._cache.values()
@@ -91,7 +89,7 @@ class MemoryCache(Cache):
             event = self._cache.pop(event_id, None)
             if not event:
                 self.logger.warning(
-                    "Could not delete event with id %s. It does not appear to be in the cache.",
+                    'Could not delete event with id %s. It does not appear to be in the cache.',
                     event_id)
 
     # ----------------------------------------------------------------------

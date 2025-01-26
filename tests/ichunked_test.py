@@ -1,10 +1,8 @@
-# -*- coding: utf-8 -*-
-#
 # This software may be modified and distributed under the terms
 # of the MIT license.  See the LICENSE file for details.
 
-from random import randint
 import unittest
+from random import randint
 
 from logstash_async.utils import ichunked
 
@@ -13,6 +11,8 @@ CHUNK_SIZE_SMALL = 1
 CHUNK_SIZE_NORMAL = 100
 CHUNK_SIZE_BIG = 750
 CHUNK_ITERATIONS = 5
+
+# ruff: noqa: PT009, S311 pylint: disable=protected-access
 
 
 class IChunkedTest(unittest.TestCase):

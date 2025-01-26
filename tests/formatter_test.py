@@ -1,18 +1,17 @@
-# -*- coding: utf-8 -*-
-#
 # This software may be modified and distributed under the terms
 # of the MIT license.  See the LICENSE file for details.
 
-from contextlib import suppress
-from logging import FileHandler, makeLogRecord
-from types import SimpleNamespace
-from unittest.mock import patch
 import importlib.metadata
 import os
 import socket
 import sys
 import unittest
+from contextlib import suppress
+from logging import FileHandler, makeLogRecord
+from types import SimpleNamespace
+from unittest.mock import patch
 
+import logstash_async
 from logstash_async.formatter import (
     DjangoLogstashEcsFormatter,
     DjangoLogstashFormatter,
@@ -21,12 +20,11 @@ from logstash_async.formatter import (
     LogstashEcsFormatter,
     LogstashFormatter,
 )
-import logstash_async
 
 
-# pylint: disable=protected-access
+# ruff: noqa: PT009, SLF001 pylint: disable=protected-access
 
-_interpreter_version = f'{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}'
+INTERPRETER_VERSION = f'{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}'
 
 
 def create_log_record(**kwargs):
@@ -51,7 +49,7 @@ class ExceptionCatchingFileHandler(FileHandler):
         FileHandler.__init__(self, *args, **kwargs)
         self.exception = None
 
-    def handleError(self, record):
+    def handleError(self, record):  # noqa: N802
         self.exception = sys.exc_info()
 
 
@@ -110,7 +108,7 @@ class LogstashFormatterTest(unittest.TestCase):
             'extra': {
                 'func_name': 'f',
                 'interpreter': sys.executable,
-                'interpreter_version': _interpreter_version,
+                'interpreter_version': INTERPRETER_VERSION,
                 'line': 2,
                 'logger_name': 'foo',
                 'logstash_async_version': logstash_async.__version__,
@@ -154,7 +152,7 @@ class LogstashEcsFormatterTest(unittest.TestCase):
             'tags': ['t1', 't2'],
             'extra': {
                 'interpreter': sys.executable,
-                'interpreter_version': _interpreter_version,
+                'interpreter_version': INTERPRETER_VERSION,
                 'logstash_async_version': logstash_async.__version__,
             }
         })
@@ -187,7 +185,7 @@ class LogstashEcsFormatterTest(unittest.TestCase):
             'tags': ['t1', 't2'],
             'extra': {
                 'interpreter': sys.executable,
-                'interpreter_version': _interpreter_version,
+                'interpreter_version': INTERPRETER_VERSION,
                 'logstash_async_version': logstash_async.__version__,
             }
         })
@@ -199,9 +197,9 @@ class DjangoTestMixin:
         super().setUpClass()
 
         # pylint: disable=import-outside-toplevel
+        import django
         from django.conf import settings
         from django.http import HttpRequest
-        import django
 
         # pylint: enable=import-outside-toplevel
 
@@ -254,7 +252,7 @@ class DjangoLogstashFormatterTest(DjangoTestMixin, unittest.TestCase):
             'extra': {
                 'func_name': 'f',
                 'interpreter': sys.executable,
-                'interpreter_version': _interpreter_version,
+                'interpreter_version': INTERPRETER_VERSION,
                 'line': 2,
                 'logger_name': 'foo',
                 'logstash_async_version': logstash_async.__version__,
@@ -332,7 +330,7 @@ class DjangoLogstashEcsFormatterTest(DjangoTestMixin, unittest.TestCase):
             'tags': ['t1', 't2'],
             'extra': {
                 'interpreter': sys.executable,
-                'interpreter_version': _interpreter_version,
+                'interpreter_version': INTERPRETER_VERSION,
                 'logstash_async_version': logstash_async.__version__,
                 'req_forwarded_proto': 'dj-f-proto',
                 'req_forwarded_for': ['dj-f1', 'dj-f2'],
@@ -389,7 +387,7 @@ class FlaskLogstashFormatterTest(FlaskTestMixin, unittest.TestCase):
             'extra': {
                 'func_name': 'f',
                 'interpreter': sys.executable,
-                'interpreter_version': _interpreter_version,
+                'interpreter_version': INTERPRETER_VERSION,
                 'line': 2,
                 'logger_name': 'foo',
                 'logstash_async_version': logstash_async.__version__,
@@ -454,7 +452,7 @@ class FlaskLogstashEcsFormatterTest(FlaskTestMixin, unittest.TestCase):
             'tags': ['t1', 't2'],
             'extra': {
                 'interpreter': sys.executable,
-                'interpreter_version': _interpreter_version,
+                'interpreter_version': INTERPRETER_VERSION,
                 'logstash_async_version': logstash_async.__version__,
                 'req_forwarded_proto': 'f-proto',
                 'req_forwarded_for': ['f1', 'f2'],

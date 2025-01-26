@@ -1,10 +1,9 @@
-# -*- coding: utf-8 -*-
-#
 # This software may be modified and distributed under the terms
 # of the MIT license.  See the LICENSE file for details.
 
-from datetime import datetime
-from logging import getLogger as get_logger
+import contextlib
+from datetime import datetime, UTC
+from logging import getLogger as get_logger  # noqa: N813
 from queue import Empty, PriorityQueue
 from socket import gaierror as socket_gaierror
 from threading import Event, Thread
@@ -105,7 +104,7 @@ class LogProcessingWorker(Thread):  # pylint: disable=too-many-instance-attribut
 
     # ----------------------------------------------------------------------
     def _reset_flush_counters(self):
-        self._last_event_flush_date = datetime.now()
+        self._last_event_flush_date = datetime.now(tz=UTC)
         self._non_flushed_event_count = 0
 
     # ----------------------------------------------------------------------
@@ -137,7 +136,7 @@ class LogProcessingWorker(Thread):  # pylint: disable=too-many-instance-attribut
             try:
                 self._fetch_event()
                 self._process_event()
-            except Empty:
+            except Empty:  # noqa: PERF203
                 # Flush queued (in database) events after internally queued events has been
                 # processed, i.e. the queue is empty.
                 if self._shutdown_requested():
@@ -185,12 +184,10 @@ class LogProcessingWorker(Thread):  # pylint: disable=too-many-instance-attribut
 
     # ----------------------------------------------------------------------
     def _expire_events(self):
-        try:
+        # Nothing to handle, if it fails, we will either successfully publish
+        # these messages next time or we will delete them on the next pass.
+        with contextlib.suppress(DatabaseLockedError, DatabaseDiskIOError):
             self._database.expire_events()
-        except (DatabaseLockedError, DatabaseDiskIOError):
-            # Nothing to handle, if it fails, we will either successfully publish
-            # these messages next time or we will delete them on the next pass.
-            pass
 
     # ----------------------------------------------------------------------
     def _log_processing_error(self, exception):
@@ -284,14 +281,13 @@ class LogProcessingWorker(Thread):  # pylint: disable=too-many-instance-attribut
 
     # ----------------------------------------------------------------------
     def _delete_queued_events_from_database(self):
-        try:
+        # Nothing to handle, if it fails, we delete those events in a later run
+        with contextlib.suppress(DatabaseLockedError, DatabaseDiskIOError):
             self._database.delete_queued_events()
-        except (DatabaseLockedError, DatabaseDiskIOError):
-            pass  # nothing to handle, if it fails, we delete those events in a later run
 
     # ----------------------------------------------------------------------
     def _queued_event_interval_reached(self):
-        delta = datetime.now() - self._last_event_flush_date
+        delta = datetime.now(tz=UTC) - self._last_event_flush_date
         return delta.total_seconds() > constants.QUEUED_EVENTS_FLUSH_INTERVAL
 
     # ----------------------------------------------------------------------
@@ -359,7 +355,7 @@ class LogProcessingWorker(Thread):  # pylint: disable=too-many-instance-attribut
                 'warn',
                 f'Non-empty queue while shutting down ({queue_size} events pending). '
                 'This indicates a previous error.',
-                extra=dict(queue_size=queue_size))
+                extra={'queue_size': queue_size})
 
     # ----------------------------------------------------------------------
     def _vaccum_database(self):

@@ -1,9 +1,8 @@
-# -*- coding: utf-8 -*-
-
 import logging
 import sys
 
 from logstash_async.handler import AsynchronousLogstashHandler
+
 
 host = 'localhost'
 port = 5959
@@ -21,7 +20,7 @@ test_logger.debug('python-logstash-async: test logstash debug message.')
 try:
     1 / 0
 except Exception as e:
-    test_logger.exception(u'Exception: %s', e)
+    test_logger.exception('Exception: %s', e)
 
 # add extra field to logstash message
 extra = {

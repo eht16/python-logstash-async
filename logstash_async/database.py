@@ -1,11 +1,9 @@
-# -*- coding: utf-8 -*-
-#
 # This software may be modified and distributed under the terms
 # of the MIT license.  See the LICENSE file for details.
 
-from contextlib import contextmanager
 import sqlite3
 import sys
+from contextlib import contextmanager
 
 from logstash_async.cache import Cache
 from logstash_async.constants import constants
@@ -102,9 +100,9 @@ class DatabaseCache(Cache):
             raise DatabaseLockedError from exc
         if str(exc) == 'disk I/O error':
             raise DatabaseDiskIOError from exc
-        if str(exc) == "unable to open database file":
+        if str(exc) == 'unable to open database file':
             raise DatabaseDiskIOError from exc
-        if str(exc) == "attempt to write a readonly database":
+        if str(exc) == 'attempt to write a readonly database':
             raise DatabaseDiskIOError from exc
 
     # ----------------------------------------------------------------------
@@ -147,8 +145,8 @@ class DatabaseCache(Cache):
         if self._event_ttl is None:
             return
 
-        query_delete = "DELETE FROM `event` WHERE " \
-                       f"`entry_date` < datetime('now', '-{self._event_ttl} seconds');"
+        query_delete = ("DELETE FROM `event` WHERE "   # noqa: S608
+                        f"`entry_date` < datetime('now', '-{self._event_ttl} seconds');")
         with self._connect() as connection:
             cursor = connection.cursor()
             cursor.execute(query_delete)
@@ -157,11 +155,11 @@ class DatabaseCache(Cache):
     def vacuum(self):
         with self._connect() as connection:
             cursor = connection.cursor()
-            cursor.execute("VACUUM;")
+            cursor.execute('VACUUM;')
 
     # ----------------------------------------------------------------------
     def get_non_flushed_event_count(self):
-        query_fetch = '''SELECT count(*) FROM `event` WHERE `pending_delete` = 0;'''
+        query_fetch = 'SELECT count(*) FROM `event` WHERE `pending_delete` = 0;'
         with self._connect() as connection:
             cursor = connection.cursor()
             cursor.execute(query_fetch)

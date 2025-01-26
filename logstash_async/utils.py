@@ -1,16 +1,12 @@
-# -*- coding: utf-8 -*-
-#
 # This software may be modified and distributed under the terms
 # of the MIT license.  See the LICENSE file for details.
 
-from __future__ import print_function
-
-from copy import deepcopy
-from datetime import datetime
-from importlib import import_module
-from itertools import chain, islice
 import sys
 import traceback
+from copy import deepcopy
+from datetime import datetime, UTC
+from importlib import import_module
+from itertools import chain, islice
 
 
 # ----------------------------------------------------------------------
@@ -30,16 +26,16 @@ def ichunked(seq, chunksize):
 
 # ----------------------------------------------------------------------
 def safe_log_via_print(log_level, message, *args, **kwargs):
-    timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    timestamp = datetime.now(tz=UTC).strftime('%Y-%m-%d %H:%M:%S')
     log_message = f'{timestamp}: {log_level}: {message}'
-    print(log_message % args, file=sys.stderr)
+    print(log_message % args, file=sys.stderr)  # noqa: T201
     # print stack trace if available
-    exc_info = kwargs.get('exc_info', None)
+    exc_info = kwargs.get('exc_info')
     if exc_info or log_level == 'exception':
         if not isinstance(exc_info, tuple):
             exc_info = sys.exc_info()
             stack_trace = ''.join(traceback.format_exception(*exc_info))
-            print(stack_trace, file=sys.stderr)
+            print(stack_trace, file=sys.stderr)  # noqa: T201
 
 
 # ----------------------------------------------------------------------
@@ -53,19 +49,20 @@ def import_string(dotted_path):
     try:
         module_path, class_name = dotted_path.rsplit('.', 1)
     except ValueError as exc:
-        raise ImportError(f'{dotted_path} does not look like a module path') from exc
+        error_message = f'{dotted_path} does not look like a module path'
+        raise ImportError(error_message) from exc
 
     module = import_module(module_path)
     try:
         return getattr(module, class_name)
     except AttributeError as exc:
-        raise ImportError(
-            f'Module "{module_path}" does not define a "{class_name}" attribute/class') from exc
+        error_message = f'Module "{module_path}" does not define a "{class_name}" attribute/class'
+        raise ImportError(error_message) from exc
 
 
 # ----------------------------------------------------------------------
 # pylint: disable-next=invalid-name
-class normalize_ecs_dict:
+class normalize_ecs_dict:  # noqa: N801
     """
     Convert dotted ecs fields into nested objects.
     """
@@ -80,7 +77,7 @@ class normalize_ecs_dict:
         for key in list(ecs_dict):
             if '.' in key:
                 cls.merge_dicts(ecs_dict, cls.de_dot_record(key, ecs_dict.pop(key)))
-        for key, val in ecs_dict.items():
+        for val in ecs_dict.values():
             cls.normalize_value(val)
 
     @classmethod

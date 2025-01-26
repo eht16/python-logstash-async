@@ -1,9 +1,6 @@
-# -*- coding: utf-8 -*-
-#
 # This software may be modified and distributed under the terms
 # of the MIT license.  See the LICENSE file for details.
 
-from datetime import date, datetime
 import importlib.metadata
 import logging
 import socket
@@ -11,10 +8,11 @@ import sys
 import time
 import traceback
 import uuid
+from datetime import date, datetime, UTC
 
+import logstash_async
 from logstash_async.constants import constants
 from logstash_async.utils import normalize_ecs_dict
-import logstash_async
 
 
 try:
@@ -142,7 +140,7 @@ class LogstashFormatter(logging.Formatter):
 
     # ----------------------------------------------------------------------
     def _format_timestamp(self, time_):
-        timestamp = datetime.utcfromtimestamp(time_)
+        timestamp = datetime.fromtimestamp(time_, UTC)
         formatted_timestamp = timestamp.strftime('%Y-%m-%dT%H:%M:%S')
         microsecond = int(timestamp.microsecond / 1000)
         return f'{formatted_timestamp}.{microsecond:03}Z'
@@ -168,47 +166,47 @@ class LogstashFormatter(logging.Formatter):
 
     # ----------------------------------------------------------------------
     def _get_primary_fields(self, record):
-        Schema = self.MessageSchema
+        schema = self.MessageSchema
         primary_fields = {
-            Schema.TIMESTAMP: self._format_timestamp(record.created),
-            Schema.VERSION: '1',
-            Schema.HOST: self._host,
-            Schema.LOG_LEVEL: record.levelname,
-            Schema.LOG_SOURCE: self._logsource,
-            Schema.MESSAGE: record.getMessage(),
-            Schema.PID: record.process,
-            Schema.PROGRAM: self._program_name,
-            Schema.MESSAGE_TYPE: self._message_type,
+            schema.TIMESTAMP: self._format_timestamp(record.created),
+            schema.VERSION: '1',
+            schema.HOST: self._host,
+            schema.LOG_LEVEL: record.levelname,
+            schema.LOG_SOURCE: self._logsource,
+            schema.MESSAGE: record.getMessage(),
+            schema.PID: record.process,
+            schema.PROGRAM: self._program_name,
+            schema.MESSAGE_TYPE: self._message_type,
         }
         if self._metadata:
-            primary_fields[Schema.METADATA] = self._metadata
+            primary_fields[schema.METADATA] = self._metadata
         if self._tags:
-            primary_fields[Schema.TAGS] = self._tags
+            primary_fields[schema.TAGS] = self._tags
         return primary_fields
 
     # ----------------------------------------------------------------------
     def _get_extra_fields(self, record):
-        Schema = self.MessageSchema
+        schema = self.MessageSchema
         extra_fields = {
-            Schema.FUNC_NAME: record.funcName,
-            Schema.INTERPRETER: self._interpreter,
-            Schema.INTERPRETER_VERSION: self._interpreter_version,
-            Schema.LINE: record.lineno,
-            Schema.LOGGER_NAME: record.name,
-            Schema.LOGSTASH_ASYNC_VERSION: logstash_async.__version__,
-            Schema.PATH: record.pathname,
-            Schema.PROCESS_NAME: record.processName,
-            Schema.THREAD_NAME: record.threadName,
+            schema.FUNC_NAME: record.funcName,
+            schema.INTERPRETER: self._interpreter,
+            schema.INTERPRETER_VERSION: self._interpreter_version,
+            schema.LINE: record.lineno,
+            schema.LOGGER_NAME: record.name,
+            schema.LOGSTASH_ASYNC_VERSION: logstash_async.__version__,
+            schema.PATH: record.pathname,
+            schema.PROCESS_NAME: record.processName,
+            schema.THREAD_NAME: record.threadName,
         }
         # static extra fields
         if self._extra:
             extra_fields.update(self._extra)
         if getattr(record, 'taskName', None):
-            extra_fields[Schema.TASK_NAME] = record.taskName
+            extra_fields[schema.TASK_NAME] = record.taskName
         # exceptions
         if record.exc_info:
-            extra_fields[Schema.ERROR_TYPE] = record.exc_info[0].__name__
-            extra_fields[Schema.STACK_TRACE] = self._format_exception(record.exc_info)
+            extra_fields[schema.ERROR_TYPE] = record.exc_info[0].__name__
+            extra_fields[schema.STACK_TRACE] = self._format_exception(record.exc_info)
         return extra_fields
 
     # ----------------------------------------------------------------------
@@ -279,8 +277,8 @@ class LogstashEcsFormatter(LogstashFormatter):
 
     def _get_primary_fields(self, record):
         message = super()._get_primary_fields(record)
-        Schema = self.MessageSchema
-        message[Schema.ECS_VERSION] = self.ecs_version
+        schema = self.MessageSchema
+        message[schema.ECS_VERSION] = self.ecs_version
         return message
 
     def _format_to_dict(self, record):
@@ -323,10 +321,10 @@ class DjangoLogstashFormatter(LogstashFormatter):
     # ----------------------------------------------------------------------
     def _get_extra_fields(self, record):
         extra_fields = super()._get_extra_fields(record)
-        Schema = self.MessageSchema
+        schema = self.MessageSchema
 
         if hasattr(record, 'status_code'):
-            extra_fields[Schema.RESP_STATUS_CODE] = record.status_code
+            extra_fields[schema.RESP_STATUS_CODE] = record.status_code
 
         # Django's runserver command passes socketobject and WSGIRequest instances as "request".
         # Hence the check for the META attribute.
@@ -335,34 +333,34 @@ class DjangoLogstashFormatter(LogstashFormatter):
             request = record.request
 
             request_user = self._get_attribute_with_default(request, 'user', '')
-            extra_fields[Schema.DJANGO_VERSION] = self._django_version
-            extra_fields[Schema.REQ_USER_AGENT] = request.META.get('HTTP_USER_AGENT', '<none>')
-            extra_fields[Schema.REQ_REMOTE_ADDRESS] = request.META.get('REMOTE_ADDR', '<none>')
-            extra_fields[Schema.REQ_HOST] = self._try_to_get_host_from_remote(request)
-            extra_fields[Schema.REQ_URI] = self._try_to_get_full_request_uri(request)
-            extra_fields[Schema.REQ_USER] = str(request_user)
-            extra_fields[Schema.REQ_METHOD] = request.META.get('REQUEST_METHOD', '')
-            extra_fields[Schema.REQ_REFERER] = request.META.get('HTTP_REFERER', '')
+            extra_fields[schema.DJANGO_VERSION] = self._django_version
+            extra_fields[schema.REQ_USER_AGENT] = request.META.get('HTTP_USER_AGENT', '<none>')
+            extra_fields[schema.REQ_REMOTE_ADDRESS] = request.META.get('REMOTE_ADDR', '<none>')
+            extra_fields[schema.REQ_HOST] = self._try_to_get_host_from_remote(request)
+            extra_fields[schema.REQ_URI] = self._try_to_get_full_request_uri(request)
+            extra_fields[schema.REQ_USER] = str(request_user)
+            extra_fields[schema.REQ_METHOD] = request.META.get('REQUEST_METHOD', '')
+            extra_fields[schema.REQ_REFERER] = request.META.get('HTTP_REFERER', '')
 
             forwarded_proto = request.META.get('HTTP_X_FORWARDED_PROTO', None)
             if forwarded_proto is not None:
-                extra_fields[Schema.REQ_FORWARDED_PROTO] = forwarded_proto
+                extra_fields[schema.REQ_FORWARDED_PROTO] = forwarded_proto
 
             forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR', None)
             if forwarded_for is not None:
                 # make it a list
                 forwarded_for_list = forwarded_for.replace(' ', '').split(',')
-                extra_fields[Schema.REQ_FORWARDED_FOR] = forwarded_for_list
+                extra_fields[schema.REQ_FORWARDED_FOR] = forwarded_for_list
 
             # template debug
             if isinstance(record.exc_info, tuple):
                 exc_value = record.exc_info[1]
                 template_info = getattr(exc_value, 'template_debug', None)
                 if template_info:
-                    extra_fields[Schema.TMPL_NAME] = template_info['name']
-                    extra_fields[Schema.TMPL_LINE] = template_info['line']
-                    extra_fields[Schema.TMPL_MESSAGE] = template_info['message']
-                    extra_fields[Schema.TMPL_DURING] = template_info['during']
+                    extra_fields[schema.TMPL_NAME] = template_info['name']
+                    extra_fields[schema.TMPL_LINE] = template_info['line']
+                    extra_fields[schema.TMPL_MESSAGE] = template_info['message']
+                    extra_fields[schema.TMPL_DURING] = template_info['during']
 
         return extra_fields
 
@@ -456,37 +454,37 @@ class FlaskLogstashFormatter(LogstashFormatter):
         from flask import request
 
         extra_fields = super()._get_extra_fields(record)
-        Schema = self.MessageSchema
+        schema = self.MessageSchema
 
-        extra_fields[Schema.FLASK_VERSION] = self._flask_version
+        extra_fields[schema.FLASK_VERSION] = self._flask_version
         if request:  # request might be unbound in other threads
-            extra_fields[Schema.REQ_USER_AGENT] = (str(request.user_agent)
+            extra_fields[schema.REQ_USER_AGENT] = (str(request.user_agent)
                                                    if request.user_agent else '')
-            extra_fields[Schema.REQ_REMOTE_ADDRESS] = request.remote_addr
-            extra_fields[Schema.REQ_HOST] = request.host.split(':', 1)[0]
-            extra_fields[Schema.REQ_URI] = request.url
-            extra_fields[Schema.REQ_METHOD] = request.method
-            extra_fields[Schema.REQ_REFERER] = request.referrer
+            extra_fields[schema.REQ_REMOTE_ADDRESS] = request.remote_addr
+            extra_fields[schema.REQ_HOST] = request.host.split(':', 1)[0]
+            extra_fields[schema.REQ_URI] = request.url
+            extra_fields[schema.REQ_METHOD] = request.method
+            extra_fields[schema.REQ_REFERER] = request.referrer
             if 'X-Request-ID' in request.headers:
-                extra_fields[Schema.REQ_ID] = request.headers.get('X-Request-ID')
+                extra_fields[schema.REQ_ID] = request.headers.get('X-Request-ID')
             if request.remote_user:
-                extra_fields[Schema.REQ_USER] = request.remote_user
+                extra_fields[schema.REQ_USER] = request.remote_user
 
             forwarded_proto = request.headers.get('X-Forwarded-Proto', None)
             if forwarded_proto is not None:
-                extra_fields[Schema.REQ_FORWARDED_PROTO] = forwarded_proto
+                extra_fields[schema.REQ_FORWARDED_PROTO] = forwarded_proto
 
             forwarded_for = request.headers.get('X-Forwarded-For', None)
             if forwarded_for is not None:
                 # make it a list
                 forwarded_for_list = forwarded_for.replace(' ', '').split(',')
-                extra_fields[Schema.REQ_FORWARDED_FOR] = forwarded_for_list
+                extra_fields[schema.REQ_FORWARDED_FOR] = forwarded_for_list
 
         # check if we have a status code somewhere
         if hasattr(record, 'status_code'):
-            extra_fields[Schema.RESP_STATUS_CODE] = record.status_code
+            extra_fields[schema.RESP_STATUS_CODE] = record.status_code
         if hasattr(record, 'response'):
-            extra_fields[Schema.RESP_STATUS_CODE] = record.response.status_code
+            extra_fields[schema.RESP_STATUS_CODE] = record.response.status_code
 
         return extra_fields
 

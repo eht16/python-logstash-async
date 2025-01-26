@@ -1,15 +1,13 @@
-# -*- coding: utf-8 -*-
-#
 # This software may be modified and distributed under the terms
 # of the MIT license.  See the LICENSE file for details.
 
 from logging import Handler
 
+import logstash_async
 from logstash_async.constants import constants
 from logstash_async.formatter import LogstashFormatter
 from logstash_async.utils import import_string, safe_log_via_print
 from logstash_async.worker import LogProcessingWorker
-import logstash_async
 
 
 class ProcessingError(Exception):
@@ -86,9 +84,9 @@ class SynchronousLogstashHandler(Handler):
         elif hasattr(self._transport_path, 'send'):
             self._transport = self._transport_path
         else:
-            raise RuntimeError(
-                'Invalid transport path: must be an importable module path, '
-                'a class or factory function or an instance.')
+            error_message = ('Invalid transport path: must be an importable module path, '
+                             'a class or factory function or an instance.')
+            raise RuntimeError(error_message)
 
     # ----------------------------------------------------------------------
     def _format_record(self, record):
@@ -192,10 +190,8 @@ class AsynchronousLogstashHandler(SynchronousLogstashHandler):
     @staticmethod
     def _worker_thread_is_running():
         worker_thread = AsynchronousLogstashHandler._worker_thread
-        if worker_thread is not None and worker_thread.is_alive():
-            return True
 
-        return False
+        return worker_thread is not None and worker_thread.is_alive()
 
     # ----------------------------------------------------------------------
     def shutdown(self):

@@ -1,8 +1,7 @@
-# -*- coding: utf-8 -*-
-
 import logging
 
 from logstash_async.handler import AsynchronousLogstashHandler
+
 
 host = 'localhost'
 port = 5959

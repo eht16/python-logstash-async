@@ -1,7 +1,10 @@
-from copy import deepcopy
 import unittest
+from copy import deepcopy
 
 from logstash_async.utils import normalize_ecs_dict
+
+
+# ruff: noqa: PT009
 
 
 class NormalizeEcsDictTest(unittest.TestCase):

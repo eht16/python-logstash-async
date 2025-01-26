@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-#
 # python-logstash-async documentation build configuration file, created by
 # sphinx-quickstart on Sun Dec 25 04:59:44 2016.
 #

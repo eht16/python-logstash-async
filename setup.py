@@ -1,12 +1,12 @@
-# -*- coding: utf-8 -*-
-#
 # This software may be modified and distributed under the terms
 # of the MIT license.  See the LICENSE file for details.
 
 from os import path
-from setuptools import setup
 from shutil import rmtree
 import sys
+
+from setuptools import setup
+
 
 NAME = 'python-logstash-async'
 VERSION = '3.0.0'

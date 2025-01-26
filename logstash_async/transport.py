@@ -1,15 +1,14 @@
-# -*- coding: utf-8 -*-
-#
 # This software may be modified and distributed under the terms
 # of the MIT license.  See the LICENSE file for details.
 
-from abc import ABC, abstractmethod
-from typing import Iterator, Union
 import json
 import logging
 import socket
 import ssl
 import time
+from abc import ABC, abstractmethod
+from collections.abc import Iterator
+from typing import Union
 
 
 # Use fcntl to control socket buffering if available
@@ -20,9 +19,9 @@ try:
 except ImportError:
     fcntl = None
 
-from requests.auth import HTTPBasicAuth
 import pylogbeat
 import requests
+from requests.auth import HTTPBasicAuth
 
 from logstash_async.constants import constants
 from logstash_async.utils import ichunked
@@ -220,17 +219,14 @@ class TcpTransport(UdpTransport):
             cert_reqs = ssl.CERT_REQUIRED
             ssl_context = ssl.create_default_context(cafile=self._ca_certs)
             if not self._ssl_verify:
-                if self._ca_certs:
-                    cert_reqs = ssl.CERT_OPTIONAL
-                else:
-                    cert_reqs = ssl.CERT_NONE
+                cert_reqs = ssl.CERT_OPTIONAL if self._ca_certs else ssl.CERT_NONE
 
             ssl_context.check_hostname = False
             ssl_context.verify_mode = cert_reqs
             if self._certfile and self._keyfile:
                 ssl_context.load_cert_chain(self._certfile, self._keyfile)
             self._sock = ssl_context.wrap_socket(self._sock, server_side=False)
-        except socket.error:
+        except OSError:
             self._close()
             raise
 
@@ -323,8 +319,8 @@ class HttpTransport(Transport):
             **kwargs
     ):
         super().__init__(host, port, timeout, ssl_enable, ssl_verify, use_logging)
-        self._username = kwargs.get('username', None)
-        self._password = kwargs.get('password', None)
+        self._username = kwargs.get('username')
+        self._password = kwargs.get('password')
         self._max_content_length = kwargs.get('max_content_length', 100 * 1024 * 1024)
         self._path = path
         self.__session = None

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-#
 # This software may be modified and distributed under the terms
 # of the MIT license.  See the LICENSE file for details.
 
@@ -20,7 +18,6 @@ class Cache(ABC):
         :param str event: A log message
         :return:
         """
-        pass
 
     # ----------------------------------------------------------------------
     @abstractmethod
@@ -29,7 +26,6 @@ class Cache(ABC):
 
         :return: A list of events to be published
         """
-        pass
 
     # ----------------------------------------------------------------------
     @abstractmethod
@@ -42,7 +38,6 @@ class Cache(ABC):
         :param events:
         :return:
         """
-        pass
 
     # ----------------------------------------------------------------------
     @abstractmethod
@@ -51,7 +46,6 @@ class Cache(ABC):
 
         :return:
         """
-        pass
 
     # ----------------------------------------------------------------------
     @abstractmethod
@@ -60,7 +54,6 @@ class Cache(ABC):
 
         :return:
         """
-        pass
 
     # ----------------------------------------------------------------------
     @abstractmethod
@@ -69,4 +62,3 @@ class Cache(ABC):
 
         :return: Count of pending events
         """
-        pass

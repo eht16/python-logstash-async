@@ -1,23 +1,21 @@
-# -*- coding: utf-8 -*-
-#
 # This software may be modified and distributed under the terms
 # of the MIT license.  See the LICENSE file for details.
 
-from stat import S_IREAD, S_IRGRP, S_IROTH, S_IWUSR
 import os
 import sqlite3
 import time
 import unittest
+from stat import S_IREAD, S_IRGRP, S_IROTH, S_IWUSR
 
 from logstash_async.constants import constants
 from logstash_async.database import DATABASE_SCHEMA_STATEMENTS, DatabaseCache, DatabaseDiskIOError
 
 
-# pylint: disable=protected-access
+# ruff: noqa: PT009, SLF001 pylint: disable=protected-access
 
 
 class DatabaseCacheTest(unittest.TestCase):
-    TEST_DB_FILENAME = "test.db"
+    TEST_DB_FILENAME = 'test.db'
     _connection = None
 
     # ----------------------------------------------------------------------
@@ -32,7 +30,7 @@ class DatabaseCacheTest(unittest.TestCase):
 
     # ----------------------------------------------------------------------
     def tearDown(self):
-        stmt = "DELETE FROM `event`;"
+        stmt = 'DELETE FROM `event`;'
         self.cache._open()
         with self.cache._connection as conn:
             conn.execute(stmt)
@@ -65,16 +63,16 @@ class DatabaseCacheTest(unittest.TestCase):
 
     # ----------------------------------------------------------------------
     def test_disk_io_exception(self):
-        self.cache.add_event("message")
-        with self.assertRaises(DatabaseDiskIOError):
+        self.cache.add_event('message')
+        with self.assertRaises(DatabaseDiskIOError):  # noqa: PT027
             # change permissions to produce error
-            os.chmod(os.path.abspath("test.db"), S_IREAD | S_IRGRP | S_IROTH)
-            self.cache.add_event("message")
-        os.chmod(os.path.abspath("test.db"), S_IWUSR | S_IREAD)
+            os.chmod(os.path.abspath('test.db'), S_IREAD | S_IRGRP | S_IROTH)
+            self.cache.add_event('message')
+        os.chmod(os.path.abspath('test.db'), S_IWUSR | S_IREAD)
 
     # ----------------------------------------------------------------------
     def test_add_event(self):
-        self.cache.add_event("message")
+        self.cache.add_event('message')
         conn = self.get_connection()
         cursor = conn.cursor()
         events = cursor.execute('SELECT `event_text`, `pending_delete` FROM `event`;').fetchall()
@@ -84,7 +82,7 @@ class DatabaseCacheTest(unittest.TestCase):
 
     # ----------------------------------------------------------------------
     def test_get_queued_events(self):
-        self.cache.add_event("message")
+        self.cache.add_event('message')
         events = self.cache.get_queued_events()
         self.assertEqual(len(events), 1)
 
@@ -92,11 +90,11 @@ class DatabaseCacheTest(unittest.TestCase):
     def test_get_queued_events_batch_size(self):
         constants.QUEUED_EVENTS_BATCH_SIZE = 3
 
-        self.cache.add_event("message 1")
-        self.cache.add_event("message 2")
-        self.cache.add_event("message 3")
-        self.cache.add_event("message 4")
-        self.cache.add_event("message 5")
+        self.cache.add_event('message 1')
+        self.cache.add_event('message 2')
+        self.cache.add_event('message 3')
+        self.cache.add_event('message 4')
+        self.cache.add_event('message 5')
 
         events = self.cache.get_queued_events()
         # expect only 3 events according to QUEUED_EVENTS_BATCH_SIZE
@@ -106,7 +104,7 @@ class DatabaseCacheTest(unittest.TestCase):
     def test_get_queued_events_batch_size_underrun(self):
         constants.QUEUED_EVENTS_BATCH_SIZE = 3
 
-        self.cache.add_event("message 1")
+        self.cache.add_event('message 1')
 
         events = self.cache.get_queued_events()
         # expect only 1 event as there are no more available
@@ -114,7 +112,7 @@ class DatabaseCacheTest(unittest.TestCase):
 
     # ----------------------------------------------------------------------
     def test_get_queued_events_set_delete_flag(self):
-        self.cache.add_event("message")
+        self.cache.add_event('message')
         events = self.cache.get_queued_events()
         self.assertEqual(len(events), 1)
         events = self.cache.get_queued_events()
@@ -122,7 +120,7 @@ class DatabaseCacheTest(unittest.TestCase):
 
     # ----------------------------------------------------------------------
     def test_requeue_queued_events(self):
-        self.cache.add_event("message")
+        self.cache.add_event('message')
         events = self.cache.get_queued_events()
         self.assertEqual(len(events), 1)
         self.cache.requeue_queued_events(events)
