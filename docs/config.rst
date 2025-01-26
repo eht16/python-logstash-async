@@ -225,6 +225,11 @@ Options:
     to Logstash. This dictionary will be merged with any other extra
     items passed in the logging call.
 
+    Note that you can also put a callable with zero arguments. If that is
+    the case, the callable will be evaluated at the moment you log this thing
+    (ie. not in the submitter thread). If this callable returns None, extra
+    field will be skipped.
+
     *Type*: ``dict``
 
     *Default*: None
