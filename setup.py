@@ -9,7 +9,7 @@ from setuptools import setup
 
 
 NAME = 'python-logstash-async'
-VERSION = '3.0.0'
+VERSION = '4.0.0'
 
 here = path.abspath(path.dirname(__file__))
 with open(path.join(here, 'README.rst'), 'rb') as f:

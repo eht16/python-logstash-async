@@ -94,6 +94,19 @@ License
 ChangeLog
 ---------
 
+4.0.0 (Jan 26 2025)
++++++++++++++++++++
+
+  * Breaking change: drop support for 3.8, 3.9 and 3.10.
+  * Catch errors on TCP/UDP socket closing to prevent requeuing of events
+    (#98, #100).
+  * Add new setting to configure batch sizes for Beats transport (#93).
+  * Support URL path in HttpTransport (#103, Seyyed Mohammad Borghei).
+  * LogstashFormatter: Move top_level_field_set creation to __init__
+    to ease setting FORMATTER_LOGSTASH_MESSAGE_FIELD_LIST after
+    importing the formatter class (#96, #97, feliixx).
+
+
 3.0.0 (Feb 12 2024)
 +++++++++++++++++++
 
