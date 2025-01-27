@@ -94,6 +94,13 @@ License
 ChangeLog
 ---------
 
+4.0.1 (Jan 27 2025)
++++++++++++++++++++
+
+  * Properly require Python >= 3.11.
+    The previous release had a wrong requirement set unfortunately.
+
+
 4.0.0 (Jan 26 2025)
 +++++++++++++++++++
 
