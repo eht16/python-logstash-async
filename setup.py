@@ -45,7 +45,7 @@ setup(
         'dev': ['django', 'flask'],
         'docs': ['sphinx-rtd-theme'],
     },
-    python_requires='>3.10',
+    python_requires='>=3.11',
     include_package_data=True,
     classifiers=[
         'Development Status :: 4 - Beta',
