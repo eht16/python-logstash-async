@@ -133,7 +133,7 @@ class UdpTransport:
         if not self._keep_connection or force:
             if self._sock:
                 try:
-                    self._wait_for_socket_buffer_empty()
+                    #self._wait_for_socket_buffer_empty()
                     self._try_to_close_socket()
                 finally:
                     self._sock = None
@@ -163,7 +163,7 @@ class UdpTransport:
     # ----------------------------------------------------------------------
     def _try_to_close_socket(self):
         try:
-            self._sock.shutdown(socket.SHUT_WR)
+            #self._sock.shutdown(socket.SHUT_WR)
             self._sock.close()
         except Exception as exc:
             self._log_close_socket_error(exc)
@@ -199,6 +199,15 @@ class TcpTransport(UdpTransport):
         self._certfile = certfile
         self._ca_certs = ca_certs
         self._timeout = timeout
+    # ----------------------------------------------------------------------
+    def _close(self, force=False):
+        if not self._keep_connection or force:
+            if self._sock:
+                try:
+                    self._wait_for_socket_buffer_empty()
+                    self._try_to_close_socket()
+                finally:
+                    self._sock = None
 
     # ----------------------------------------------------------------------
     def _create_socket(self):
