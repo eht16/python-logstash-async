@@ -92,7 +92,7 @@ class LogstashFormatterTest(unittest.TestCase):
 
     @patch.object(LogstashFormatter, '_format_exception', lambda s, e: e)
     def test_default_schema(self):
-        formatter = LogstashFormatter(tags=['t1', 't2'])
+        formatter = LogstashFormatter(tags=['t1', 't2'], extra={'value': lambda: 5})
         result = formatter._format_to_dict(create_log_record())
         self.assertDictEqual(result, {
             '@timestamp': '2021-10-24T13:32:15.024Z',
@@ -106,6 +106,7 @@ class LogstashFormatterTest(unittest.TestCase):
             'type': 'python-logstash',
             'tags': ['t1', 't2'],
             'extra': {
+                'value': 5,
                 'func_name': 'f',
                 'interpreter': sys.executable,
                 'interpreter_version': INTERPRETER_VERSION,
