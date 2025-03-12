@@ -40,7 +40,7 @@ setup(
         'Documentation': 'https://python-logstash-async.readthedocs.io/en/stable/',
     },
     keywords='logging logstash asynchronous',
-    install_requires=['limits', 'pylogbeat', 'requests'],
+    install_requires=['limits==4.1', 'pylogbeat', 'requests'],
     extras_require={
         'dev': ['django', 'flask'],
         'docs': ['sphinx-rtd-theme'],
