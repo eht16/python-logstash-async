@@ -162,16 +162,20 @@ class UdpTransport:
 
     # ----------------------------------------------------------------------
     def _try_to_close_socket(self):
+        self._shutdown_socket()
         try:
-            self._sock.shutdown(socket.SHUT_WR)
             self._sock.close()
         except Exception as exc:
-            self._log_close_socket_error(exc)
+            message = f'Error on closing the transport socket: {exc}'
+            self._log_close_socket_error(message)
 
     # ----------------------------------------------------------------------
-    def _log_close_socket_error(self, exc):
-        msg = f'Error on closing the transport socket: {exc}'
-        safe_log_via_print('warning', msg)
+    def _shutdown_socket(self):
+        pass  # not necessary for UDP sockets
+
+    # ----------------------------------------------------------------------
+    def _log_close_socket_error(self, message):
+        safe_log_via_print('warning', message)
 
     # ----------------------------------------------------------------------
     def close(self):
@@ -234,6 +238,14 @@ class TcpTransport(UdpTransport):
     def _send_via_socket(self, data):
         data_to_send = self._convert_data_to_send(data)
         self._sock.sendall(data_to_send)
+
+    # ----------------------------------------------------------------------
+    def _shutdown_socket(self):
+        try:
+            self._sock.shutdown(socket.SHUT_WR)
+        except Exception as exc:
+            message = f'Error on shutting down the transport socket: {exc}'
+            self._log_close_socket_error(message)
 
 
 class BeatsTransport:
