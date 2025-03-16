@@ -94,6 +94,13 @@ License
 ChangeLog
 ---------
 
+4.0.2 (Mar 16 2025)
++++++++++++++++++++
+
+  * Fix hang on socket errors by not using the logging system
+  * Do not try to "shutdown" UDP sockets (#107,  #108).
+
+
 4.0.1 (Jan 27 2025)
 +++++++++++++++++++
 
