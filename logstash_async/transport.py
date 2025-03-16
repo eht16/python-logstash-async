@@ -24,7 +24,7 @@ import requests
 from requests.auth import HTTPBasicAuth
 
 from logstash_async.constants import constants
-from logstash_async.utils import ichunked
+from logstash_async.utils import ichunked, safe_log_via_print
 
 
 logger = logging.getLogger(__name__)
@@ -171,7 +171,7 @@ class UdpTransport:
     # ----------------------------------------------------------------------
     def _log_close_socket_error(self, exc):
         msg = f'Error on closing the transport socket: {exc}'
-        logger.warning(msg)
+        safe_log_via_print('warning', msg)
 
     # ----------------------------------------------------------------------
     def close(self):
