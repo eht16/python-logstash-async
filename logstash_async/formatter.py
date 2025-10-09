@@ -200,7 +200,11 @@ class LogstashFormatter(logging.Formatter):
         }
         # static extra fields
         if self._extra:
-            extra_fields.update(self._extra)
+            for field_name, field_value in self._extra.items():
+                if callable(field_value):
+                    field_value = field_value()
+                if field_value is not None:
+                    extra_fields[field_name] = field_value
         if getattr(record, 'taskName', None):
             extra_fields[schema.TASK_NAME] = record.taskName
         # exceptions
