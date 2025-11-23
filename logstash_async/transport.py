@@ -159,6 +159,9 @@ class UdpTransport:
             return True
 
         socket_fd = self._sock.fileno()
+        if socket_fd == -1:
+            return True
+
         buffer_size = struct.pack('I', 0)
         ioctl_result = fcntl.ioctl(socket_fd, termios.TIOCOUTQ, buffer_size)
         buffer_size = struct.unpack('I', ioctl_result)[0]
