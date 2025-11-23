@@ -94,6 +94,13 @@ License
 ChangeLog
 ---------
 
+4.1.0 (Nov 23 2025)
++++++++++++++++++++
+
+  * Fix handling already closed sockets on shutdown
+  * Support setting "ssl_verify_flags" to override Python's default
+
+
 4.0.2 (Mar 16 2025)
 +++++++++++++++++++
 
