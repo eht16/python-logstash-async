@@ -48,6 +48,8 @@ class Transport(ABC):
     :type ssl_enable: bool
     :param ssl_verify: Activates the TLS certificate verification.
     :type ssl_verify: bool or str
+    :param ssl_verify_flags: Verification flags for ssl.SSLContext or None
+    :type ssl_verify_flags: int
     :param use_logging: Use logging for debugging.
     :type use_logging: bool
     """
@@ -59,6 +61,7 @@ class Transport(ABC):
             timeout: Union[None, float],
             ssl_enable: bool,
             ssl_verify: Union[bool, str],
+            ssl_verify_flags: Union[None, int],
             use_logging: bool,
     ):
         self._host = host
@@ -66,6 +69,7 @@ class Transport(ABC):
         self._timeout = None if timeout is TimeoutNotSet else timeout
         self._ssl_enable = ssl_enable
         self._ssl_verify = ssl_verify
+        self._ssl_verify_flags = ssl_verify_flags
         self._use_logging = use_logging
         super().__init__()
 
@@ -191,6 +195,7 @@ class TcpTransport(UdpTransport):
             port,
             ssl_enable,
             ssl_verify,
+            ssl_verify_flags,
             keyfile,
             certfile,
             ca_certs,
@@ -199,6 +204,7 @@ class TcpTransport(UdpTransport):
         super().__init__(host, port)
         self._ssl_enable = ssl_enable
         self._ssl_verify = ssl_verify
+        self._ssl_verify_flags = ssl_verify_flags
         self._keyfile = keyfile
         self._certfile = certfile
         self._ca_certs = ca_certs
@@ -227,6 +233,10 @@ class TcpTransport(UdpTransport):
 
             ssl_context.check_hostname = False
             ssl_context.verify_mode = cert_reqs
+
+            if self._ssl_verify_flags is not None:
+                ssl_context.verify_flags = self._ssl_verify_flags
+
             if self._certfile and self._keyfile:
                 ssl_context.load_cert_chain(self._certfile, self._keyfile)
             self._sock = ssl_context.wrap_socket(self._sock, server_side=False)
@@ -257,6 +267,7 @@ class BeatsTransport:
             port,
             ssl_enable,
             ssl_verify,
+            ssl_verify_flags,
             keyfile,
             certfile,
             ca_certs,
@@ -269,6 +280,7 @@ class BeatsTransport:
             timeout=timeout_,
             ssl_enable=ssl_enable,
             ssl_verify=ssl_verify,
+            ssl_verify_flags=ssl_verify_flags,
             keyfile=keyfile,
             certfile=certfile,
             ca_certs=ca_certs,
@@ -308,6 +320,8 @@ class HttpTransport(Transport):
     pass a string with a file location to CA certificate the class tries to
     validate it against it. (Default: True)
     :type ssl_verify: bool or str
+    :param ssl_verify_flags: Verification flags for ssl.SSLContext (Default: None)
+    :type ssl_verify_flags: int
     :param use_logging: Use logging for debugging.
     :type use_logging: bool
     :param username: Username for basic authorization. (Default: "")
@@ -319,6 +333,7 @@ class HttpTransport(Transport):
     :type max_content_length: int
     """
 
+    # pylint: disable=too-many-arguments,too-many-positional-arguments
     def __init__(
             self,
             host: str,
@@ -326,11 +341,12 @@ class HttpTransport(Transport):
             timeout: Union[None, float] = TimeoutNotSet,
             ssl_enable: bool = True,
             ssl_verify: Union[bool, str] = True,
+            ssl_verify_flags: Union[None, int] = None,
             use_logging: bool = False,
             path: str = '',
             **kwargs
     ):
-        super().__init__(host, port, timeout, ssl_enable, ssl_verify, use_logging)
+        super().__init__(host, port, timeout, ssl_enable, ssl_verify, ssl_verify_flags, use_logging)
         self._username = kwargs.get('username')
         self._password = kwargs.get('password')
         self._max_content_length = kwargs.get('max_content_length', 100 * 1024 * 1024)

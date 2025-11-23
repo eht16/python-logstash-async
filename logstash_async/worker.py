@@ -49,6 +49,7 @@ class LogProcessingWorker(Thread):  # pylint: disable=too-many-instance-attribut
         self._transport = kwargs.pop('transport')
         self._ssl_enable = kwargs.pop('ssl_enable')
         self._ssl_verify = kwargs.pop('ssl_verify')
+        self._ssl_verify_flags = kwargs.pop('ssl_verify_flags')
         self._keyfile = kwargs.pop('keyfile')
         self._certfile = kwargs.pop('certfile')
         self._ca_certs = kwargs.pop('ca_certs')

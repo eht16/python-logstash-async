@@ -90,6 +90,21 @@ Options for configuring the log handler
     *Default*: ``True``
 
 
+``ssl_verify_flags``
+
+    Specify verify flags for Python's `ssl.SSLContext`.
+    See the Python documentation for valid values.
+    This can be useful to override Python 3.13's strict verify flags by passing `0`.
+
+    Only used for `logstash_async.transport.TcpTransport`,
+    ``logstash_async.transport.BeatsTransport`` and
+    ``logstash_async.transport.HttpTransport``.
+
+    *Type*: ``integer``
+
+    *Default*: None
+
+
 ``keyfile``
 
     The path to client side SSL key file.

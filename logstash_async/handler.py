@@ -21,6 +21,7 @@ class SynchronousLogstashHandler(Handler):
     :param transport: Callable or path to a compatible transport class.
     :param ssl_enable: Should SSL be enabled for the connection? Default is False.
     :param ssl_verify: Should the server's SSL certificate be verified?
+    :param ssl_verify_flags: Verification flags for ssl.SSLContext (Default: None)
     :param keyfile: The path to client side SSL key file (default is None).
     :param certfile: The path to client side SSL certificate file (default is None).
     :param ca_certs: The path to the file containing recognized CA certificates.
@@ -29,16 +30,17 @@ class SynchronousLogstashHandler(Handler):
     """
 
     # ----------------------------------------------------------------------
-    # pylint: disable=too-many-arguments
+    # pylint: disable=too-many-arguments,too-many-positional-arguments
     def __init__(self, host, port, transport='logstash_async.transport.TcpTransport',
-                 ssl_enable=False, ssl_verify=True, keyfile=None, certfile=None, ca_certs=None,
-                 enable=True, encoding='utf-8', **kwargs):
+                 ssl_enable=False, ssl_verify=True, ssl_verify_flags=None, keyfile=None,
+                 certfile=None, ca_certs=None, enable=True, encoding='utf-8', **kwargs):
         super().__init__()
         self._host = host
         self._port = port
         self._transport_path = transport
         self._ssl_enable = ssl_enable
         self._ssl_verify = ssl_verify
+        self._ssl_verify_flags = ssl_verify_flags
         self._keyfile = keyfile
         self._certfile = certfile
         self._ca_certs = ca_certs
@@ -72,6 +74,7 @@ class SynchronousLogstashHandler(Handler):
             timeout=constants.SOCKET_TIMEOUT,
             ssl_enable=self._ssl_enable,
             ssl_verify=self._ssl_verify,
+            ssl_verify_flags=self._ssl_verify_flags,
             keyfile=self._keyfile,
             certfile=self._certfile,
             ca_certs=self._ca_certs,
@@ -135,16 +138,17 @@ class AsynchronousLogstashHandler(SynchronousLogstashHandler):
     _worker_thread = None
 
     # ----------------------------------------------------------------------
-    # pylint: disable=too-many-arguments
+    # pylint: disable=too-many-arguments,too-many-positional-arguments
     def __init__(self, host, port, database_path, transport='logstash_async.transport.TcpTransport',
-                 ssl_enable=False, ssl_verify=True, keyfile=None, certfile=None, ca_certs=None,
-                 enable=True, event_ttl=None, encoding='utf-8', **kwargs):
+                 ssl_enable=False, ssl_verify=True, ssl_verify_flags=None, keyfile=None,
+                 certfile=None, ca_certs=None, enable=True, event_ttl=None, encoding='utf-8',
+                 **kwargs):
 
         self._database_path = database_path
         self._event_ttl = event_ttl
 
         super().__init__(host, port, transport,
-                 ssl_enable, ssl_verify, keyfile, certfile, ca_certs,
+                 ssl_enable, ssl_verify, ssl_verify_flags, keyfile, certfile, ca_certs,
                  enable, encoding, **kwargs)
 
     # ----------------------------------------------------------------------
@@ -178,6 +182,7 @@ class AsynchronousLogstashHandler(SynchronousLogstashHandler):
             transport=self._transport,
             ssl_enable=self._ssl_enable,
             ssl_verify=self._ssl_verify,
+            ssl_verify_flags=self._ssl_verify_flags,
             keyfile=self._keyfile,
             certfile=self._certfile,
             ca_certs=self._ca_certs,
